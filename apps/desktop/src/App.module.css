@@ -1,0 +1,527 @@
+.appShell {
+  display: grid;
+  gap: 16px;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px 18px 24px;
+}
+
+.topBar,
+.pageSection,
+.detailsPanel,
+.directoryCard,
+.settingsCard,
+.warningPanel,
+.errorBanner {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(11, 15, 21, 0.92);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+}
+
+.topBar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #f8fafc;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #eff6ff;
+  font-weight: 700;
+}
+
+.tabNav,
+.languageSwitch,
+.languageSwitchInline,
+.pillGroup,
+.badgeRow,
+.actionRow {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tabButton,
+.tabButtonActive,
+.languageButton,
+.languageButtonActive,
+.filterPill,
+.filterPillActive,
+.primaryButton,
+.secondaryButton,
+.skillRow,
+.skillRowActive {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.tabButton,
+.languageButton,
+.filterPill,
+.secondaryButton {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(241, 245, 249, 0.75);
+}
+
+.tabButton,
+.tabButtonActive,
+.languageButton,
+.languageButtonActive,
+.filterPill,
+.filterPillActive {
+  padding: 0.5rem 0.8rem;
+}
+
+.tabButtonActive,
+.languageButtonActive,
+.filterPillActive {
+  background: rgba(59, 130, 246, 0.18);
+  color: #dbeafe;
+}
+
+.languageButtonActive {
+  background: rgba(245, 158, 11, 0.22);
+  color: #ffedd5;
+}
+
+.pageSection,
+.detailsPanel,
+.warningPanel {
+  padding: 14px;
+}
+
+.toolbar,
+.splitLayout,
+.settingsGrid,
+.directoryGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.toolbar {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.searchField input,
+.settingsField input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+}
+
+.searchField input::placeholder,
+.settingsField input::placeholder {
+  color: rgba(248, 250, 252, 0.36);
+}
+
+.searchField input:focus,
+.settingsField input:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 40px;
+  padding: 0.7rem 0.95rem;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #eff6ff;
+}
+
+.secondaryButton {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover,
+.tabButton:hover,
+.languageButton:hover,
+.filterPill:hover,
+.skillRow:hover,
+.skillRowActive:hover {
+  transform: translateY(-1px);
+}
+
+.filterStrip {
+  display: grid;
+  gap: 10px;
+}
+
+.inlineSummary,
+.helperText,
+.directoryPath,
+.skillRowContent p,
+.detailsDescription,
+.previewState,
+.warningItem p {
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.inlineSummary,
+.helperText,
+.readout span,
+.metaGrid span {
+  font-size: 0.9rem;
+}
+
+.splitLayout {
+  grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+  align-items: start;
+}
+
+.listPanel,
+.detailsPanel {
+  min-height: 560px;
+}
+
+.skillList,
+.warningList {
+  display: grid;
+  gap: 8px;
+}
+
+.skillRow,
+.skillRowActive {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.skillRow {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.skillRowActive {
+  border: 1px solid rgba(59, 130, 246, 0.36);
+  background: rgba(59, 130, 246, 0.12);
+  color: #eff6ff;
+}
+
+.skillRowContent strong,
+.panelTitle,
+.pageTitle {
+  color: #f8fafc;
+}
+
+.skillRowContent strong {
+  font-size: 0.98rem;
+}
+
+.skillRowContent p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skillRowMeta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge,
+.agentBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.07);
+  color: #cbd5e1;
+}
+
+.agentBadge {
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
+}
+
+.directoryCard .agentBadge,
+.metaGrid .agentBadge {
+  background: rgba(251, 146, 60, 0.18);
+  color: #fed7aa;
+}
+
+.pageHeader,
+.panelHeader,
+.previewHeader,
+.directoryCardHeader,
+.directoryFooter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pageTitle,
+.panelTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.sectionLabel {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.detailsDescription {
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.metaSection,
+.previewSection {
+  margin-top: 16px;
+}
+
+.metaGrid {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.metaGrid > div,
+.readout {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.metaGrid strong,
+.readout strong,
+.directoryFooter span,
+.statusOk,
+.statusMissing {
+  color: #f8fafc;
+  word-break: break-word;
+}
+
+.previewFrame {
+  margin-top: 10px;
+  min-height: 320px;
+  max-height: 520px;
+  overflow: auto;
+  border-radius: 10px;
+  background: rgba(5, 8, 12, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.previewContent,
+.directoryPath,
+.metaGrid strong,
+.readout strong {
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+.previewContent {
+  margin: 0;
+  padding: 14px;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: #dbeafe;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.previewState,
+.emptyState,
+.emptyPanel {
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.emptyState strong,
+.emptyPanel {
+  color: #f8fafc;
+}
+
+.emptyState p {
+  margin: 8px 0 12px;
+  color: rgba(226, 232, 240, 0.72);
+  line-height: 1.6;
+}
+
+.directoryGrid,
+.settingsGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.directoryCard,
+.settingsCard {
+  padding: 14px;
+}
+
+.directoryCard {
+  display: grid;
+  gap: 14px;
+}
+
+.directoryPath {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.statusOk,
+.statusMissing {
+  font-size: 0.82rem;
+}
+
+.statusOk {
+  color: #86efac;
+}
+
+.statusMissing {
+  color: #fca5a5;
+}
+
+.warningPanel {
+  margin-top: 14px;
+}
+
+.warningItem {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.warningItem strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #f8fafc;
+}
+
+.settingsCard {
+  display: grid;
+  gap: 12px;
+}
+
+.readout {
+  margin-top: 4px;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.4);
+}
+
+.errorBanner strong {
+  color: #fee2e2;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1080px) {
+  .splitLayout,
+  .directoryGrid,
+  .settingsGrid,
+  .topBar {
+    grid-template-columns: 1fr;
+  }
+
+  .tabNav {
+    justify-content: flex-start;
+  }
+
+  .languageSwitch {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .appShell {
+    padding: 12px;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .skillRow,
+  .skillRowActive,
+  .directoryCardHeader,
+  .directoryFooter,
+  .panelHeader,
+  .pageHeader {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .skillRowMeta {
+    justify-content: flex-start;
+  }
+}

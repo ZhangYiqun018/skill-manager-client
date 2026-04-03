@@ -1,0 +1,11 @@
+{
+  "name": "skill-manager-client",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "desktop:install": "pnpm --dir apps/desktop install",
+    "desktop:dev": "pnpm --dir apps/desktop tauri dev",
+    "desktop:build": "pnpm --dir apps/desktop tauri build",
+    "cli:scan": "cargo run -p skill-manager-cli -- scan"
+  }
+}

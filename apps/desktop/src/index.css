@@ -1,0 +1,44 @@
+:root {
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 28%),
+    radial-gradient(circle at top right, rgba(251, 146, 60, 0.14), transparent 32%),
+    linear-gradient(180deg, #0a0d12 0%, #06080c 100%);
+  font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.18;
+}
+
+button,
+input {
+  font: inherit;
+}

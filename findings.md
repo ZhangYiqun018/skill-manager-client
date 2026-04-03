@@ -1,0 +1,30 @@
+# Findings
+
+- Repository started empty.
+- Local skill directories exist on this machine:
+  - `~/.codex/skills`
+  - `~/.claude/skills`
+- Current tooling available locally:
+  - `cargo 1.92.0`
+  - `rustc 1.92.0`
+  - `node v24.13.0`
+  - `npm 11.6.2`
+  - `pnpm 8.15.6`
+- Current package versions discovered:
+  - `@tauri-apps/cli`: `2.10.1`
+  - `tauri` crate: `2.10.3`
+- Official `skills` CLI supports project/global installs and `skills.sh`, but its install mode can fall back to copy semantics. A custom manager should own symlink behavior.
+- The desktop client now defaults to English and supports switching to Chinese with a persisted local preference.
+- The project now includes a project-scoped UI skill install:
+  - `.agents/skills/frontend-design`
+  - `.claude/skills/frontend-design` as a symlink to the canonical project copy
+- The desktop app now exposes two real management actions:
+  - `read_skill_content`
+  - `open_in_finder`
+- `mdfind "kMDItemFSName == 'SKILL.md'"` returns a very large raw result set on this machine, so full-disk discovery must filter to supported install layouts instead of blindly indexing every match.
+- The new index layer uses SQLite and stores discovered skills plus scan warnings under the app support directory, which allows the desktop app to read cached results immediately on launch.
+- The current full-disk discovery rules recognize these layouts:
+  - `~/.codex/skills/*/SKILL.md`
+  - `~/.claude/skills/*/SKILL.md`
+  - `**/.claude/skills/*/SKILL.md`
+  - `**/.agents/skills/*/SKILL.md`
