@@ -1,26 +1,35 @@
 import styles from "../../App.module.css";
-import { agentLabel, copy, scopeLabel, type Language } from "../../i18n";
-import type { InstalledSkill } from "../../types";
+import {
+  agentLabel,
+  copy,
+  healthLabel,
+  scopeLabel,
+  sourceLabel,
+  type Language,
+} from "../../i18n";
+import type { InstallTargetRecord, SkillItem } from "../../types";
 
-type SkillDetailsPanelProps = {
+type LibraryDetailsPanelProps = {
   language: Language;
   loading: boolean;
   onOpenFolder: () => void;
   onOpenSkillFile: () => void;
   previewContent?: string;
   previewError?: string | null;
-  selectedSkill: InstalledSkill | null;
+  relatedTargets: InstallTargetRecord[];
+  selectedSkill: SkillItem | null;
 };
 
-export function SkillDetailsPanel({
+export function LibraryDetailsPanel({
   language,
   loading,
   onOpenFolder,
   onOpenSkillFile,
   previewContent,
   previewError,
+  relatedTargets,
   selectedSkill,
-}: SkillDetailsPanelProps) {
+}: LibraryDetailsPanelProps) {
   const text = copy[language];
 
   if (!selectedSkill) {
@@ -46,8 +55,11 @@ export function SkillDetailsPanel({
         </div>
         <div className={styles.badgeRow}>
           <span className={styles.badge}>{scopeLabel(selectedSkill.scope, language)}</span>
-          <span className={styles.agentBadge}>
-            {agentLabel(selectedSkill.agent, language)}
+          <span className={styles.agentBadge} data-agent={selectedSkill.agent}>
+            {agentLabel(selectedSkill.agent)}
+          </span>
+          <span className={styles.sourceBadge}>
+            {sourceLabel(selectedSkill.source_type, language)}
           </span>
         </div>
       </div>
@@ -91,6 +103,41 @@ export function SkillDetailsPanel({
             </div>
           ) : null}
         </div>
+      </section>
+
+      <section className={styles.metaSection}>
+        <div className={styles.panelHeader}>
+          <div>
+            <p className={styles.sectionLabel}>{text.installTargetsTitle}</p>
+          </div>
+        </div>
+        {relatedTargets.length === 0 ? (
+          <div className={styles.emptyPanel}>{text.noTargetsBody}</div>
+        ) : (
+          <div className={styles.targetList}>
+            {relatedTargets.map((target) => (
+              <div key={target.id} className={styles.targetRow}>
+                <div>
+                  <strong>{target.path}</strong>
+                  <p>
+                    {agentLabel(target.agent)} · {scopeLabel(target.scope, language)}
+                  </p>
+                </div>
+                <span
+                  className={
+                    target.health_state === "healthy"
+                      ? styles.statusHealthy
+                      : target.health_state === "warning"
+                        ? styles.statusWarning
+                        : styles.statusMissing
+                  }
+                >
+                  {healthLabel(target.health_state, language)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className={styles.previewSection}>

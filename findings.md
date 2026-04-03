@@ -28,3 +28,18 @@
   - `~/.claude/skills/*/SKILL.md`
   - `**/.claude/skills/*/SKILL.md`
   - `**/.agents/skills/*/SKILL.md`
+- The current macOS Spotlight-only discovery path under-detects hidden project directories such as `.agents/skills`, so the scanner now needs a hybrid strategy:
+  - fast discovery via Spotlight where useful
+  - targeted filesystem walking for hidden project-scoped skill roots
+- The next product requirement set adds four new constraints:
+  - full-disk scanning must be explicitly user-triggered and guarded by a second confirmation because it can take noticeable time
+  - discovery results must be grouped for duplicate review before adoption
+  - duplicate handling must distinguish exact duplicates from same-name content variants
+  - adoption must support batch actions such as all project-scoped candidates, all Codex candidates, and all Claude Code candidates
+- Name alone is not a safe dedupe key. It is useful for grouping and review, but final duplicate decisions should use content identity:
+  - same normalized name + same content hash => exact duplicate candidates
+  - same normalized name + different content hash => version candidates within one skill family
+- The current implementation now fingerprints discovered skills with:
+  - `family_key` for grouping same-name families
+  - `content_hash` for exact-duplicate detection and content-aware managed-store paths
+- Full-disk scans are now user-confirmed actions in the UI rather than startup side effects.

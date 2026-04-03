@@ -64,6 +64,33 @@ impl SkillScope {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[serde(rename_all = "snake_case")]
+pub enum SkillSourceType {
+    Disk,
+    Import,
+    Remote,
+}
+
+impl SkillSourceType {
+    pub(crate) fn as_key(&self) -> &'static str {
+        match self {
+            Self::Disk => "disk",
+            Self::Import => "import",
+            Self::Remote => "remote",
+        }
+    }
+
+    pub(crate) fn from_key(value: &str) -> Option<Self> {
+        match value {
+            "disk" => Some(Self::Disk),
+            "import" => Some(Self::Import),
+            "remote" => Some(Self::Remote),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SkillMetadata {
     pub name: Option<String>,
@@ -73,6 +100,9 @@ pub struct SkillMetadata {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstalledSkill {
+    pub source_type: SkillSourceType,
+    pub family_key: String,
+    pub content_hash: String,
     pub agent: AgentKind,
     pub scope: SkillScope,
     pub slug: String,
@@ -129,6 +159,7 @@ pub struct IndexedScanSummary {
 #[derive(Debug, Clone)]
 pub struct IndexOptions {
     pub index_path: Option<PathBuf>,
+    pub store_path: Option<PathBuf>,
     pub stale_after_secs: Option<u64>,
     pub discover_full_disk: bool,
 }
@@ -137,6 +168,7 @@ impl Default for IndexOptions {
     fn default() -> Self {
         Self {
             index_path: None,
+            store_path: None,
             stale_after_secs: None,
             discover_full_disk: true,
         }
@@ -163,6 +195,7 @@ impl From<&RootSpec> for ScanRoot {
 
 #[derive(Debug, Clone)]
 pub(crate) struct SkillDescriptor {
+    pub source_type: SkillSourceType,
     pub agent: AgentKind,
     pub scope: SkillScope,
     pub skill_dir: PathBuf,

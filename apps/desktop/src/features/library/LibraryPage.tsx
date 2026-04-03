@@ -1,37 +1,42 @@
 import styles from "../../App.module.css";
-import { agentLabel, copy, scopeLabel, type Language } from "../../i18n";
+import { FilterPill } from "../../components/FilterPill";
+import { copy, sourceLabel, scopeLabel, agentLabel, type Language } from "../../i18n";
 import type {
   AgentFilter,
-  InstalledSkill,
   ScopeFilter,
+  SkillItem,
+  SourceFilter,
+  InstallTargetRecord,
 } from "../../types";
-import { SkillDetailsPanel } from "./SkillDetailsPanel";
+import { LibraryDetailsPanel } from "./LibraryDetailsPanel";
 
-type SkillsTabProps = {
+type LibraryPageProps = {
   agentCounts: Record<AgentFilter, number>;
   agentFilter: AgentFilter;
-  filteredSkills: InstalledSkill[];
+  filteredSkills: SkillItem[];
   language: Language;
   loading: boolean;
   onAgentFilterChange: (filter: AgentFilter) => void;
   onOpenFolder: () => void;
   onOpenSkillFile: () => void;
-  onRescan: () => void;
+  onRefreshIndex: () => void;
   onScopeFilterChange: (filter: ScopeFilter) => void;
-  onSearchQueryChange: (value: string) => void;
   onSelectSkill: (skillPath: string) => void;
+  onSourceFilterChange: (filter: SourceFilter) => void;
   previewContent?: string;
   previewError?: string | null;
   previewLoading: boolean;
+  relatedTargets: InstallTargetRecord[];
   scopeCounts: Record<ScopeFilter, number>;
   scopeFilter: ScopeFilter;
-  searchQuery: string;
-  selectedSkill: InstalledSkill | null;
+  selectedSkill: SkillItem | null;
+  sourceCounts: Record<SourceFilter, number>;
+  sourceFilter: SourceFilter;
   totalSkills: number;
   warningCount: number;
 };
 
-export function SkillsTab({
+export function LibraryPage({
   agentCounts,
   agentFilter,
   filteredSkills,
@@ -40,37 +45,35 @@ export function SkillsTab({
   onAgentFilterChange,
   onOpenFolder,
   onOpenSkillFile,
-  onRescan,
+  onRefreshIndex,
   onScopeFilterChange,
-  onSearchQueryChange,
   onSelectSkill,
+  onSourceFilterChange,
   previewContent,
   previewError,
   previewLoading,
+  relatedTargets,
   scopeCounts,
   scopeFilter,
-  searchQuery,
   selectedSkill,
+  sourceCounts,
+  sourceFilter,
   totalSkills,
   warningCount,
-}: SkillsTabProps) {
+}: LibraryPageProps) {
   const text = copy[language];
 
   return (
     <section className={styles.pageSection}>
-      <div className={styles.toolbar}>
-        <label className={styles.searchField}>
-          <span className={styles.visuallyHidden}>{text.searchLabel}</span>
-          <input
-            value={searchQuery}
-            onChange={(event) => onSearchQueryChange(event.currentTarget.value)}
-            placeholder={text.searchPlaceholder}
-          />
-        </label>
-        <button type="button" className={styles.primaryButton} onClick={onRescan}>
-          {loading ? text.rescanning : text.rescan}
+      <header className={styles.pageHeader}>
+        <div>
+          <p className={styles.sectionLabel}>{text.libraryTitle}</p>
+          <h1 className={styles.pageTitle}>{text.libraryBody}</h1>
+        </div>
+        <button type="button" className={styles.primaryButton} onClick={onRefreshIndex}>
+          {loading ? text.refreshingIndex : text.refreshIndex}
         </button>
-      </div>
+      </header>
 
       <div className={styles.filterStrip}>
         <div className={styles.pillGroup}>
@@ -81,13 +84,31 @@ export function SkillsTab({
           />
           <FilterPill
             active={agentFilter === "codex"}
-            label={`${agentLabel("codex", language)} (${agentCounts.codex})`}
+            label={`${agentLabel("codex")} (${agentCounts.codex})`}
             onClick={() => onAgentFilterChange("codex")}
           />
           <FilterPill
             active={agentFilter === "claude_code"}
-            label={`${agentLabel("claude_code", language)} (${agentCounts.claude_code})`}
+            label={`${agentLabel("claude_code")} (${agentCounts.claude_code})`}
             onClick={() => onAgentFilterChange("claude_code")}
+          />
+        </div>
+
+        <div className={styles.pillGroup}>
+          <FilterPill
+            active={sourceFilter === "all"}
+            label={`${text.allSources} (${sourceCounts.all})`}
+            onClick={() => onSourceFilterChange("all")}
+          />
+          <FilterPill
+            active={sourceFilter === "import"}
+            label={`${sourceLabel("import", language)} (${sourceCounts.import})`}
+            onClick={() => onSourceFilterChange("import")}
+          />
+          <FilterPill
+            active={sourceFilter === "remote"}
+            label={`${sourceLabel("remote", language)} (${sourceCounts.remote})`}
+            onClick={() => onSourceFilterChange("remote")}
           />
         </div>
 
@@ -114,23 +135,16 @@ export function SkillsTab({
         {text.showing} {filteredSkills.length} {text.of} {totalSkills} {text.skills}
         {" · "}
         {warningCount} {text.warningsInline}
+        {" · "}
+        {text.indexedInventory}
       </div>
 
       <div className={styles.splitLayout}>
         <section className={styles.listPanel}>
           {filteredSkills.length === 0 ? (
             <div className={styles.emptyState}>
-              <strong>{text.emptySkillsTitle}</strong>
-              <p>{text.emptySkillsBody}</p>
-              {searchQuery ? (
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  onClick={() => onSearchQueryChange("")}
-                >
-                  {text.clearSearch}
-                </button>
-              ) : null}
+              <strong>{text.emptyLibraryTitle}</strong>
+              <p>{text.emptyLibraryBody}</p>
             </div>
           ) : (
             <div className={styles.skillList}>
@@ -145,14 +159,18 @@ export function SkillsTab({
                   }
                   onClick={() => onSelectSkill(skill.path)}
                 >
+                  <div className={styles.skillRowStripe} data-state={skill.health_state} />
                   <div className={styles.skillRowContent}>
                     <strong>{skill.display_name}</strong>
                     <p>{skill.description ?? text.descriptionFallback}</p>
                   </div>
                   <div className={styles.skillRowMeta}>
                     <span className={styles.badge}>{scopeLabel(skill.scope, language)}</span>
-                    <span className={styles.agentBadge}>
-                      {agentLabel(skill.agent, language)}
+                    <span className={styles.agentBadge} data-agent={skill.agent}>
+                      {agentLabel(skill.agent)}
+                    </span>
+                    <span className={styles.sourceBadge}>
+                      {sourceLabel(skill.source_type, language)}
                     </span>
                   </div>
                 </button>
@@ -161,34 +179,17 @@ export function SkillsTab({
           )}
         </section>
 
-        <SkillDetailsPanel
+        <LibraryDetailsPanel
           language={language}
           loading={previewLoading}
           onOpenFolder={onOpenFolder}
           onOpenSkillFile={onOpenSkillFile}
           previewContent={previewContent}
           previewError={previewError}
+          relatedTargets={relatedTargets}
           selectedSkill={selectedSkill}
         />
       </div>
     </section>
-  );
-}
-
-type FilterPillProps = {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-};
-
-function FilterPill({ active, label, onClick }: FilterPillProps) {
-  return (
-    <button
-      type="button"
-      className={active ? styles.filterPillActive : styles.filterPill}
-      onClick={onClick}
-    >
-      {label}
-    </button>
   );
 }

@@ -5,7 +5,9 @@ use std::process::Command;
 use anyhow::{Context, Result};
 use serde::Serialize;
 use skill_manager_core::{
-    IndexOptions, IndexedScanSummary, ScanOptions, ScanSummary, load_skill_index as load_skill_index_core,
+    IndexOptions, IndexedScanSummary, ScanOptions, ScanSummary,
+    adopt_skill as adopt_skill_core, adopt_skills as adopt_skills_core,
+    load_skill_index as load_skill_index_core,
     refresh_skill_index as refresh_skill_index_core, scan_local_skills as scan_local_skills_core,
 };
 
@@ -24,6 +26,30 @@ fn load_skill_index(project_root: Option<String>) -> Result<IndexedScanSummary, 
 fn refresh_skill_index(project_root: Option<String>) -> Result<IndexedScanSummary, String> {
     refresh_skill_index_core(&build_scan_options(project_root), &IndexOptions::default())
         .map_err(error_chain)
+}
+
+#[tauri::command]
+fn adopt_skill(path: String, project_root: Option<String>) -> Result<IndexedScanSummary, String> {
+    let allowed_path = validate_allowed_path(&path, project_root.clone()).map_err(error_chain)?;
+    let scan_options = build_scan_options(project_root);
+    let index_options = IndexOptions::default();
+    adopt_skill_core(allowed_path, &scan_options, &index_options).map_err(error_chain)?;
+    refresh_skill_index_core(&scan_options, &index_options).map_err(error_chain)
+}
+
+#[tauri::command]
+fn adopt_skills(
+    paths: Vec<String>,
+    project_root: Option<String>,
+) -> Result<IndexedScanSummary, String> {
+    let validated_paths = paths
+        .into_iter()
+        .map(|path| validate_allowed_path(&path, project_root.clone()).map_err(error_chain))
+        .collect::<Result<Vec<_>, _>>()?;
+    let scan_options = build_scan_options(project_root);
+    let index_options = IndexOptions::default();
+    adopt_skills_core(validated_paths, &scan_options, &index_options).map_err(error_chain)?;
+    refresh_skill_index_core(&scan_options, &index_options).map_err(error_chain)
 }
 
 #[derive(Debug, Serialize)]
@@ -55,6 +81,8 @@ pub fn run() {
             scan_local_skills,
             load_skill_index,
             refresh_skill_index,
+            adopt_skill,
+            adopt_skills,
             read_skill_content,
             open_in_finder
         ])

@@ -17,6 +17,38 @@
 - Added a SQLite-backed local index layer in the shared Rust core.
 - Added Spotlight-based full-disk discovery on macOS for supported Codex and Claude skill layouts.
 - Switched the desktop app startup flow to load cached index data first and refresh in the background when the cache is stale.
+- Wrote a first-pass product requirements document covering multi-source discovery, managed library, symlink-based install targets, and MVP / post-MVP scope.
+- Reworked the desktop frontend into a new four-area information architecture:
+  - `Library`
+  - `Discover`
+  - `Targets`
+  - `Settings`
+- Split desktop frontend types and API access into directory-based modules in preparation for library / discovery / target records.
+- Added a global search bar and health badge to the top bar, plus new page skeletons for discovery and target health.
+- Added source-aware skill records in the Rust core with `disk / import / remote` modeling.
+- Added a managed store path model and a first real `adopt` flow:
+  - copy a discovered disk skill directory into the canonical managed store
+  - rescan the index after adoption
+  - surface managed skills in `Library` and disk candidates in `Discover`
+- Added a first backend-to-frontend workflow for `Discover -> Adopt -> Library`.
+- Reworked full-disk discovery to stop depending solely on Spotlight so hidden project-scoped skill roots can be found.
+- Suppressed low-value permission-denied warnings from full-disk discovery so the warning panel only carries meaningful scan issues.
+- Captured the next product-planning slice for discovery/adoption:
+  - explicit confirmation before full-disk scan
+  - duplicate grouping during candidate review
+  - exact-duplicate vs variant handling
+  - batch adoption presets by scope and agent
+- Implemented explicit confirmation before manual full-disk scans; the app no longer auto-runs a full-disk refresh on startup.
+- Added candidate fingerprinting in the Rust core:
+  - `family_key` for grouping skill families
+  - `content_hash` for exact-duplicate detection
+- Updated the managed-store path strategy to use content-aware identifiers so exact duplicates collapse into one canonical managed copy per agent/scope.
+- Reworked the Discover UI into grouped candidate review with:
+  - family-level grouping
+  - unique / exact-duplicate / variant states
+  - multi-select checkboxes
+  - batch selection presets for recommended, project, Codex, and Claude Code candidates
+  - batch adopt into the managed library
 - Verified:
   - `cargo test -p skill-manager-core`
   - `cargo run -p skill-manager-cli -- scan`

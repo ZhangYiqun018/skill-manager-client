@@ -10,6 +10,7 @@ dirs.workspace = true
 rusqlite.workspace = true
 serde.workspace = true
 serde_yaml.workspace = true
+sha2.workspace = true
 thiserror.workspace = true
 walkdir.workspace = true
 

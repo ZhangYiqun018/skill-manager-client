@@ -1,15 +1,17 @@
 import { useDeferredValue, useMemo } from "react";
 import type {
   AgentFilter,
-  InstalledSkill,
   ScopeFilter,
+  SkillItem,
+  SourceFilter,
 } from "../types";
 
 type UseSkillFiltersArgs = {
-  skills: InstalledSkill[];
+  skills: SkillItem[];
   searchQuery: string;
   agentFilter: AgentFilter;
   scopeFilter: ScopeFilter;
+  sourceFilter: SourceFilter;
 };
 
 export function useSkillFilters({
@@ -17,6 +19,7 @@ export function useSkillFilters({
   searchQuery,
   agentFilter,
   scopeFilter,
+  sourceFilter,
 }: UseSkillFiltersArgs) {
   const deferredQuery = useDeferredValue(searchQuery);
 
@@ -26,13 +29,16 @@ export function useSkillFilters({
     return skills.filter((skill) => {
       const matchesAgent = agentFilter === "all" || skill.agent === agentFilter;
       const matchesScope = scopeFilter === "all" || skill.scope === scopeFilter;
-      const haystack = `${skill.display_name} ${skill.description ?? ""} ${skill.slug}`
+      const matchesSource =
+        sourceFilter === "all" || skill.source_type === sourceFilter;
+      const haystack =
+        `${skill.display_name} ${skill.description ?? ""} ${skill.slug} ${skill.source_type}`
         .toLowerCase()
         .trim();
       const matchesQuery =
         normalizedQuery.length === 0 || haystack.includes(normalizedQuery);
 
-      return matchesAgent && matchesScope && matchesQuery;
+      return matchesAgent && matchesScope && matchesSource && matchesQuery;
     });
-  }, [agentFilter, deferredQuery, scopeFilter, skills]);
+  }, [agentFilter, deferredQuery, scopeFilter, skills, sourceFilter]);
 }

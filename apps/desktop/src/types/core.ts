@@ -1,8 +1,7 @@
 export type AgentKind = "claude_code" | "codex";
 export type SkillScope = "global" | "project";
-export type AppTab = "skills" | "directories" | "settings";
-export type AgentFilter = "all" | AgentKind;
-export type ScopeFilter = "all" | SkillScope;
+export type SkillSourceType = "disk" | "import" | "remote";
+export type HealthState = "healthy" | "warning" | "missing";
 
 export interface SkillMetadata {
   name?: string | null;
@@ -11,6 +10,9 @@ export interface SkillMetadata {
 }
 
 export interface InstalledSkill {
+  source_type: SkillSourceType;
+  family_key: string;
+  content_hash: string;
   agent: AgentKind;
   scope: SkillScope;
   slug: string;
@@ -21,6 +23,15 @@ export interface InstalledSkill {
   source_root: string;
   project_root?: string | null;
   metadata: SkillMetadata;
+}
+
+export interface SkillItem extends InstalledSkill {
+  health_state: Exclude<HealthState, "missing">;
+  warning_count: number;
+}
+
+export interface DiscoveryRecord extends InstalledSkill {
+  discovered_at?: number | null;
 }
 
 export interface ScanRoot {
@@ -53,6 +64,12 @@ export interface IndexedScanSummary {
   index: IndexStatus;
 }
 
-export interface SkillContentPayload {
-  content: string;
+export interface InstallTargetRecord {
+  id: string;
+  agent: AgentKind;
+  scope: SkillScope;
+  path: string;
+  exists: boolean;
+  health_state: HealthState;
+  skill_count: number;
 }

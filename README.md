@@ -8,6 +8,10 @@ Tauri + Rust workspace for a local skill manager.
 - `crates/skill-manager-cli`: command-line interface
 - `apps/desktop`: Tauri desktop client
 
+## Product Docs
+
+- `docs/skill-manager-prd.md`: product requirements for design and implementation planning
+
 ## First Milestone
 
 - scan local Codex skills

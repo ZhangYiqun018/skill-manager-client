@@ -1,15 +1,17 @@
 use std::collections::BTreeSet;
 use std::ffi::OsStr;
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use dirs::home_dir;
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use walkdir::WalkDir;
 
 use crate::models::{
     AgentKind, InstalledSkill, RootSpec, ScanOptions, ScanRoot, ScanSummary, ScanWarning,
-    SkillDescriptor, SkillMetadata, SkillScope,
+    SkillDescriptor, SkillMetadata, SkillScope, SkillSourceType,
 };
 
 const SKILL_FILE_NAME: &str = "SKILL.md";
@@ -103,12 +105,26 @@ pub(crate) fn build_installed_skill(
         .skill_dir
         .file_name()
         .and_then(|value| value.to_str())
-        .map(str::to_owned)
+        .map(|value| normalize_slug(value, &descriptor.source_type))
         .unwrap_or_else(|| "unknown-skill".to_string());
 
     let display_name = metadata.name.clone().unwrap_or_else(|| slug.clone());
+    let family_key = normalize_family_key(&display_name, &slug);
+    let content_hash = match hash_skill_directory(&descriptor.skill_dir) {
+        Ok(hash) => hash,
+        Err(message) => {
+            warnings.push(ScanWarning {
+                path: Some(descriptor.skill_dir.clone()),
+                message,
+            });
+            format!("unhashed-{}", fallback_hash_seed(&descriptor.skill_dir))
+        }
+    };
 
     InstalledSkill {
+        source_type: descriptor.source_type,
+        family_key,
+        content_hash,
         agent: descriptor.agent,
         scope: descriptor.scope,
         slug,
@@ -120,6 +136,91 @@ pub(crate) fn build_installed_skill(
         project_root: descriptor.project_root,
         metadata,
     }
+}
+
+fn normalize_slug(value: &str, source_type: &SkillSourceType) -> String {
+    if *source_type == SkillSourceType::Import {
+        return value
+            .rsplit_once("--")
+            .map(|(slug, _)| slug.to_string())
+            .unwrap_or_else(|| value.to_string());
+    }
+
+    value.to_string()
+}
+
+fn normalize_family_key(display_name: &str, slug: &str) -> String {
+    let raw = if display_name.trim().is_empty() {
+        slug
+    } else {
+        display_name
+    };
+
+    let mut normalized = String::with_capacity(raw.len());
+    let mut last_was_separator = false;
+
+    for ch in raw.chars() {
+        if ch.is_ascii_alphanumeric() {
+            normalized.push(ch.to_ascii_lowercase());
+            last_was_separator = false;
+        } else if !last_was_separator {
+            normalized.push('-');
+            last_was_separator = true;
+        }
+    }
+
+    normalized.trim_matches('-').to_string()
+}
+
+fn hash_skill_directory(skill_dir: &Path) -> Result<String, String> {
+    let mut hasher = Sha256::new();
+
+    for entry in WalkDir::new(skill_dir)
+        .follow_links(false)
+        .sort_by_file_name()
+        .into_iter()
+    {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let relative_path = entry
+            .path()
+            .strip_prefix(skill_dir)
+            .map_err(|error| error.to_string())?;
+
+        hasher.update(relative_path.to_string_lossy().as_bytes());
+
+        if entry.file_type().is_dir() {
+            hasher.update(b":dir:");
+            continue;
+        }
+
+        if entry.file_type().is_symlink() {
+            hasher.update(b":symlink:");
+            let target = fs::read_link(entry.path()).map_err(|error| error.to_string())?;
+            hasher.update(target.to_string_lossy().as_bytes());
+            continue;
+        }
+
+        hasher.update(b":file:");
+        let mut file = fs::File::open(entry.path()).map_err(|error| error.to_string())?;
+        let mut buffer = [0_u8; 8192];
+        loop {
+            let bytes_read = file.read(&mut buffer).map_err(|error| error.to_string())?;
+            if bytes_read == 0 {
+                break;
+            }
+            hasher.update(&buffer[..bytes_read]);
+        }
+    }
+
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn fallback_hash_seed(path: &Path) -> String {
+    use std::hash::{Hash, Hasher};
+
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    path.hash(&mut hasher);
+    format!("{:08x}", hasher.finish())
 }
 
 pub(crate) fn classify_discovered_skill_path(
@@ -142,6 +243,7 @@ pub(crate) fn classify_discovered_skill_path(
 
     match container_name {
         ".agents" => Some(SkillDescriptor {
+            source_type: SkillSourceType::Disk,
             agent: AgentKind::Codex,
             scope: SkillScope::Project,
             skill_dir,
@@ -156,6 +258,7 @@ pub(crate) fn classify_discovered_skill_path(
                 .unwrap_or(false);
 
             Some(SkillDescriptor {
+                source_type: SkillSourceType::Disk,
                 agent: AgentKind::ClaudeCode,
                 scope: if is_global {
                     SkillScope::Global
@@ -179,6 +282,7 @@ pub(crate) fn classify_discovered_skill_path(
                 .unwrap_or(false);
 
             is_global.then(|| SkillDescriptor {
+                source_type: SkillSourceType::Disk,
                 agent: AgentKind::Codex,
                 scope: SkillScope::Global,
                 skill_dir,
@@ -240,6 +344,7 @@ fn scan_root(root: &RootSpec, summary: &mut ScanSummary) {
         }
 
         let descriptor = SkillDescriptor {
+            source_type: SkillSourceType::Disk,
             agent: root.agent.clone(),
             scope: root.scope.clone(),
             skill_dir: skill_dir.to_path_buf(),

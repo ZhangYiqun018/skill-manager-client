@@ -9,9 +9,13 @@
 .topBar,
 .pageSection,
 .detailsPanel,
-.directoryCard,
-.settingsCard,
 .warningPanel,
+.discoverCard,
+.discoveryGroup,
+.settingsCard,
+.targetCard,
+.panelNote,
+.modalCard,
 .errorBanner {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -21,9 +25,9 @@
 
 .topBar {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto minmax(280px, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   padding: 10px 12px;
 }
 
@@ -46,6 +50,11 @@
   font-weight: 700;
 }
 
+.topBarCenter {
+  min-width: 0;
+}
+
+.topBarActions,
 .tabNav,
 .languageSwitch,
 .languageSwitchInline,
@@ -58,6 +67,10 @@
   gap: 8px;
 }
 
+.topBarActions {
+  justify-content: flex-end;
+}
+
 .tabButton,
 .tabButtonActive,
 .languageButton,
@@ -66,6 +79,8 @@
 .filterPillActive,
 .primaryButton,
 .secondaryButton,
+.healthBadge,
+.healthBadgeAlert,
 .skillRow,
 .skillRowActive {
   appearance: none;
@@ -82,7 +97,8 @@
 .tabButton,
 .languageButton,
 .filterPill,
-.secondaryButton {
+.secondaryButton,
+.healthBadge {
   background: rgba(255, 255, 255, 0.04);
   color: rgba(241, 245, 249, 0.75);
 }
@@ -92,8 +108,10 @@
 .languageButton,
 .languageButtonActive,
 .filterPill,
-.filterPillActive {
-  padding: 0.5rem 0.8rem;
+.filterPillActive,
+.healthBadge,
+.healthBadgeAlert {
+  padding: 0.52rem 0.8rem;
 }
 
 .tabButtonActive,
@@ -108,43 +126,125 @@
   color: #ffedd5;
 }
 
+.healthBadge,
+.healthBadgeAlert {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.healthBadgeAlert {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fecaca;
+}
+
+.healthDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
+}
+
+.healthBadgeAlert .healthDot {
+  background: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
+}
+
+.tabButton:hover,
+.languageButton:hover,
+.filterPill:hover,
+.primaryButton:hover,
+.secondaryButton:hover,
+.healthBadge:hover,
+.healthBadgeAlert:hover,
+.skillRow:hover,
+.skillRowActive:hover {
+  transform: translateY(-1px);
+}
+
 .pageSection,
 .detailsPanel,
-.warningPanel {
+.warningPanel,
+.discoverCard,
+.settingsCard,
+.targetCard,
+.panelNote {
   padding: 14px;
 }
 
-.toolbar,
-.splitLayout,
-.settingsGrid,
-.directoryGrid {
-  display: grid;
-  gap: 14px;
+.pageHeader,
+.panelHeader,
+.previewHeader,
+.targetCardHeader,
+.directoryFooter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.toolbar {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+.pageTitle,
+.panelTitle,
+.skillRowContent strong {
+  margin: 0;
+  color: #f8fafc;
 }
 
-.searchField input,
-.settingsField input {
+.pageTitle,
+.panelTitle {
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.sectionLabel {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.helperText,
+.inlineSummary,
+.detailsDescription,
+.previewState,
+.warningItem p,
+.skillRowContent p,
+.readout span,
+.metaGrid span,
+.panelNote p,
+.directoryPath {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.helperText,
+.inlineSummary,
+.readout span,
+.metaGrid span {
+  font-size: 0.9rem;
+}
+
+.searchField {
+  display: block;
+}
+
+.searchField input {
   width: 100%;
   min-height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  padding: 0.7rem 0.85rem;
+  padding: 0.72rem 0.9rem;
   background: rgba(255, 255, 255, 0.04);
   color: #f8fafc;
 }
 
-.searchField input::placeholder,
-.settingsField input::placeholder {
+.searchField input::placeholder {
   color: rgba(248, 250, 252, 0.36);
 }
 
-.searchField input:focus,
-.settingsField input:focus {
+.searchField input:focus {
   outline: 2px solid rgba(59, 130, 246, 0.25);
   border-color: rgba(59, 130, 246, 0.45);
 }
@@ -152,7 +252,7 @@
 .primaryButton,
 .secondaryButton {
   min-height: 40px;
-  padding: 0.7rem 0.95rem;
+  padding: 0.72rem 0.95rem;
   cursor: pointer;
 }
 
@@ -166,45 +266,112 @@
 }
 
 .secondaryButton:disabled {
-  cursor: not-allowed;
   opacity: 0.45;
+  cursor: not-allowed;
 }
 
-.primaryButton:hover,
-.secondaryButton:hover,
-.tabButton:hover,
-.languageButton:hover,
-.filterPill:hover,
-.skillRow:hover,
-.skillRowActive:hover {
-  transform: translateY(-1px);
-}
-
-.filterStrip {
+.filterStrip,
+.discoverGrid,
+.settingsGrid,
+.targetSummary,
+.warningList,
+.skillList,
+.discoveryGroupList,
+.targetList,
+.scopeList {
   display: grid;
   gap: 10px;
 }
 
-.inlineSummary,
-.helperText,
-.directoryPath,
-.skillRowContent p,
-.detailsDescription,
-.previewState,
-.warningItem p {
-  color: rgba(226, 232, 240, 0.7);
+.filterStrip {
+  margin-top: 16px;
 }
 
-.inlineSummary,
-.helperText,
-.readout span,
-.metaGrid span {
+.inlineSummary {
+  margin-top: 14px;
+}
+
+.discoverGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.discoverCard {
+  display: grid;
+  gap: 14px;
+}
+
+.discoveryGroupList {
+  margin-top: 14px;
+}
+
+.discoveryGroup {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.discoveryGroupHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.groupMetaRow,
+.selectionToolbar {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectionToolbar {
+  margin-top: 12px;
+}
+
+.selectionSummary {
+  color: #f8fafc;
   font-size: 0.9rem;
 }
 
+.discoveryStateBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+
+.inlineTag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  font-size: 0.78rem;
+}
+
+.panelNote {
+  margin-top: 14px;
+}
+
+.panelNote strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #f8fafc;
+}
+
 .splitLayout {
+  display: grid;
   grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 14px;
   align-items: start;
+  margin-top: 16px;
 }
 
 .listPanel,
@@ -212,16 +379,10 @@
   min-height: 560px;
 }
 
-.skillList,
-.warningList {
-  display: grid;
-  gap: 8px;
-}
-
 .skillRow,
 .skillRowActive {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 4px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -230,8 +391,30 @@
   cursor: pointer;
 }
 
+.selectableSkillRow,
+.selectableSkillRowActive {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.selectionCheckbox {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12px;
+}
+
+.selectionCheckbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+}
+
 .skillRow {
   border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .skillRowActive {
@@ -240,10 +423,24 @@
   color: #eff6ff;
 }
 
-.skillRowContent strong,
-.panelTitle,
-.pageTitle {
-  color: #f8fafc;
+.selectableSkillRowActive .skillRow,
+.selectableSkillRowActive .skillRowActive {
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.28);
+}
+
+.skillRowStripe {
+  width: 4px;
+  align-self: stretch;
+  border-radius: 999px;
+  background: #22c55e;
+}
+
+.skillRowStripe[data-state="warning"] {
+  background: #f59e0b;
+}
+
+.skillRowStripe[data-state="missing"] {
+  background: #ef4444;
 }
 
 .skillRowContent strong {
@@ -253,7 +450,7 @@
 .skillRowContent p {
   margin: 4px 0 0;
   font-size: 0.88rem;
-  line-height: 1.4;
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -269,7 +466,8 @@
 }
 
 .badge,
-.agentBadge {
+.agentBadge,
+.sourceBadge {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
@@ -283,40 +481,24 @@
 }
 
 .agentBadge {
+  border: 1px solid transparent;
+}
+
+.agentBadge[data-agent="codex"] {
   background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(96, 165, 250, 0.3);
   color: #bfdbfe;
 }
 
-.directoryCard .agentBadge,
-.metaGrid .agentBadge {
-  background: rgba(251, 146, 60, 0.18);
+.agentBadge[data-agent="claude_code"] {
+  background: rgba(249, 115, 22, 0.16);
+  border-color: rgba(251, 146, 60, 0.28);
   color: #fed7aa;
 }
 
-.pageHeader,
-.panelHeader,
-.previewHeader,
-.directoryCardHeader,
-.directoryFooter {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.pageTitle,
-.panelTitle {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.35;
-}
-
-.sectionLabel {
-  margin: 0 0 6px;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #94a3b8;
+.sourceBadge {
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
 }
 
 .detailsDescription {
@@ -325,7 +507,8 @@
 }
 
 .metaSection,
-.previewSection {
+.previewSection,
+.targetGroup {
   margin-top: 16px;
 }
 
@@ -347,8 +530,7 @@
 .metaGrid strong,
 .readout strong,
 .directoryFooter span,
-.statusOk,
-.statusMissing {
+.directoryPath {
   color: #f8fafc;
   word-break: break-word;
 }
@@ -364,9 +546,8 @@
 }
 
 .previewContent,
-.directoryPath,
 .metaGrid strong,
-.readout strong {
+.directoryPath {
   font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
 }
 
@@ -380,7 +561,51 @@
   word-break: break-word;
 }
 
-.previewState,
+.targetList {
+  margin-top: 10px;
+}
+
+.targetRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.targetRow strong,
+.warningItem strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #f8fafc;
+}
+
+.targetRow p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.68);
+}
+
+.statusHealthy,
+.statusWarning,
+.statusMissing {
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.statusHealthy {
+  color: #86efac;
+}
+
+.statusWarning {
+  color: #fcd34d;
+}
+
+.statusMissing {
+  color: #fca5a5;
+}
+
 .emptyState,
 .emptyPanel {
   padding: 14px;
@@ -394,22 +619,25 @@
 }
 
 .emptyState p {
-  margin: 8px 0 12px;
+  margin: 8px 0 0;
   color: rgba(226, 232, 240, 0.72);
   line-height: 1.6;
 }
 
-.directoryGrid,
+.targetSummary,
 .settingsGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.targetGrid {
+  display: grid;
+  gap: 12px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 10px;
 }
 
-.directoryCard,
-.settingsCard {
-  padding: 14px;
-}
-
-.directoryCard {
+.targetCard {
   display: grid;
   gap: 14px;
 }
@@ -421,21 +649,8 @@
   word-break: break-word;
 }
 
-.statusOk,
-.statusMissing {
-  font-size: 0.82rem;
-}
-
-.statusOk {
-  color: #86efac;
-}
-
-.statusMissing {
-  color: #fca5a5;
-}
-
 .warningPanel {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .warningItem {
@@ -444,19 +659,20 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-.warningItem strong {
-  display: block;
-  margin-bottom: 6px;
-  color: #f8fafc;
+.scopeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.settingsCard {
-  display: grid;
-  gap: 12px;
-}
-
-.readout {
-  margin-top: 4px;
+.scopeChip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.34rem 0.68rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 0.82rem;
 }
 
 .errorBanner {
@@ -473,6 +689,22 @@
   color: #fee2e2;
 }
 
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.modalCard {
+  width: min(560px, 100%);
+  padding: 16px;
+}
+
 .visuallyHidden {
   position: absolute;
   width: 1px;
@@ -485,19 +717,18 @@
   border: 0;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1140px) {
+  .topBar,
   .splitLayout,
-  .directoryGrid,
+  .discoverGrid,
+  .targetSummary,
   .settingsGrid,
-  .topBar {
+  .targetGrid {
     grid-template-columns: 1fr;
   }
 
-  .tabNav {
-    justify-content: flex-start;
-  }
-
-  .languageSwitch {
+  .tabNav,
+  .topBarActions {
     justify-content: flex-start;
   }
 }
@@ -507,16 +738,16 @@
     padding: 12px;
   }
 
-  .toolbar {
-    grid-template-columns: 1fr;
-  }
-
   .skillRow,
   .skillRowActive,
-  .directoryCardHeader,
-  .directoryFooter,
+  .selectableSkillRow,
+  .selectableSkillRowActive,
+  .pageHeader,
   .panelHeader,
-  .pageHeader {
+  .previewHeader,
+  .targetCardHeader,
+  .directoryFooter,
+  .targetRow {
     grid-template-columns: 1fr;
     display: grid;
   }
