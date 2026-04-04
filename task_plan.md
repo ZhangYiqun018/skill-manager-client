@@ -23,8 +23,13 @@ Bootstrap a Tauri + Rust based skill manager with:
 | Frontend IA refactor | complete | Desktop app moved to `library / discover / targets / settings` structure with modularized types and API layer |
 | Managed library adoption | complete | First `Discover -> Adopt -> Library` loop wired through the Rust core, Tauri commands, and desktop UI |
 | Discovery hardening | complete | Added explicit full-scan confirmation, hidden project-skill discovery, duplicate grouping, and batch adoption presets |
-| Variant/version handling | in_progress | Exact duplicate vs variant detection exists; user-defined version labeling is still pending |
-| Target sync and repair | pending | Install managed skills into agent targets by symlink and repair broken targets |
+| Variant/version handling | in_progress | Exact duplicate vs variant detection now runs in Rust core via `DiscoveryReport`; managed variant labels are persisted and editable, but family/variant tables and compare/diff are still pending |
+| Target sync and repair | in_progress | Managed skills support per-target install / remove / repair, and Targets now has backend-owned target inventory plus batch sync/repair; remaining work is mainly deeper target-registry/settings support |
+| UX subtraction refactor | in_progress | Shell controls, Discover intake, Library detail hierarchy, and Targets/Settings scope are being simplified to surface default-variant management and reduce duplicated explanations |
+| Local import | complete | Local folder import now flows directly into the managed library with agent/scope selection |
+| Remote registry | complete | `skills.sh` search and remote adoption now work through the desktop app |
+| External product research | complete | Reviewed PromptHub source to extract reusable UX/workflow patterns and identify where our model should intentionally diverge |
+| Product blueprint and priority planning | complete | Converted PRD + UI spec + PromptHub research into a long-term product blueprint and a phased development priority list |
 | Verification | complete | Rust checks, core tests, CLI smoke test, and frontend build passed |
 
 ## Decisions
@@ -43,18 +48,57 @@ Bootstrap a Tauri + Rust based skill manager with:
 - Full-disk scanning must be manual and guarded by a confirmation step because it can be slow and noisy.
 - Candidate review should be name-grouped for usability, but dedupe decisions should be driven by content hashing rather than name alone.
 - Exact duplicates should be collapsible into one recommended adoption candidate; same-name variants should be preserved as separate versions within one skill family.
+- Dedupe needs a richer internal model than `family_key + content_hash`; it should distinguish:
+  - discovery occurrence
+  - exact duplicate group
+  - skill family
+  - variant
+  - canonical managed item
 - Batch adoption needs first-class presets, at minimum:
   - all project-scoped candidates
   - all Codex candidates
   - all Claude Code candidates
   - all exact-unique candidates
 - Manual scan confirmation should apply to any UI action that triggers a full-disk refresh, not only the Discover page.
+- Discover review should operate on representative candidates rather than every raw disk occurrence, so list density stays manageable on machines with many duplicated skills.
+- The right-side details panel should stay visible while browsing long discovery/library lists on desktop widths; stacked layouts should disable sticky behavior.
+- Same-content skills found in multiple places should merge into one canonical managed item while preserving all origin paths as provenance.
+- Same-family but different-content skills should not force immediate semver; the product should support generated default version labels and optional user overrides.
+- PromptHub is a good reference for:
+  - library/distribution/store workspace separation
+  - full skill detail pages
+  - install-first desktop UX
+  - settings for path overrides and install mode
+- PromptHub is not a good reference for:
+  - family/variant identity
+  - provenance-aware dedupe
+  - whole-directory canonical installation semantics
+- The next implementation priority order has shifted to:
+  - persist richer family / variant / provenance entities instead of deriving them from flat skills rows
+  - add compare/diff flows for same-family variants
+  - expand settings for install strategy, path overrides, and extra scan roots
+  - harden remote-source preview and candidate review before adoption
+- The current UX problem is no longer backend capability; it is product expression:
+  - default-version management exists but was buried too deep
+  - the same family/variant/install concepts were repeated across multiple surfaces
+  - shell-level search / refresh / language controls overreached into page-specific workflows
+  - `Discover` and `Targets` both tried to do too many jobs at once
+- Phase 1 and most of Phase 3 are now landed:
+  - managed `Skill Detail` has tabs for overview, content, files, installs, and origins
+  - install actions live on the selected managed skill
+  - backend install records and origin records exist
+  - Targets now exposes batch sync / repair from backend-owned target inventories
+  - local folder import and `skills.sh` remote adoption are wired end to end
+  - discovery grouping has moved from frontend projection into the Rust core
 
 ## Risks
 
 - Tauri setup can require platform-specific config even for a minimal app.
 - `SKILL.md` frontmatter differs slightly across ecosystems, so parsing needs to stay tolerant.
 - Spotlight discovery is macOS-specific for now; other platforms currently fall back to known-root scanning only.
-- The managed store exists, but install targets still do not sync from it yet, so the product is not at full management closure.
+- The managed store and install targets now form a functional loop, but install strategy/settings and richer target policy are still missing.
 - Duplicate review can become confusing if the product exposes raw scan results without grouping, exact-duplicate suppression, and clear variant labeling.
-- Variant families are now detectable, but they still need a proper version-labeling flow before import UX is complete.
+- Variant families are now detectable in the backend report, but they still need persistent naming, compare/diff, and family-level browsing.
+- A shallow dedupe model risks two opposite mistakes:
+  - over-merging distinct variants that only share a name
+  - under-merging exact duplicates that should collapse into one canonical managed item with multiple origins

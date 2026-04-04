@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { SkillContentPayload } from "../types";
+import type { RuntimeSettingsSnapshot, SkillContentPayload } from "../types";
 
 export async function readSkillContent(
   path: string,
@@ -9,4 +9,8 @@ export async function readSkillContent(
 
 export async function openInFinder(path: string): Promise<void> {
   return invoke("open_in_finder", { path });
+}
+
+export async function loadRuntimeSettings(): Promise<RuntimeSettingsSnapshot> {
+  return invoke<RuntimeSettingsSnapshot>("load_runtime_settings");
 }

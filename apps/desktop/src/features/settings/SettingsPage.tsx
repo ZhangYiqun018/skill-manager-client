@@ -1,23 +1,37 @@
+import { useEffect, useState } from "react";
 import styles from "../../App.module.css";
+import { loadRuntimeSettings } from "../../api";
 import { copy, type Language } from "../../i18n";
-import type { IndexStatus } from "../../types";
+import type { IndexStatus, RuntimeSettingsSnapshot } from "../../types";
 
 type SettingsPageProps = {
   indexStatus: IndexStatus | null;
   language: Language;
   onLanguageChange: (language: Language) => void;
-  onRefreshIndex: () => void;
-  refreshing: boolean;
 };
 
 export function SettingsPage({
   indexStatus,
   language,
   onLanguageChange,
-  onRefreshIndex,
-  refreshing,
 }: SettingsPageProps) {
   const text = copy[language];
+  const [runtimeSettings, setRuntimeSettings] =
+    useState<RuntimeSettingsSnapshot | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void loadRuntimeSettings().then((settings) => {
+      if (!cancelled) {
+        setRuntimeSettings(settings);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section className={styles.pageSection}>
@@ -59,25 +73,21 @@ export function SettingsPage({
               <strong>{indexStatus?.index_path ?? "—"}</strong>
             </div>
             <div>
+              <span>{text.storePathLabel}</span>
+              <strong>{runtimeSettings?.store_path ?? "—"}</strong>
+            </div>
+            <div>
               <span>{text.lastUpdatedLabel}</span>
               <strong>{formatTimestamp(indexStatus?.last_refresh_unix_ms, language)}</strong>
             </div>
-          </div>
-          <div className={styles.actionRow}>
-            <button type="button" className={styles.primaryButton} onClick={onRefreshIndex}>
-              {refreshing ? text.refreshingIndex : text.refreshIndex}
-            </button>
-          </div>
-        </article>
-
-        <article className={styles.settingsCard}>
-          <p className={styles.sectionLabel}>{text.discoveryScopeTitle}</p>
-          <p className={styles.helperText}>{text.discoveryScopeBody}</p>
-          <div className={styles.scopeList}>
-            <span className={styles.scopeChip}>~/.codex/skills/*</span>
-            <span className={styles.scopeChip}>~/.claude/skills/*</span>
-            <span className={styles.scopeChip}>**/.agents/skills/*</span>
-            <span className={styles.scopeChip}>**/.claude/skills/*</span>
+            <div>
+              <span>{text.installStrategyTitle}</span>
+              <strong>
+                {runtimeSettings?.install_strategy === "symlink_first"
+                  ? text.installStrategyValueSymlinkFirst
+                  : "—"}
+              </strong>
+            </div>
           </div>
         </article>
       </div>

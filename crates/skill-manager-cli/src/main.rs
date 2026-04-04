@@ -2,7 +2,11 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use skill_manager_core::{ScanOptions, ScanSummary, scan_local_skills};
+use skill_manager_core::{
+    AgentKind, IndexOptions, ScanOptions, ScanSummary, SkillScope,
+    check_managed_skill_updates, import_git_skill, scan_local_skills,
+    update_managed_skill_from_git,
+};
 
 #[derive(Debug, Parser)]
 #[command(name = "skill-manager", about = "Manage local AI agent skills")]
@@ -21,6 +25,28 @@ enum Commands {
         /// Print the scan result as JSON.
         #[arg(long)]
         json: bool,
+    },
+    /// Install a skill from a Git URL into the managed library.
+    Install {
+        /// Git URL to clone (e.g., https://github.com/user/repo.git).
+        url: String,
+        /// Agent to assign (codex or claude_code).
+        #[arg(long, default_value = "codex")]
+        agent: String,
+        /// Scope to assign (global or project).
+        #[arg(long, default_value = "global")]
+        scope: String,
+        /// Optional branch to checkout.
+        #[arg(long)]
+        branch: Option<String>,
+        /// Optional subpath within the repo to the skill directory.
+        #[arg(long)]
+        subpath: Option<String>,
+    },
+    /// Check for updates to Git-tracked skills, or update a specific skill.
+    Update {
+        /// Optional managed skill path to update. If omitted, checks all Git-tracked skills.
+        skill_path: Option<PathBuf>,
     },
 }
 
@@ -43,9 +69,73 @@ fn main() -> Result<()> {
                 print_summary(&summary);
             }
         }
+        Commands::Install {
+            url,
+            agent,
+            scope,
+            branch,
+            subpath,
+        } => {
+            let agent = parse_agent(&agent)?;
+            let scope = parse_scope(&scope)?;
+            let index_options = IndexOptions::default();
+            let skill = import_git_skill(url, subpath, None, agent, scope, branch, &index_options)?;
+            println!("Installed skill: {}", skill.display_name);
+            println!("  Path: {}", skill.path.display());
+            println!("  Family: {}", skill.family_key);
+            println!("  Variant: {}", skill.variant_label.as_deref().unwrap_or("default"));
+        }
+        Commands::Update { skill_path } => {
+            let index_options = IndexOptions::default();
+            match skill_path {
+                Some(path) => {
+                    let scan_options = ScanOptions::default();
+                    let skill = update_managed_skill_from_git(path, &scan_options, &index_options)?;
+                    println!("Updated skill: {}", skill.display_name);
+                    println!("  Path: {}", skill.path.display());
+                }
+                None => {
+                    let checks = check_managed_skill_updates(&index_options)?;
+                    if checks.is_empty() {
+                        println!("No Git-tracked skills found.");
+                    } else {
+                        let mut has_updates = false;
+                        for check in checks {
+                            if check.has_update {
+                                has_updates = true;
+                                println!(
+                                    "Update available: {} -> {}",
+                                    check.current_commit, check.latest_commit
+                                );
+                                println!("  Path: {}", check.managed_skill_path.display());
+                            }
+                        }
+                        if !has_updates {
+                            println!("All Git-tracked skills are up to date.");
+                        }
+                    }
+                }
+            }
+        }
     }
 
     Ok(())
+}
+
+fn parse_agent(value: &str) -> Result<AgentKind> {
+    match value {
+        "codex" => Ok(AgentKind::Codex),
+        "claude_code" => Ok(AgentKind::ClaudeCode),
+        _ => anyhow::bail!("Unsupported agent: {value}"),
+    }
+}
+
+fn parse_scope(value: &str) -> Result<SkillScope> {
+    match value {
+        "global" => Ok(SkillScope::Global),
+        "project" => Ok(SkillScope::Project),
+        _ => anyhow::bail!("Unsupported scope: {value}"),
+    }
 }
 
 fn print_summary(summary: &ScanSummary) {

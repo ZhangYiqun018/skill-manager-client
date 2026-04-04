@@ -19,7 +19,10 @@ tauri-build.workspace = true
 
 [dependencies]
 anyhow.workspace = true
+reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 skill-manager-core = { path = "../../../crates/skill-manager-core" }
 tauri.workspace = true
+tauri-plugin-dialog.workspace = true
+walkdir.workspace = true

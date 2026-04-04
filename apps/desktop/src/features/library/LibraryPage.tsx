@@ -1,12 +1,12 @@
+import { useMemo } from "react";
 import styles from "../../App.module.css";
 import { FilterPill } from "../../components/FilterPill";
-import { copy, sourceLabel, scopeLabel, agentLabel, type Language } from "../../i18n";
+import { SearchField } from "../../components/SearchField";
+import { copy, scopeLabel, agentLabel, sourceLabel, type Language } from "../../i18n";
 import type {
   AgentFilter,
   ScopeFilter,
   SkillItem,
-  SourceFilter,
-  InstallTargetRecord,
 } from "../../types";
 import { LibraryDetailsPanel } from "./LibraryDetailsPanel";
 
@@ -15,25 +15,29 @@ type LibraryPageProps = {
   agentFilter: AgentFilter;
   filteredSkills: SkillItem[];
   language: Language;
-  loading: boolean;
   onAgentFilterChange: (filter: AgentFilter) => void;
-  onOpenFolder: () => void;
-  onOpenSkillFile: () => void;
-  onRefreshIndex: () => void;
+  onOpenPath: (path: string) => void;
+  onPromoteVariant: (path: string) => void;
   onScopeFilterChange: (filter: ScopeFilter) => void;
+  onSearchQueryChange: (value: string) => void;
   onSelectSkill: (skillPath: string) => void;
-  onSourceFilterChange: (filter: SourceFilter) => void;
+  onUpdateVariantLabel: (skillPath: string, variantLabel: string) => void;
   previewContent?: string;
   previewError?: string | null;
   previewLoading: boolean;
-  relatedTargets: InstallTargetRecord[];
+  searchQuery: string;
   scopeCounts: Record<ScopeFilter, number>;
   scopeFilter: ScopeFilter;
   selectedSkill: SkillItem | null;
-  sourceCounts: Record<SourceFilter, number>;
-  sourceFilter: SourceFilter;
-  totalSkills: number;
-  warningCount: number;
+  hasUpdateFor: (path: string) => boolean;
+  onUpdateSkill: (path: string) => void;
+  updatingPath: string | null;
+};
+
+type LibraryFamilyGroup = {
+  familyKey: string;
+  displayName: string;
+  skills: SkillItem[];
 };
 
 export function LibraryPage({
@@ -41,27 +45,63 @@ export function LibraryPage({
   agentFilter,
   filteredSkills,
   language,
-  loading,
   onAgentFilterChange,
-  onOpenFolder,
-  onOpenSkillFile,
-  onRefreshIndex,
+  onOpenPath,
+  onPromoteVariant,
   onScopeFilterChange,
+  onSearchQueryChange,
   onSelectSkill,
-  onSourceFilterChange,
+  onUpdateVariantLabel,
   previewContent,
   previewError,
   previewLoading,
-  relatedTargets,
+  searchQuery,
   scopeCounts,
   scopeFilter,
   selectedSkill,
-  sourceCounts,
-  sourceFilter,
-  totalSkills,
-  warningCount,
+  hasUpdateFor,
+  onUpdateSkill,
+  updatingPath,
 }: LibraryPageProps) {
   const text = copy[language];
+  const familyGroups = useMemo<LibraryFamilyGroup[]>(() => {
+    const groups = new Map<string, LibraryFamilyGroup>();
+
+    for (const skill of filteredSkills) {
+      const familyKey = skill.family_key || skill.slug || skill.path;
+      const existing = groups.get(familyKey);
+
+      if (existing) {
+        existing.skills.push(skill);
+        continue;
+      }
+
+      groups.set(familyKey, {
+        familyKey,
+        displayName: skill.display_name,
+        skills: [skill],
+      });
+    }
+
+    return Array.from(groups.values())
+      .map((group) => ({
+        ...group,
+        skills: [...group.skills].sort((left, right) =>
+          variantRowTitle(left, language).localeCompare(variantRowTitle(right, language)),
+        ),
+      }))
+      .sort((left, right) => left.displayName.localeCompare(right.displayName));
+  }, [filteredSkills, language]);
+
+  const selectedFamilySkills = useMemo(
+    () =>
+      selectedSkill
+        ? familyGroups.find((group) => group.familyKey === selectedSkill.family_key)?.skills ?? [
+            selectedSkill,
+          ]
+        : [],
+    [familyGroups, selectedSkill],
+  );
 
   return (
     <section className={styles.pageSection}>
@@ -70,10 +110,14 @@ export function LibraryPage({
           <p className={styles.sectionLabel}>{text.libraryTitle}</p>
           <h1 className={styles.pageTitle}>{text.libraryBody}</h1>
         </div>
-        <button type="button" className={styles.primaryButton} onClick={onRefreshIndex}>
-          {loading ? text.refreshingIndex : text.refreshIndex}
-        </button>
       </header>
+
+      <SearchField
+        ariaLabel={text.searchLabel}
+        onChange={onSearchQueryChange}
+        placeholder={text.searchPlaceholder}
+        value={searchQuery}
+      />
 
       <div className={styles.filterStrip}>
         <div className={styles.pillGroup}>
@@ -96,24 +140,6 @@ export function LibraryPage({
 
         <div className={styles.pillGroup}>
           <FilterPill
-            active={sourceFilter === "all"}
-            label={`${text.allSources} (${sourceCounts.all})`}
-            onClick={() => onSourceFilterChange("all")}
-          />
-          <FilterPill
-            active={sourceFilter === "import"}
-            label={`${sourceLabel("import", language)} (${sourceCounts.import})`}
-            onClick={() => onSourceFilterChange("import")}
-          />
-          <FilterPill
-            active={sourceFilter === "remote"}
-            label={`${sourceLabel("remote", language)} (${sourceCounts.remote})`}
-            onClick={() => onSourceFilterChange("remote")}
-          />
-        </div>
-
-        <div className={styles.pillGroup}>
-          <FilterPill
             active={scopeFilter === "all"}
             label={`${text.allScopes} (${scopeCounts.all})`}
             onClick={() => onScopeFilterChange("all")}
@@ -131,65 +157,103 @@ export function LibraryPage({
         </div>
       </div>
 
-      <div className={styles.inlineSummary}>
-        {text.showing} {filteredSkills.length} {text.of} {totalSkills} {text.skills}
-        {" · "}
-        {warningCount} {text.warningsInline}
-        {" · "}
-        {text.indexedInventory}
-      </div>
-
       <div className={styles.splitLayout}>
         <section className={styles.listPanel}>
           {filteredSkills.length === 0 ? (
             <div className={styles.emptyState}>
+              <span className={styles.emptyStateIcon}>📁</span>
               <strong>{text.emptyLibraryTitle}</strong>
-              <p>{text.emptyLibraryBody}</p>
+              <p>
+                {searchQuery.trim()
+                  ? text.noMatchingSkillsBody
+                  : text.noSkillsInLibraryBody}
+              </p>
             </div>
           ) : (
-            <div className={styles.skillList}>
-              {filteredSkills.map((skill) => (
-                <button
-                  key={`${skill.agent}-${skill.scope}-${skill.path}`}
-                  type="button"
-                  className={
-                    selectedSkill?.path === skill.path
-                      ? styles.skillRowActive
-                      : styles.skillRow
-                  }
-                  onClick={() => onSelectSkill(skill.path)}
-                >
-                  <div className={styles.skillRowStripe} data-state={skill.health_state} />
-                  <div className={styles.skillRowContent}>
-                    <strong>{skill.display_name}</strong>
-                    <p>{skill.description ?? text.descriptionFallback}</p>
+            <div className={styles.familyGroupList}>
+              {familyGroups.map((group) => (
+                <article key={group.familyKey} className={styles.familyGroupCard}>
+                  <div className={styles.familyGroupHeader}>
+                    <div>
+                      <strong>{group.displayName}</strong>
+                      <p className={styles.helperText}>
+                        {group.skills.length} {text.variantCountLabel}
+                      </p>
+                    </div>
                   </div>
-                  <div className={styles.skillRowMeta}>
-                    <span className={styles.badge}>{scopeLabel(skill.scope, language)}</span>
-                    <span className={styles.agentBadge} data-agent={skill.agent}>
-                      {agentLabel(skill.agent)}
-                    </span>
-                    <span className={styles.sourceBadge}>
-                      {sourceLabel(skill.source_type, language)}
-                    </span>
+
+                  <div className={styles.skillList}>
+                    {group.skills.map((skill) => (
+                      <button
+                        key={`${skill.agent}-${skill.scope}-${skill.path}`}
+                        type="button"
+                        className={
+                          selectedSkill?.path === skill.path
+                            ? styles.skillRowActive
+                            : styles.skillRow
+                        }
+                        onClick={() => onSelectSkill(skill.path)}
+                      >
+                        <div className={styles.skillRowStripe} data-state={skill.health_state} />
+                        <div className={styles.skillRowContent}>
+                          <strong>{variantRowTitle(skill, language)}</strong>
+                          <p>{skill.description ?? text.descriptionFallback}</p>
+                          <div className={styles.groupMetaRow}>
+                            {skill.variant_label ? (
+                              <span className={styles.inlineTag}>
+                                {text.variantLabelLabel}: {skill.variant_label}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className={styles.skillRowMeta}>
+                          <span className={styles.badge}>{scopeLabel(skill.scope, language)}</span>
+                          <span className={styles.agentBadge} data-agent={skill.agent}>
+                            {agentLabel(skill.agent)}
+                          </span>
+                          {skill.source_type === "remote" ? (
+                            <span className={styles.sourceBadge}>
+                              {sourceLabel(skill.source_type, language)}
+                            </span>
+                          ) : null}
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                </button>
+                </article>
               ))}
             </div>
           )}
         </section>
 
         <LibraryDetailsPanel
+          familySkills={selectedFamilySkills}
+          hasUpdateFor={hasUpdateFor}
           language={language}
-          loading={previewLoading}
-          onOpenFolder={onOpenFolder}
-          onOpenSkillFile={onOpenSkillFile}
+          onOpenPath={onOpenPath}
+          onPromoteVariant={onPromoteVariant}
+          onSelectSkill={onSelectSkill}
+          onUpdateSkill={onUpdateSkill}
+          onUpdateVariantLabel={onUpdateVariantLabel}
           previewContent={previewContent}
           previewError={previewError}
-          relatedTargets={relatedTargets}
+          previewLoading={previewLoading}
           selectedSkill={selectedSkill}
+          updatingPath={updatingPath}
         />
       </div>
     </section>
   );
+}
+
+function variantRowTitle(skill: SkillItem, language: Language): string {
+  if (skill.variant_label?.trim()) {
+    return skill.variant_label.trim();
+  }
+
+  return `${agentLabel(skill.agent)} · ${scopeLabel(skill.scope, language)} · ${shortHash(skill.content_hash)}`;
+}
+
+function shortHash(contentHash: string): string {
+  return contentHash.slice(0, 8);
 }

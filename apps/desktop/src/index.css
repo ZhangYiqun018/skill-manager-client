@@ -1,10 +1,11 @@
 :root {
   color: #f8fafc;
   background:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 28%),
-    radial-gradient(circle at top right, rgba(251, 146, 60, 0.14), transparent 32%),
-    linear-gradient(180deg, #0a0d12 0%, #06080c 100%);
-  font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 24%),
+    radial-gradient(circle at 85% 10%, rgba(251, 146, 60, 0.1), transparent 26%),
+    radial-gradient(circle at 50% 100%, rgba(148, 163, 184, 0.08), transparent 28%),
+    linear-gradient(180deg, #080b10 0%, #05070b 100%);
+  font-family: "Avenir Next", "Space Grotesk", "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -32,10 +33,10 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.18;
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.2;
 }
 
 button,

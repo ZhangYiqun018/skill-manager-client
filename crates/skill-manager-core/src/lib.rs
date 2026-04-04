@@ -3,11 +3,24 @@ mod models;
 mod scan;
 
 pub use index::{
-    IndexError, adopt_skill, adopt_skills, default_index_path, default_store_path, load_skill_index,
-    refresh_skill_index,
+    IndexError, adopt_skill, adopt_skills, apply_adoption_resolutions, check_managed_skill_updates,
+    compare_skills, default_index_path, default_repo_cache_path, default_store_path,
+    diff_skill_directories, import_git_skill, import_skill_directory, install_managed_skill,
+    load_install_target_inventory, load_discovery_report, load_managed_git_source,
+    load_managed_skill_history, load_managed_skill_origins, load_skill_file_tree, load_skill_index,
+    load_skill_install_statuses, promote_managed_skill_variant, read_skill_text_file,
+    refresh_skill_index, remove_managed_skill_install, repair_install_target,
+    repair_managed_skill_install, sync_install_target, update_managed_skill_from_git,
+    update_managed_skill_variant_label,
 };
 pub use models::{
-    AgentKind, IndexOptions, IndexStatus, IndexedScanSummary, InstalledSkill, ScanOptions,
-    ScanRoot, ScanSummary, ScanWarning, SkillMetadata, SkillScope, SkillSourceType,
+    AdoptionResolution, AdoptionResolutionAction, AgentKind, DiscoveryCandidate, DiscoveryGroup,
+    DiscoveryGroupKind, DiscoveryReport, DiscoveryReviewState, DiscoverySummary, IndexOptions,
+    IndexStatus, IndexedScanSummary, InstallHealthState, InstallMethod,
+    InstallTargetHealthState, InstallTargetInventory, InstallTargetInventoryItem, InstalledSkill,
+    ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin, ManagedSkillRevision,
+    ManagedVariantHistory, RemoteUpdateCheck, ScanOptions, ScanRoot, ScanSummary, ScanWarning,
+    SkillComparison, SkillDirectoryDiff, SkillFileDiff, SkillFileDiffKind, SkillFileKind,
+    SkillFileNode, SkillInstallStatus, SkillMetadata, SkillScope, SkillSourceType,
 };
 pub use scan::scan_local_skills;

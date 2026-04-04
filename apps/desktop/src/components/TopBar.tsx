@@ -2,17 +2,13 @@ import styles from "../App.module.css";
 import { copy, type Language } from "../i18n";
 import type { AppTab } from "../types";
 import { HealthBadge } from "./HealthBadge";
-import { SearchField } from "./SearchField";
 
 type TopBarProps = {
   activeTab: AppTab;
   healthCount: number;
   language: Language;
   onHealthClick: () => void;
-  onLanguageChange: (language: Language) => void;
-  onSearchQueryChange: (value: string) => void;
   onTabChange: (tab: AppTab) => void;
-  searchQuery: string;
 };
 
 const tabs: AppTab[] = ["library", "discover", "targets", "settings"];
@@ -22,18 +18,24 @@ export function TopBar({
   healthCount,
   language,
   onHealthClick,
-  onLanguageChange,
-  onSearchQueryChange,
   onTabChange,
-  searchQuery,
 }: TopBarProps) {
   const text = copy[language];
 
   return (
-    <header className={styles.topBar}>
-      <div className={styles.brand}>
-        <div className={styles.brandMark}>S</div>
-        <strong>{text.appName}</strong>
+    <aside className={styles.topBar}>
+      <div className={styles.sidebarSection}>
+        <div className={styles.brand}>
+          <div className={styles.brandMark}>S</div>
+          <div className={styles.brandCopy}>
+            <strong>{text.appName}</strong>
+            <span className={styles.helperText}>
+              {language === "zh"
+                ? "发现、收编、安装、修复"
+                : "Discover, adopt, install, repair"}
+            </span>
+          </div>
+        </div>
       </div>
 
       <nav className={styles.tabNav} aria-label="Primary">
@@ -44,43 +46,21 @@ export function TopBar({
             className={activeTab === tab ? styles.tabButtonActive : styles.tabButton}
             onClick={() => onTabChange(tab)}
           >
-            {text.tabs[tab]}
+            <span className={styles.tabButtonLabel}>{text.tabs[tab]}</span>
           </button>
         ))}
       </nav>
 
-      <div className={styles.topBarCenter}>
-        <SearchField
-          ariaLabel={text.globalSearchLabel}
-          onChange={onSearchQueryChange}
-          placeholder={text.globalSearchPlaceholder}
-          value={searchQuery}
-        />
-      </div>
-
-      <div className={styles.topBarActions}>
+      <div className={styles.sidebarStatus}>
+        <p className={styles.sectionLabel}>
+          {language === "zh" ? "运行状态" : "Workspace health"}
+        </p>
         <HealthBadge
           issues={healthCount}
           language={language}
           onClick={onHealthClick}
         />
-        <div className={styles.languageSwitch} aria-label={text.languageLabel}>
-          <button
-            type="button"
-            className={language === "en" ? styles.languageButtonActive : styles.languageButton}
-            onClick={() => onLanguageChange("en")}
-          >
-            {text.english}
-          </button>
-          <button
-            type="button"
-            className={language === "zh" ? styles.languageButtonActive : styles.languageButton}
-            onClick={() => onLanguageChange("zh")}
-          >
-            {text.chinese}
-          </button>
-        </div>
       </div>
-    </header>
+    </aside>
   );
 }

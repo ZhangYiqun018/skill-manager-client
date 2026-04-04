@@ -91,17 +91,273 @@ impl SkillSourceType {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SkillFileKind {
+    Directory,
+    File,
+    Symlink,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SkillFileNode {
+    pub name: String,
+    pub path: PathBuf,
+    pub relative_path: PathBuf,
+    pub kind: SkillFileKind,
+    pub children: Vec<SkillFileNode>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InstallMethod {
+    Symlink,
+    Copy,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InstallHealthState {
+    NotInstalled,
+    Healthy,
+    Copied,
+    Broken,
+    Conflict,
+    MissingTarget,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InstallTargetHealthState {
+    Healthy,
+    Warning,
+    Missing,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SkillInstallStatus {
+    pub target_id: String,
+    pub agent: AgentKind,
+    pub scope: SkillScope,
+    pub target_root: PathBuf,
+    pub install_path: PathBuf,
+    pub project_root: Option<PathBuf>,
+    pub root_exists: bool,
+    pub install_method: Option<InstallMethod>,
+    pub health_state: InstallHealthState,
+    pub recorded: bool,
+    pub pinned: bool,
+    pub variant_label: Option<String>,
+    pub content_hash: String,
+    pub is_family_default: bool,
+    pub last_action_unix_ms: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct InstallTargetInventoryItem {
+    pub managed_skill_path: PathBuf,
+    pub managed_skill_md: PathBuf,
+    pub display_name: String,
+    pub family_key: String,
+    pub variant_label: Option<String>,
+    pub content_hash: String,
+    pub slug: String,
+    pub source_type: SkillSourceType,
+    pub install_path: PathBuf,
+    pub install_method: Option<InstallMethod>,
+    pub health_state: InstallHealthState,
+    pub recorded: bool,
+    pub pinned: bool,
+    pub is_family_default: bool,
+    pub last_action_unix_ms: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct InstallTargetInventory {
+    pub id: String,
+    pub agent: AgentKind,
+    pub scope: SkillScope,
+    pub path: PathBuf,
+    pub exists: bool,
+    pub project_root: Option<PathBuf>,
+    pub health_state: InstallTargetHealthState,
+    pub discovered_skill_count: usize,
+    pub managed_install_count: usize,
+    pub needs_attention_count: usize,
+    pub items: Vec<InstallTargetInventoryItem>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ManagedSkillOrigin {
+    pub origin: String,
+    pub source_type: SkillSourceType,
+    pub recorded_unix_ms: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ManagedSkillRevision {
+    pub managed_skill_path: PathBuf,
+    pub revision_hash: String,
+    pub display_name: String,
+    pub variant_label: String,
+    pub created_unix_ms: i64,
+    pub is_promoted: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ManagedVariantHistory {
+    pub family_key: String,
+    pub variant_label: String,
+    pub revisions: Vec<ManagedSkillRevision>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ManagedSkillHistory {
+    pub family_key: String,
+    pub display_name: String,
+    pub promoted_managed_skill_path: Option<PathBuf>,
+    pub promoted_variant_label: Option<String>,
+    pub variants: Vec<ManagedVariantHistory>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ManagedGitSource {
+    pub managed_skill_path: PathBuf,
+    pub git_url: String,
+    pub git_commit: String,
+    pub git_branch: Option<String>,
+    pub repo_subpath: Option<String>,
+    pub recorded_unix_ms: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct RemoteUpdateCheck {
+    pub managed_skill_path: PathBuf,
+    pub current_commit: String,
+    pub latest_commit: String,
+    pub has_update: bool,
+    pub checked_unix_ms: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum DiscoveryGroupKind {
+    Unique,
+    ExactDuplicate,
+    Variant,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum DiscoveryReviewState {
+    Ready,
+    NeedsReview,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DiscoveryCandidate {
+    pub id: String,
+    pub content_hash: String,
+    pub occurrence_count: usize,
+    pub provenance_paths: Vec<PathBuf>,
+    pub representative: InstalledSkill,
+    pub suggested_version_label: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DiscoveryGroup {
+    pub family_key: String,
+    pub display_name: String,
+    pub kind: DiscoveryGroupKind,
+    pub review_state: DiscoveryReviewState,
+    pub occurrence_count: usize,
+    pub duplicate_count: usize,
+    pub variant_count: usize,
+    pub candidates: Vec<DiscoveryCandidate>,
+    pub recommended_paths: Vec<PathBuf>,
+    pub existing_variants: Vec<InstalledSkill>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct DiscoverySummary {
+    pub occurrence_count: usize,
+    pub exact_duplicate_group_count: usize,
+    pub family_count: usize,
+    pub variant_family_count: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct DiscoveryReport {
+    pub summary: DiscoverySummary,
+    pub all_groups: Vec<DiscoveryGroup>,
+    pub unique_groups: Vec<DiscoveryGroup>,
+    pub exact_duplicate_groups: Vec<DiscoveryGroup>,
+    pub variant_groups: Vec<DiscoveryGroup>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum AdoptionResolutionAction {
+    Merge,
+    CreateVariant,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AdoptionResolution {
+    pub source_path: PathBuf,
+    pub action: AdoptionResolutionAction,
+    pub merge_target_path: Option<PathBuf>,
+    pub variant_label: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SkillComparison {
+    pub left: InstalledSkill,
+    pub right: InstalledSkill,
+    pub left_content: String,
+    pub right_content: String,
+    pub common_files: Vec<PathBuf>,
+    pub left_only_files: Vec<PathBuf>,
+    pub right_only_files: Vec<PathBuf>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SkillFileDiffKind {
+    Added,
+    Removed,
+    Modified,
+    Unchanged,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SkillFileDiff {
+    pub relative_path: PathBuf,
+    pub kind: SkillFileDiffKind,
+    pub left_hash: Option<String>,
+    pub right_hash: Option<String>,
+    pub unified_diff: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SkillDirectoryDiff {
+    pub left_path: PathBuf,
+    pub right_path: PathBuf,
+    pub file_diffs: Vec<SkillFileDiff>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 pub struct SkillMetadata {
     pub name: Option<String>,
     pub description: Option<String>,
     pub user_invocable: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct InstalledSkill {
     pub source_type: SkillSourceType,
     pub family_key: String,
+    pub variant_label: Option<String>,
     pub content_hash: String,
     pub agent: AgentKind,
     pub scope: SkillScope,

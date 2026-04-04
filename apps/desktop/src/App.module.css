@@ -1,9 +1,15 @@
 .appShell {
   display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 100vh;
+  padding: 18px;
+}
+
+.workspace {
+  display: grid;
   gap: 16px;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 16px 18px 24px;
+  min-width: 0;
 }
 
 .topBar,
@@ -25,17 +31,25 @@
 
 .topBar {
   display: grid;
-  grid-template-columns: auto auto minmax(280px, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
+  grid-template-rows: auto auto 1fr;
+  align-self: start;
+  gap: 16px;
+  min-height: calc(100vh - 36px);
+  padding: 16px 14px;
+  position: sticky;
+  top: 18px;
 }
 
 .brand {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   color: #f8fafc;
+}
+
+.brandCopy {
+  display: grid;
+  gap: 4px;
 }
 
 .brandMark {
@@ -56,6 +70,9 @@
 
 .topBarActions,
 .tabNav,
+.sidebarStatus,
+.sidebarSection,
+.sidebarFooter,
 .languageSwitch,
 .languageSwitchInline,
 .pillGroup,
@@ -69,6 +86,21 @@
 
 .topBarActions {
   justify-content: flex-end;
+}
+
+.sidebarSection,
+.sidebarStatus {
+  display: grid;
+  gap: 10px;
+}
+
+.sidebarFooter {
+  align-self: end;
+}
+
+.tabNav {
+  display: grid;
+  gap: 8px;
 }
 
 .tabButton,
@@ -119,6 +151,36 @@
 .filterPillActive {
   background: rgba(59, 130, 246, 0.18);
   color: #dbeafe;
+}
+
+.tabButton,
+.tabButtonActive {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0.72rem 0.84rem;
+  text-align: left;
+}
+
+.tabButtonActive {
+  border-color: rgba(96, 165, 250, 0.32);
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(30, 64, 175, 0.16)),
+    rgba(255, 255, 255, 0.03);
+}
+
+.tabButtonLabel {
+  color: #f8fafc;
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.tabButtonMeta {
+  color: rgba(226, 232, 240, 0.6);
+  font-size: 0.79rem;
+  line-height: 1.4;
 }
 
 .languageButtonActive {
@@ -174,6 +236,13 @@
   padding: 14px;
 }
 
+.pageSection {
+  padding: 18px;
+  background:
+    linear-gradient(180deg, rgba(8, 11, 17, 0.96), rgba(7, 10, 15, 0.92)),
+    rgba(11, 15, 21, 0.92);
+}
+
 .pageHeader,
 .panelHeader,
 .previewHeader,
@@ -226,10 +295,16 @@
   font-size: 0.9rem;
 }
 
+.sidebarStatus .helperText,
+.brandCopy .helperText {
+  margin: 0;
+}
+
 .searchField {
   display: block;
 }
 
+.searchField,
 .searchField input {
   width: 100%;
   min-height: 40px;
@@ -240,10 +315,12 @@
   color: #f8fafc;
 }
 
+.searchField::placeholder,
 .searchField input::placeholder {
   color: rgba(248, 250, 252, 0.36);
 }
 
+.searchField:focus,
 .searchField input:focus {
   outline: 2px solid rgba(59, 130, 246, 0.25);
   border-color: rgba(59, 130, 246, 0.45);
@@ -272,10 +349,12 @@
 
 .filterStrip,
 .discoverGrid,
+.intakeBar,
 .settingsGrid,
 .targetSummary,
 .warningList,
 .skillList,
+.familyGroupList,
 .discoveryGroupList,
 .targetList,
 .scopeList {
@@ -287,28 +366,106 @@
   margin-top: 16px;
 }
 
+.intakeBar {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(11, 15, 21, 0.88);
+}
+
+.intakeHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intakeActions {
+  display: grid;
+  grid-template-columns: auto auto minmax(260px, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
 .inlineSummary {
   margin-top: 14px;
 }
 
 .discoverGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  margin-top: 16px;
+}
+
+.discoverSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
   margin-top: 16px;
 }
 
 .discoverCard {
   display: grid;
   gap: 14px;
+  min-height: 100%;
+}
+
+.summaryCard {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(11, 15, 21, 0.92);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+}
+
+.summaryCard span {
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.84rem;
+}
+
+.summaryCard strong {
+  color: #f8fafc;
+  font-size: 1.25rem;
 }
 
 .discoveryGroupList {
   margin-top: 14px;
 }
 
+.sectionStack,
+.sectionBlock {
+  display: grid;
+  gap: 12px;
+}
+
+.sectionIntro {
+  display: grid;
+  gap: 4px;
+}
+
 .discoveryGroup {
   display: grid;
   gap: 12px;
   padding: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.02));
+}
+
+.familyGroupCard {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+}
+
+.familyGroupHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .discoveryGroupHeader {
@@ -328,11 +485,13 @@
 
 .selectionToolbar {
   margin-top: 12px;
+  justify-content: flex-start;
 }
 
 .selectionSummary {
   color: #f8fafc;
   font-size: 0.9rem;
+  margin-left: auto;
 }
 
 .discoveryStateBadge {
@@ -358,6 +517,8 @@
 
 .panelNote {
   margin-top: 14px;
+  display: grid;
+  gap: 10px;
 }
 
 .panelNote strong {
@@ -368,7 +529,7 @@
 
 .splitLayout {
   display: grid;
-  grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+  grid-template-columns: minmax(380px, 0.92fr) minmax(460px, 1.08fr);
   gap: 14px;
   align-items: start;
   margin-top: 16px;
@@ -377,6 +538,14 @@
 .listPanel,
 .detailsPanel {
   min-height: 560px;
+  min-width: 0;
+}
+
+.detailsPanel {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
 }
 
 .skillRow,
@@ -465,6 +634,34 @@
   gap: 8px;
 }
 
+.candidateMetaRow {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.remoteSearchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.registryList {
+  display: grid;
+  gap: 10px;
+}
+
+.registryResultCard {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .badge,
 .agentBadge,
 .sourceBadge {
@@ -485,15 +682,15 @@
 }
 
 .agentBadge[data-agent="codex"] {
-  background: rgba(59, 130, 246, 0.18);
-  border-color: rgba(96, 165, 250, 0.3);
-  color: #bfdbfe;
+  background: rgba(251, 146, 60, 0.18);
+  border-color: rgba(251, 146, 60, 0.3);
+  color: #fed7aa;
 }
 
 .agentBadge[data-agent="claude_code"] {
-  background: rgba(249, 115, 22, 0.16);
-  border-color: rgba(251, 146, 60, 0.28);
-  color: #fed7aa;
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #bfdbfe;
 }
 
 .sourceBadge {
@@ -510,6 +707,90 @@
 .previewSection,
 .targetGroup {
   margin-top: 16px;
+}
+
+.detailSection,
+.detailStack {
+  margin-top: 16px;
+}
+
+.detailStack {
+  display: grid;
+  gap: 14px;
+}
+
+.variantEditor,
+.variantEditorForm,
+.variantFamilyPanel,
+.variantFamilyList {
+  display: grid;
+  gap: 12px;
+}
+
+.variantFamilyPanel {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.variantFamilyButton,
+.variantFamilyButtonActive {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #f8fafc;
+  text-align: left;
+}
+
+.variantFamilyButtonActive {
+  border-color: rgba(59, 130, 246, 0.38);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.variantFamilyButton span,
+.variantFamilyButtonActive span {
+  color: rgba(226, 232, 240, 0.72);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.82rem;
+}
+
+.detailTabBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.detailTab,
+.detailTabActive {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.4rem 0.72rem;
+  font: inherit;
+  font-size: 0.82rem;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.detailTab {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(241, 245, 249, 0.72);
+}
+
+.detailTabActive {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(96, 165, 250, 0.24);
+  color: #dbeafe;
 }
 
 .metaGrid {
@@ -559,6 +840,92 @@
   color: #dbeafe;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.fileBrowser {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.3fr);
+  gap: 14px;
+}
+
+.fileTreePane,
+.fileViewerPane,
+.originCard,
+.installCard {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fileTreePane {
+  min-height: 360px;
+}
+
+.fileViewerPane {
+  min-width: 0;
+}
+
+.fileTreeList,
+.originList,
+.installGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.fileTreeNode {
+  display: grid;
+  gap: 8px;
+}
+
+.fileTreeChildren {
+  display: grid;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fileTreeDirectory {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #f8fafc;
+  padding: 0.2rem 0;
+}
+
+.fileTreeDirectory span {
+  color: rgba(226, 232, 240, 0.56);
+  font-size: 0.78rem;
+}
+
+.fileTreeButton,
+.fileTreeButtonActive {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.55rem 0.68rem;
+  background: transparent;
+  color: rgba(241, 245, 249, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.fileTreeButton {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fileTreeButtonActive {
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(96, 165, 250, 0.24);
+  color: #dbeafe;
+}
+
+.fileTreeButton span:last-child {
+  color: rgba(226, 232, 240, 0.5);
+  font-size: 0.76rem;
 }
 
 .targetList {
@@ -613,33 +980,106 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 32px 24px;
+}
+
+.emptyStateIcon {
+  font-size: 2.5rem;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.inlineMessage {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.12);
+  color: #fecaca;
+}
+
 .emptyState strong,
 .emptyPanel {
   color: #f8fafc;
 }
 
 .emptyState p {
-  margin: 8px 0 0;
+  margin: 0;
   color: rgba(226, 232, 240, 0.72);
   line-height: 1.6;
+  max-width: 360px;
 }
 
 .targetSummary,
 .settingsGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 16px;
 }
 
 .targetGrid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   margin-top: 10px;
 }
 
 .targetCard {
   display: grid;
   gap: 14px;
+}
+
+.targetInventoryMeta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.82rem;
+}
+
+.targetCardActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.targetRecordedList {
+  display: grid;
+  gap: 10px;
+}
+
+.targetListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ghostButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: rgba(226, 232, 240, 0.7);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.ghostButton:hover {
+  color: #f8fafc;
+}
+
+.targetItemCard {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .directoryPath {
@@ -651,6 +1091,37 @@
 
 .warningPanel {
   margin-top: 16px;
+}
+
+.installCard {
+  display: grid;
+  gap: 12px;
+}
+
+.installCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.installCardHeader p,
+.originCard p {
+  margin: 4px 0 0;
+  color: rgba(226, 232, 240, 0.68);
+}
+
+.installCardActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.originCard strong {
+  color: #f8fafc;
+  display: block;
+  margin-top: 10px;
+  word-break: break-word;
 }
 
 .warningItem {
@@ -705,6 +1176,200 @@
   padding: 16px;
 }
 
+.resolutionModal {
+  width: min(1180px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(10, 14, 21, 0.98), rgba(7, 10, 15, 0.96)),
+    rgba(11, 15, 21, 0.96);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+}
+
+.resolutionGrid,
+.comparisonGrid {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.resolutionGrid {
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+}
+
+.resolutionPanel,
+.comparisonCard,
+.comparisonMetaCard {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.resolutionEntryList {
+  display: grid;
+  gap: 12px;
+}
+
+.resolutionEntry {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.resolutionChoiceRow {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resolutionBody {
+  display: grid;
+  gap: 8px;
+}
+
+.resolutionBody span,
+.comparisonMetaCard strong {
+  color: #f8fafc;
+}
+
+.comparisonPanel {
+  margin-top: 16px;
+}
+
+.comparisonGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.diffLayout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.diffFileList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding-right: 8px;
+}
+
+.diffFileButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.diffFileButton:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.diffFileButton[data-active="true"] {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.diffBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.diffBadge[data-kind="added"] {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+.diffBadge[data-kind="removed"] {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.diffBadge[data-kind="modified"] {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+
+.diffFileName {
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.diffContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 200px;
+}
+
+.diffContentHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(11, 15, 21, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.diffHashRow {
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.diffUnified {
+  flex: 1;
+  overflow: auto;
+  background: rgba(2, 6, 23, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+  white-space: pre;
+  max-height: 320px;
+}
+
+@media (max-width: 1140px) {
+  .diffLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .diffFileList {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-right: 0;
+    padding-bottom: 8px;
+    max-height: 200px;
+  }
+}
+
 .visuallyHidden {
   position: absolute;
   width: 1px;
@@ -718,24 +1383,52 @@
 }
 
 @media (max-width: 1140px) {
+  .appShell,
   .topBar,
   .splitLayout,
   .discoverGrid,
+  .discoverSummaryGrid,
+  .fileBrowser,
+  .resolutionGrid,
+  .comparisonGrid,
   .targetSummary,
   .settingsGrid,
   .targetGrid {
     grid-template-columns: 1fr;
   }
 
+  .appShell {
+    padding: 14px;
+  }
+
+  .topBar {
+    min-height: auto;
+    position: static;
+  }
+
   .tabNav,
   .topBarActions {
     justify-content: flex-start;
+  }
+
+  .detailsPanel {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
   }
 }
 
 @media (max-width: 720px) {
   .appShell {
     padding: 12px;
+  }
+
+  .selectionToolbar,
+  .remoteSearchRow,
+  .intakeActions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .skillRow,

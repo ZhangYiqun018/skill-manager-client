@@ -49,8 +49,71 @@
   - multi-select checkboxes
   - batch selection presets for recommended, project, Codex, and Claude Code candidates
   - batch adopt into the managed library
+- Reviewed the current dedupe design and recorded why it is still too shallow for a mature merge workflow:
+  - grouping is still name-driven
+  - provenance is not yet first-class
+  - variants do not have proper version labeling or comparison
+  - canonical merge decisions are not yet separated from candidate review
+- Improved long-list browsing by making the right-side details panel sticky on desktop-width layouts and disabling sticky behavior once the layout collapses to one column.
+- Reworked Discover from shallow family buckets into a richer review surface with:
+  - scan summary cards
+  - separate sections for variants, exact duplicates, and direct-adopt uniques
+  - representative candidates per content hash instead of listing every raw disk occurrence
+  - generated default labels for candidate variants during review
+- Completed a code-level PromptHub research pass focused on its skill subsystem:
+  - cloned the public repo
+  - reviewed main/renderer/shared architecture
+  - traced scanning, import, installation, detail-page, and settings flows
+  - documented what to borrow and what to avoid in `docs/prompt-hub-research.md`
+- Converted the accumulated PRD, UI spec, and PromptHub research into two execution documents:
+  - `docs/product-blueprint.md`
+  - `docs/development-priorities.md`
+- Implemented the first real `Skill Detail` backend slice in Rust core:
+  - managed-skill origin recording in SQLite
+  - recursive file tree loading
+  - file text reading
+  - per-target install status derivation
+  - install / remove / repair actions for managed skills
+- Exposed the new detail/install capabilities through Tauri commands.
+- Reworked the `Library` detail panel into a tabbed managed-object workspace with:
+  - `Overview`
+  - `Content`
+  - `Files`
+  - `Installs`
+  - `Origins`
+- Kept `Discover` on a lighter preview panel so candidate review and managed detail remain separate workflows.
+- Expanded the desktop UI and translations to cover the new detail and install states.
+- Updated target aggregation in the desktop app so discovered project-scoped roots now surface alongside default roots.
+- Added direct local-folder import into the managed library with agent/scope selection.
+- Added `skills.sh` registry search and remote adoption through backend-owned HTTP fetch + temporary clone/import flow.
+- Upgraded the `Targets` page into a target-centric control surface backed by real target inventory instead of frontend-only root summaries:
+  - recorded installs per target
+  - batch sync / repair actions per target
+  - per-target install-item health lists
+- Moved discovery grouping out of the frontend and into the Rust core:
+  - backend `DiscoveryReport`
+  - exact-duplicate vs variant grouping
+  - backend-generated suggested version labels
+  - frontend now only filters and selects against backend report data
+- Added persistent managed variant labels:
+  - managed-skill variant labels now live in SQLite
+  - library rows and detail pages now display them
+  - the detail panel supports renaming and saving labels back into the index
+- Expanded `Settings` with real runtime configuration readouts:
+  - canonical managed store path
+  - current install strategy (`symlink first`)
+- Added Rust-core tests for:
+  - backend discovery report grouping
+  - target inventory + recorded-install sync behavior
+  - variant-label persistence and round-tripping through the library index
+- Ran a subtraction-focused UI refactor based on direct review plus two agent reviews:
+  - removed shell-level global search and sidebar language duplication
+  - moved `Library` detail to default directly into `Variants`
+  - removed the redundant `Overview` tab so default-version actions are no longer buried behind a second layer
+  - simplified `Discover` from three entry cards + summary cards into one intake bar plus one review queue
+  - simplified `Targets` into a repair-oriented console and removed top-level summaries/warnings duplication
+  - simplified `Settings` down to language + runtime path/status
 - Verified:
   - `cargo test -p skill-manager-core`
-  - `cargo run -p skill-manager-cli -- scan`
   - `cargo check --workspace`
   - `pnpm --dir apps/desktop build`

@@ -124,6 +124,7 @@ pub(crate) fn build_installed_skill(
     InstalledSkill {
         source_type: descriptor.source_type,
         family_key,
+        variant_label: None,
         content_hash,
         agent: descriptor.agent,
         scope: descriptor.scope,
@@ -172,7 +173,7 @@ fn normalize_family_key(display_name: &str, slug: &str) -> String {
     normalized.trim_matches('-').to_string()
 }
 
-fn hash_skill_directory(skill_dir: &Path) -> Result<String, String> {
+pub(crate) fn hash_skill_directory(skill_dir: &Path) -> Result<String, String> {
     let mut hasher = Sha256::new();
 
     for entry in WalkDir::new(skill_dir)
