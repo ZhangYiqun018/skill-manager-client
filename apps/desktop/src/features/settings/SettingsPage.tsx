@@ -3,17 +3,22 @@ import styles from "../../App.module.css";
 import { loadRuntimeSettings } from "../../api";
 import { copy, type Language } from "../../i18n";
 import type { IndexStatus, RuntimeSettingsSnapshot } from "../../types";
+import type { ThemeMode } from "../../hooks/useTheme";
 
 type SettingsPageProps = {
   indexStatus: IndexStatus | null;
   language: Language;
   onLanguageChange: (language: Language) => void;
+  themeMode: ThemeMode;
+  onThemeChange: (mode: ThemeMode) => void;
 };
 
 export function SettingsPage({
   indexStatus,
   language,
   onLanguageChange,
+  themeMode,
+  onThemeChange,
 }: SettingsPageProps) {
   const text = copy[language];
   const [runtimeSettings, setRuntimeSettings] =
@@ -62,6 +67,34 @@ export function SettingsPage({
             </button>
           </div>
           <p className={styles.helperText}>{text.savedLanguageHint}</p>
+        </article>
+
+        <article className={styles.settingsCard}>
+          <p className={styles.sectionLabel}>{text.appearanceTitle}</p>
+          <div className={styles.languageSwitchInline}>
+            <button
+              type="button"
+              className={themeMode === "system" ? styles.languageButtonActive : styles.languageButton}
+              onClick={() => onThemeChange("system")}
+            >
+              {text.themeSystem}
+            </button>
+            <button
+              type="button"
+              className={themeMode === "light" ? styles.languageButtonActive : styles.languageButton}
+              onClick={() => onThemeChange("light")}
+            >
+              {text.themeLight}
+            </button>
+            <button
+              type="button"
+              className={themeMode === "dark" ? styles.languageButtonActive : styles.languageButton}
+              onClick={() => onThemeChange("dark")}
+            >
+              {text.themeDark}
+            </button>
+          </div>
+          <p className={styles.helperText}>{text.savedThemeHint}</p>
         </article>
 
         <article className={styles.settingsCard}>

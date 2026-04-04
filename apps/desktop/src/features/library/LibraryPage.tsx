@@ -103,62 +103,64 @@ export function LibraryPage({
     [familyGroups, selectedSkill],
   );
 
+  const isDetailView = selectedSkill != null;
+
   return (
     <section className={styles.pageSection}>
-      <header className={styles.pageHeader}>
-        <div>
-          <p className={styles.sectionLabel}>{text.libraryTitle}</p>
-          <h1 className={styles.pageTitle}>{text.libraryBody}</h1>
-        </div>
-      </header>
+      {!isDetailView ? (
+        <>
+          <header className={styles.pageHeader}>
+            <div>
+              <p className={styles.sectionLabel}>{text.libraryTitle}</p>
+              <h1 className={styles.pageTitle}>{text.libraryBody}</h1>
+            </div>
+          </header>
 
-      <SearchField
-        ariaLabel={text.searchLabel}
-        onChange={onSearchQueryChange}
-        placeholder={text.searchPlaceholder}
-        value={searchQuery}
-      />
+          <SearchField
+            ariaLabel={text.searchLabel}
+            onChange={onSearchQueryChange}
+            placeholder={text.searchPlaceholder}
+            value={searchQuery}
+          />
 
-      <div className={styles.filterStrip}>
-        <div className={styles.pillGroup}>
-          <FilterPill
-            active={agentFilter === "all"}
-            label={`${text.allAgents} (${agentCounts.all})`}
-            onClick={() => onAgentFilterChange("all")}
-          />
-          <FilterPill
-            active={agentFilter === "codex"}
-            label={`${agentLabel("codex")} (${agentCounts.codex})`}
-            onClick={() => onAgentFilterChange("codex")}
-          />
-          <FilterPill
-            active={agentFilter === "claude_code"}
-            label={`${agentLabel("claude_code")} (${agentCounts.claude_code})`}
-            onClick={() => onAgentFilterChange("claude_code")}
-          />
-        </div>
+          <div className={styles.filterStrip}>
+            <div className={styles.pillGroup}>
+              <FilterPill
+                active={agentFilter === "all"}
+                label={`${text.allAgents} (${agentCounts.all})`}
+                onClick={() => onAgentFilterChange("all")}
+              />
+              <FilterPill
+                active={agentFilter === "codex"}
+                label={`${agentLabel("codex")} (${agentCounts.codex})`}
+                onClick={() => onAgentFilterChange("codex")}
+              />
+              <FilterPill
+                active={agentFilter === "claude_code"}
+                label={`${agentLabel("claude_code")} (${agentCounts.claude_code})`}
+                onClick={() => onAgentFilterChange("claude_code")}
+              />
+            </div>
 
-        <div className={styles.pillGroup}>
-          <FilterPill
-            active={scopeFilter === "all"}
-            label={`${text.allScopes} (${scopeCounts.all})`}
-            onClick={() => onScopeFilterChange("all")}
-          />
-          <FilterPill
-            active={scopeFilter === "global"}
-            label={`${scopeLabel("global", language)} (${scopeCounts.global})`}
-            onClick={() => onScopeFilterChange("global")}
-          />
-          <FilterPill
-            active={scopeFilter === "project"}
-            label={`${scopeLabel("project", language)} (${scopeCounts.project})`}
-            onClick={() => onScopeFilterChange("project")}
-          />
-        </div>
-      </div>
+            <div className={styles.pillGroup}>
+              <FilterPill
+                active={scopeFilter === "all"}
+                label={`${text.allScopes} (${scopeCounts.all})`}
+                onClick={() => onScopeFilterChange("all")}
+              />
+              <FilterPill
+                active={scopeFilter === "global"}
+                label={`${scopeLabel("global", language)} (${scopeCounts.global})`}
+                onClick={() => onScopeFilterChange("global")}
+              />
+              <FilterPill
+                active={scopeFilter === "project"}
+                label={`${scopeLabel("project", language)} (${scopeCounts.project})`}
+                onClick={() => onScopeFilterChange("project")}
+              />
+            </div>
+          </div>
 
-      <div className={styles.splitLayout}>
-        <section className={styles.listPanel}>
           {filteredSkills.length === 0 ? (
             <div className={styles.emptyState}>
               <span className={styles.emptyStateIcon}>📁</span>
@@ -170,78 +172,73 @@ export function LibraryPage({
               </p>
             </div>
           ) : (
-            <div className={styles.familyGroupList}>
-              {familyGroups.map((group) => (
-                <article key={group.familyKey} className={styles.familyGroupCard}>
-                  <div className={styles.familyGroupHeader}>
-                    <div>
-                      <strong>{group.displayName}</strong>
-                      <p className={styles.helperText}>
-                        {group.skills.length} {text.variantCountLabel}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className={styles.skillList}>
-                    {group.skills.map((skill) => (
-                      <button
-                        key={`${skill.agent}-${skill.scope}-${skill.path}`}
-                        type="button"
-                        className={
-                          selectedSkill?.path === skill.path
-                            ? styles.skillRowActive
-                            : styles.skillRow
-                        }
-                        onClick={() => onSelectSkill(skill.path)}
+            <div className={styles.skillGalleryGrid}>
+              {familyGroups.map((group, index) => {
+                const representative = group.skills[0];
+                const delay = Math.min(index * 40, 600);
+                return (
+                  <button
+                    key={group.familyKey}
+                    type="button"
+                    className={styles.skillGalleryCard}
+                    style={{ "--delay": `${delay}ms` } as React.CSSProperties}
+                    onClick={() => onSelectSkill(representative.path)}
+                  >
+                    <div className={styles.skillCardHeader}>
+                      <div
+                        className={styles.skillCardIcon}
+                        style={{ background: familyGradient(group.familyKey) }}
+                        aria-hidden
                       >
-                        <div className={styles.skillRowStripe} data-state={skill.health_state} />
-                        <div className={styles.skillRowContent}>
-                          <strong>{variantRowTitle(skill, language)}</strong>
-                          <p>{skill.description ?? text.descriptionFallback}</p>
-                          <div className={styles.groupMetaRow}>
-                            {skill.variant_label ? (
-                              <span className={styles.inlineTag}>
-                                {text.variantLabelLabel}: {skill.variant_label}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                        <div className={styles.skillRowMeta}>
-                          <span className={styles.badge}>{scopeLabel(skill.scope, language)}</span>
-                          <span className={styles.agentBadge} data-agent={skill.agent}>
-                            {agentLabel(skill.agent)}
-                          </span>
-                          {skill.source_type === "remote" ? (
-                            <span className={styles.sourceBadge}>
-                              {sourceLabel(skill.source_type, language)}
-                            </span>
-                          ) : null}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </article>
-              ))}
+                        {group.displayName.slice(0, 1).toUpperCase()}
+                      </div>
+                    </div>
+                    <h3 className={styles.skillCardTitle}>{group.displayName}</h3>
+                    <p className={styles.skillCardDescription}>
+                      {representative.description ?? text.descriptionFallback}
+                    </p>
+                    <div className={styles.skillCardMeta}>
+                      <span className={styles.badge}>
+                        {scopeLabel(representative.scope, language)}
+                      </span>
+                      <span className={styles.agentBadge} data-agent={representative.agent}>
+                        {agentLabel(representative.agent)}
+                      </span>
+                      {representative.source_type === "remote" ? (
+                        <span className={styles.sourceBadge}>
+                          {sourceLabel(representative.source_type, language)}
+                        </span>
+                      ) : null}
+                      <span className={styles.badge}>
+                        {group.skills.length} {text.variantCountLabel}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
-        </section>
-
-        <LibraryDetailsPanel
-          familySkills={selectedFamilySkills}
-          hasUpdateFor={hasUpdateFor}
-          language={language}
-          onOpenPath={onOpenPath}
-          onPromoteVariant={onPromoteVariant}
-          onSelectSkill={onSelectSkill}
-          onUpdateSkill={onUpdateSkill}
-          onUpdateVariantLabel={onUpdateVariantLabel}
-          previewContent={previewContent}
-          previewError={previewError}
-          previewLoading={previewLoading}
-          selectedSkill={selectedSkill}
-          updatingPath={updatingPath}
-        />
-      </div>
+        </>
+      ) : (
+        <div className={styles.detailViewFull}>
+          <LibraryDetailsPanel
+            familySkills={selectedFamilySkills}
+            hasUpdateFor={hasUpdateFor}
+            language={language}
+            onBack={() => onSelectSkill("")}
+            onOpenPath={onOpenPath}
+            onPromoteVariant={onPromoteVariant}
+            onSelectSkill={onSelectSkill}
+            onUpdateSkill={onUpdateSkill}
+            onUpdateVariantLabel={onUpdateVariantLabel}
+            previewContent={previewContent}
+            previewError={previewError}
+            previewLoading={previewLoading}
+            selectedSkill={selectedSkill}
+            updatingPath={updatingPath}
+          />
+        </div>
+      )}
     </section>
   );
 }
@@ -250,10 +247,18 @@ function variantRowTitle(skill: SkillItem, language: Language): string {
   if (skill.variant_label?.trim()) {
     return skill.variant_label.trim();
   }
-
   return `${agentLabel(skill.agent)} · ${scopeLabel(skill.scope, language)} · ${shortHash(skill.content_hash)}`;
 }
 
 function shortHash(contentHash: string): string {
   return contentHash.slice(0, 8);
+}
+
+function familyGradient(key: string): string {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `linear-gradient(135deg, hsl(${h} 55% 55%), hsl(${h} 60% 40%))`;
 }

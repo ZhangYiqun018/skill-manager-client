@@ -185,6 +185,8 @@ export type Copy = {
   switchVariantAction: string;
   promoteVariantAction: string;
   promotedVariantLabel: string;
+  promoteHint: string;
+  diffPathNotAllowedError: string;
   revisionHistoryTitle: string;
   revisionHashLabel: string;
   pinnedInstallLabel: string;
@@ -272,6 +274,33 @@ export type Copy = {
   fileDiffTitle: string;
   leftHashLabel: string;
   rightHashLabel: string;
+  backToGallery: string;
+  appearanceTitle: string;
+  themeSystem: string;
+  themeLight: string;
+  themeDark: string;
+  savedThemeHint: string;
+  scanningDisk: string;
+  scanDiskAction: string;
+  adoptSkillAction: string;
+  quickActionsTitle: string;
+  managedSkillsLabel: string;
+  workspaceHealthLabel: string;
+  healthyStatus: string;
+  issuesStatus: string;
+  managedSkillsCount: string;
+  guideTitle: string;
+  guideBody: string;
+  guideQuickStartTitle: string;
+  guideQuickStartBody: string;
+  guideLibraryTitle: string;
+  guideLibraryBody: string;
+  guideDiscoverTitle: string;
+  guideDiscoverBody: string;
+  guideTargetsTitle: string;
+  guideTargetsBody: string;
+  guideSettingsTitle: string;
+  guideSettingsBody: string;
 };
 
 export const copy: Record<Language, Copy> = {
@@ -282,6 +311,7 @@ export const copy: Record<Language, Copy> = {
       discover: "Discover",
       targets: "Targets",
       settings: "Settings",
+      guide: "Guide",
     },
     languageLabel: "Language",
     english: "EN",
@@ -472,9 +502,11 @@ export const copy: Record<Language, Copy> = {
     comparisonTitle: "Comparison",
     compareWithCurrent: "Compare with current",
     currentVariantLabel: "Current variant",
-    switchVariantAction: "Open variant",
-    promoteVariantAction: "Promote as default",
-    promotedVariantLabel: "Promoted default",
+    switchVariantAction: "View this variant",
+    promoteVariantAction: "Set as default",
+    promotedVariantLabel: "Default variant",
+    promoteHint: "Only affects future installs. Existing installations stay unchanged.",
+    diffPathNotAllowedError: "Cannot compare: this variant is outside the current workspace scope.",
     revisionHistoryTitle: "Revision history",
     revisionHashLabel: "Revision",
     pinnedInstallLabel: "Pinned",
@@ -573,6 +605,38 @@ export const copy: Record<Language, Copy> = {
     fileDiffTitle: "File changes",
     leftHashLabel: "Left hash",
     rightHashLabel: "Right hash",
+    backToGallery: "Back to gallery",
+    appearanceTitle: "Appearance",
+    themeSystem: "System",
+    themeLight: "Light",
+    themeDark: "Dark",
+    savedThemeHint: "Your preference is saved for the next session.",
+    scanningDisk: "Scanning...",
+    scanDiskAction: "Scan disk",
+    adoptSkillAction: "Adopt skill",
+    quickActionsTitle: "Quick actions",
+    managedSkillsLabel: "Managed skills",
+    workspaceHealthLabel: "Workspace health",
+    healthyStatus: "Healthy",
+    issuesStatus: "issues",
+    managedSkillsCount: "Managed skills",
+    guideTitle: "Guide",
+    guideBody: "How Skill Manager works and how to get the most out of it.",
+    guideQuickStartTitle: "Quick start",
+    guideQuickStartBody:
+      "Skill Manager helps you collect, version, and install AI skills for Codex and Claude Code. Start in Discover to find existing skills, then use Library to manage versions and Targets to keep installs healthy.",
+    guideLibraryTitle: "Library — skill inventory",
+    guideLibraryBody:
+      "Browse all managed skills grouped by family. Each card represents a skill family. Inside a skill you can view its files, install history, and Git origin. The Variants tab lets you compare different snapshots of the same family and set one as the default.",
+    guideDiscoverTitle: "Discover — find and adopt",
+    guideDiscoverBody:
+      "Scan your disk to find existing Codex / Claude Code skills. You can also adopt skills directly from a Git URL. When a discovered skill matches an existing family, you can merge the duplicate or create a new named variant.",
+    guideTargetsTitle: "Targets — install health",
+    guideTargetsBody:
+      "Targets are the directories where skills are installed (e.g. Codex global, Claude Code project). Use this page to install, remove, or repair skills on each target. Green means healthy, yellow means warning, red means broken or missing.",
+    guideSettingsTitle: "Settings — preferences and paths",
+    guideSettingsBody:
+      "Change language and theme, and review the local index path and managed store path. Your preferences are saved locally.",
   },
   zh: {
     appName: "Skill Manager",
@@ -581,6 +645,7 @@ export const copy: Record<Language, Copy> = {
       discover: "发现与导入",
       targets: "安装目标",
       settings: "设置",
+      guide: "指南",
     },
     languageLabel: "语言",
     english: "EN",
@@ -754,9 +819,11 @@ export const copy: Record<Language, Copy> = {
     comparisonTitle: "内容对比",
     compareWithCurrent: "与当前版本对比",
     currentVariantLabel: "当前变体",
-    switchVariantAction: "切换到该变体",
+    switchVariantAction: "查看此变体",
     promoteVariantAction: "设为默认版本",
-    promotedVariantLabel: "已提升为默认",
+    promotedVariantLabel: "默认版本",
+    promoteHint: "仅影响未来的新安装，不会修改已有的安装。",
+    diffPathNotAllowedError: "无法对比：该变体已不在当前工作区范围内。",
     revisionHistoryTitle: "修订历史",
     revisionHashLabel: "修订",
     pinnedInstallLabel: "已固定",
@@ -844,6 +911,38 @@ export const copy: Record<Language, Copy> = {
     fileDiffTitle: "文件变更",
     leftHashLabel: "左侧哈希",
     rightHashLabel: "右侧哈希",
+    backToGallery: "返回画廊",
+    appearanceTitle: "外观",
+    themeSystem: "跟随系统",
+    themeLight: "浅色",
+    themeDark: "深色",
+    savedThemeHint: "您的偏好设置会在下次启动时保留。",
+    scanningDisk: "扫描中...",
+    scanDiskAction: "扫描磁盘",
+    adoptSkillAction: "收编技能",
+    quickActionsTitle: "快捷操作",
+    managedSkillsLabel: "已管理技能",
+    workspaceHealthLabel: "运行状态",
+    healthyStatus: "健康",
+    issuesStatus: "个问题",
+    managedSkillsCount: "已管理技能",
+    guideTitle: "使用指南",
+    guideBody: "了解 Skill Manager 的工作原理和最佳实践。",
+    guideQuickStartTitle: "快速上手",
+    guideQuickStartBody:
+      "Skill Manager 帮助你收集、版本化管理并安装 Codex 和 Claude Code 的 AI 技能。先在「发现与导入」里扫描已有技能，然后在「托管库」中管理版本，在「安装目标」里保持安装健康。",
+    guideLibraryTitle: "托管库 — 技能仓库",
+    guideLibraryBody:
+      "按技能族（family）分组浏览所有托管技能。每张卡片代表一个技能族。点进去可以查看文件、安装历史、Git 来源。变体页签让你对比同一技能族的不同快照，并将其中一个设为默认版本。",
+    guideDiscoverTitle: "发现与导入 — 寻找技能",
+    guideDiscoverBody:
+      "扫描磁盘查找已有的 Codex / Claude Code 技能，也可以直接通过 Git URL 收编远程技能。当发现的技能与已有技能族匹配时，你可以选择合并重复项，或创建一个带名称的新变体。",
+    guideTargetsTitle: "安装目标 — 安装健康",
+    guideTargetsBody:
+      "目标目录是技能实际安装的位置（如 Codex 全局目录、Claude Code 项目目录）。在这个页面可以对每个目标执行安装、移除或修复操作。绿色表示健康，黄色表示警告，红色表示损坏或缺失。",
+    guideSettingsTitle: "设置 — 偏好与路径",
+    guideSettingsBody:
+      "更改语言和主题，查看本地索引路径和托管仓库路径。偏好设置会保存在本地。",
   },
 };
 

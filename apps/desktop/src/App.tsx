@@ -13,9 +13,11 @@ import { filterDiscoveryReport } from "./features/discover/report";
 import { LibraryPage } from "./features/library/LibraryPage";
 import { SettingsPage } from "./features/settings/SettingsPage";
 import { TargetsPage } from "./features/targets/TargetsPage";
+import { GuidePage } from "./features/guide/GuidePage";
 import { useAppBootstrap } from "./hooks/useAppBootstrap";
 import { useDiscoveryState } from "./hooks/useDiscoveryState";
 import { useLanguage } from "./hooks/useLanguage";
+import { useTheme } from "./hooks/useTheme";
 import { useRemoteUpdates } from "./hooks/useRemoteUpdates";
 import { useSkillFilters } from "./hooks/useSkillFilters";
 import { useSkillPreview } from "./hooks/useSkillPreview";
@@ -31,6 +33,7 @@ import type {
 
 function App() {
   const { language, setLanguage } = useLanguage();
+  const { themeMode, setThemeMode } = useTheme();
   const text = copy[language];
 
   const {
@@ -174,7 +177,6 @@ function App() {
   const selectedLibrarySkill = useMemo(
     () =>
       filteredSkills.find((skill) => skill.path === selectedLibrarySkillPath) ??
-      filteredSkills[0] ??
       null,
     [filteredSkills, selectedLibrarySkillPath],
   );
@@ -331,6 +333,11 @@ function App() {
         language={language}
         onHealthClick={() => setActiveTab("targets")}
         onTabChange={setActiveTab}
+        onRefreshIndex={handleRequestFullScan}
+        onGoToDiscover={() => setActiveTab("discover")}
+        skillCount={librarySkills.length}
+        themeMode={themeMode}
+        onThemeChange={setThemeMode}
       />
 
       <div className={styles.workspace}>
@@ -429,8 +436,12 @@ function App() {
             indexStatus={indexStatus}
             language={language}
             onLanguageChange={setLanguage}
+            themeMode={themeMode}
+            onThemeChange={setThemeMode}
           />
         ) : null}
+
+        {activeTab === "guide" ? <GuidePage language={language} /> : null}
       </div>
 
       <ConfirmModal

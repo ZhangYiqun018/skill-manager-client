@@ -1,7 +1,7 @@
 import type { AgentKind, DiscoveryRecord, SkillScope, SkillSourceType } from "./core";
 import type { InstalledSkill } from "./core";
 
-export type AppTab = "library" | "discover" | "targets" | "settings";
+export type AppTab = "library" | "discover" | "targets" | "settings" | "guide";
 export type AgentFilter = "all" | AgentKind;
 export type ScopeFilter = "all" | SkillScope;
 export type SourceFilter = "all" | SkillSourceType;

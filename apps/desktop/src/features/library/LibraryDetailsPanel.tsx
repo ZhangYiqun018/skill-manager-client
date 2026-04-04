@@ -42,6 +42,7 @@ type LibraryDetailsPanelProps = {
   familySkills: SkillItem[];
   hasUpdateFor: (path: string) => boolean;
   language: Language;
+  onBack?: () => void;
   onOpenPath: (path: string) => void;
   onPromoteVariant: (path: string) => void | Promise<void>;
   onSelectSkill: (path: string) => void;
@@ -58,6 +59,7 @@ export function LibraryDetailsPanel({
   familySkills,
   hasUpdateFor,
   language,
+  onBack,
   onOpenPath,
   onPromoteVariant,
   onSelectSkill,
@@ -400,9 +402,11 @@ export function LibraryDetailsPanel({
         setSelectedDiffFile(firstModified);
       }
     } catch (error: unknown) {
-      setDirectoryDiffError(
-        error instanceof Error ? error.message : text.defaultScanError,
-      );
+      const rawMessage = error instanceof Error ? error.message : String(error);
+      const friendlyMessage = rawMessage.includes("Path is outside configured skill roots")
+        ? text.diffPathNotAllowedError
+        : rawMessage;
+      setDirectoryDiffError(friendlyMessage);
     } finally {
       setDirectoryDiffLoading(false);
     }
@@ -433,6 +437,13 @@ export function LibraryDetailsPanel({
 
   return (
     <aside className={styles.detailsPanel}>
+      {onBack ? (
+        <div style={{ marginBottom: 12 }}>
+          <button type="button" className={styles.libraryBackButton} onClick={onBack}>
+            ← {text.backToGallery ?? "Back to gallery"}
+          </button>
+        </div>
+      ) : null}
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.sectionLabel}>{text.detailsTitle}</p>
@@ -470,7 +481,7 @@ export function LibraryDetailsPanel({
         </button>
       </div>
 
-      <div className={styles.detailTabBar}>
+      <div className={styles.detailTabBarUnderline}>
         <DetailTabButton
           active={activeTab === "variants"}
           label={text.detailVariantsTab}
@@ -511,6 +522,7 @@ export function LibraryDetailsPanel({
                   type="button"
                   className={styles.primaryButton}
                   disabled={promotingPath === selectedSkill.path}
+                  title={text.promoteHint}
                   onClick={async () => {
                     setPromotingPath(selectedSkill.path);
                     try {
@@ -692,6 +704,7 @@ export function LibraryDetailsPanel({
                                     type="button"
                                     className={styles.secondaryButton}
                                     disabled={promotingPath === revision.managed_skill_path}
+                                    title={text.promoteHint}
                                     onClick={async () => {
                                       setPromotingPath(revision.managed_skill_path);
                                       try {
@@ -1025,7 +1038,7 @@ function DetailTabButton({ active, label, onClick }: DetailTabButtonProps) {
   return (
     <button
       type="button"
-      className={active ? styles.detailTabActive : styles.detailTab}
+      className={active ? styles.detailTabUnderlineActive : styles.detailTabUnderline}
       onClick={onClick}
     >
       {label}
