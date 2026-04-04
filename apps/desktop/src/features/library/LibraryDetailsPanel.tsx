@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import styles from "../../App.module.css";
 import {
   installSkillToTarget,
@@ -12,6 +11,7 @@ import {
   repairSkillTarget,
 } from "../../api";
 import { diffSkills, loadManagedGitSource } from "../../api/library";
+import { InstallModal } from "./InstallModal";
 import {
   agentLabel,
   copy,
@@ -102,12 +102,7 @@ export function LibraryDetailsPanel({
   const [promotingPath, setPromotingPath] = useState<string | null>(null);
   const [gitSource, setGitSource] = useState<ManagedGitSource | null>(null);
   const [gitSourceLoading, setGitSourceLoading] = useState(false);
-  const [showCustomInstall, setShowCustomInstall] = useState(false);
-  const [customInstallPath, setCustomInstallPath] = useState("");
-  const [customInstallAgent, setCustomInstallAgent] = useState<"codex" | "claude_code">("codex");
-  const [customInstallScope, setCustomInstallScope] = useState<"global" | "project">("global");
-  const [customInstallLabel, setCustomInstallLabel] = useState("");
-  const [customInstallBusy, setCustomInstallBusy] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   useEffect(() => {
     setActiveTab("variants");
@@ -485,6 +480,13 @@ export function LibraryDetailsPanel({
           onClick={() => onOpenPath(selectedSkill.skill_md)}
         >
           {text.openSkillFile}
+        </button>
+        <button
+          type="button"
+          className={styles.primaryButton}
+          onClick={() => setShowInstallModal(true)}
+        >
+          {text.installToCustomLocation}
         </button>
       </div>
 
@@ -938,115 +940,13 @@ export function LibraryDetailsPanel({
               ) : null}
 
               <div className={styles.variantFamilyPanel} style={{ marginBottom: 20 }}>
-                {showCustomInstall ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <p className={styles.sectionLabel}>{text.customInstallTitle}</p>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <input
-                        type="text"
-                        className={styles.searchField}
-                        value={customInstallPath}
-                        onChange={(e) => setCustomInstallPath(e.target.value)}
-                        placeholder={text.customTargetPath}
-                        style={{ flex: 1 }}
-                      />
-                      <button
-                        type="button"
-                        className={styles.secondaryButton}
-                        onClick={async () => {
-                          const selected = await openDialog({ directory: true, multiple: false });
-                          if (selected && typeof selected === "string") {
-                            setCustomInstallPath(selected);
-                          }
-                        }}
-                      >
-                        {text.selectFolder}
-                      </button>
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <select
-                        className={styles.searchField}
-                        value={customInstallAgent}
-                        onChange={(e) => setCustomInstallAgent(e.target.value as "codex" | "claude_code")}
-                        style={{ flex: 1 }}
-                      >
-                        <option value="codex">{agentLabel("codex")}</option>
-                        <option value="claude_code">{agentLabel("claude_code")}</option>
-                      </select>
-                      <select
-                        className={styles.searchField}
-                        value={customInstallScope}
-                        onChange={(e) => setCustomInstallScope(e.target.value as "global" | "project")}
-                        style={{ flex: 1 }}
-                      >
-                        <option value="global">{scopeLabel("global", language)}</option>
-                        <option value="project">{scopeLabel("project", language)}</option>
-                      </select>
-                    </div>
-                    <input
-                      type="text"
-                      className={styles.searchField}
-                      value={customInstallLabel}
-                      onChange={(e) => setCustomInstallLabel(e.target.value)}
-                      placeholder={text.customInstallLabel}
-                    />
-                    <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                      <button
-                        type="button"
-                        className={styles.secondaryButton}
-                        onClick={() => {
-                          setShowCustomInstall(false);
-                          setCustomInstallPath("");
-                          setCustomInstallLabel("");
-                        }}
-                      >
-                        {text.cancelVariantLabel}
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.primaryButton}
-                        disabled={!customInstallPath.trim() || customInstallBusy}
-                        onClick={async () => {
-                          setCustomInstallBusy(true);
-                          setInstallsError(null);
-                          try {
-                            const next = await installSkillToTarget(
-                              selectedSkill.path,
-                              customInstallPath.trim(),
-                            );
-                            setInstallStatuses(next);
-                            setShowCustomInstall(false);
-                            setCustomInstallPath("");
-                            setCustomInstallLabel("");
-                          } catch (error: unknown) {
-                            setInstallsError(
-                              error instanceof Error ? error.message : text.defaultScanError,
-                            );
-                          } finally {
-                            setCustomInstallBusy(false);
-                          }
-                        }}
-                      >
-                        {customInstallBusy ? text.installingLabel : text.customInstallConfirm}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className={styles.primaryButton}
-                    onClick={() => {
-                      setShowCustomInstall(true);
-                      setCustomInstallAgent(selectedSkill.agent);
-                      setCustomInstallScope("global");
-                      setCustomInstallPath("");
-                      setCustomInstallLabel("");
-                      setInstallsError(null);
-                    }}
-                  >
-                    {text.installToCustomLocation}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  onClick={() => setShowInstallModal(true)}
+                >
+                  {text.installToCustomLocation}
+                </button>
               </div>
 
               {installStatuses && installStatuses.length > 0 ? (
@@ -1143,6 +1043,30 @@ export function LibraryDetailsPanel({
             <div className={styles.emptyPanel}>{text.originsEmptyBody}</div>
           )}
         </section>
+      ) : null}
+
+      {showInstallModal ? (
+        <InstallModal
+          skill={selectedSkill}
+          language={language}
+          onClose={() => setShowInstallModal(false)}
+          onInstall={async (targetPath, targetAgent, targetScope) => {
+            setInstallsError(null);
+            try {
+              const next = await installSkillToTarget(
+                selectedSkill.path,
+                targetPath,
+                targetAgent,
+                targetScope,
+              );
+              setInstallStatuses(next);
+              setShowInstallModal(false);
+            } catch (error: unknown) {
+              setInstallsError(error instanceof Error ? error.message : text.defaultScanError);
+              throw error;
+            }
+          }}
+        />
       ) : null}
     </aside>
   );

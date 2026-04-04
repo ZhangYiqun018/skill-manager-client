@@ -484,8 +484,12 @@ async fn repair_install_target(
 async fn install_managed_skill(
     path: String,
     target_root: String,
+    agent: Option<String>,
+    scope: Option<String>,
     project_root: Option<String>,
 ) -> Result<Vec<SkillInstallStatus>, String> {
+    let agent_override = agent.as_deref().map(parse_agent).transpose().map_err(error_chain)?;
+    let scope_override = scope.as_deref().map(parse_scope).transpose().map_err(error_chain)?;
     let scan_options = build_scan_options(project_root);
     run_blocking(move || {
         let index_options = IndexOptions::default();
@@ -495,6 +499,8 @@ async fn install_managed_skill(
         install_managed_skill_core(
             allowed_path,
             PathBuf::from(target_root),
+            agent_override,
+            scope_override,
             &scan_options,
             &index_options,
         )

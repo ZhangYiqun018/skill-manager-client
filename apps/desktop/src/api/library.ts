@@ -32,10 +32,14 @@ export async function loadSkillInstallStatuses(
 export async function installSkillToTarget(
   path: string,
   targetRoot: string,
+  agent?: "codex" | "claude_code",
+  scope?: "global" | "project",
 ): Promise<SkillInstallStatus[]> {
   return invoke<SkillInstallStatus[]>("install_managed_skill", {
     path,
     targetRoot,
+    agent: agent ?? null,
+    scope: scope ?? null,
   });
 }
 

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import styles from "../../App.module.css";
 import { installSkillToTarget } from "../../api/library";
 import { FilterPill } from "../../components/FilterPill";
@@ -10,6 +9,7 @@ import type {
   ScopeFilter,
   SkillItem,
 } from "../../types";
+import { InstallModal } from "./InstallModal";
 import { LibraryDetailsPanel } from "./LibraryDetailsPanel";
 
 type LibraryPageProps = {
@@ -113,7 +113,7 @@ export function LibraryPage({
 
   const isDetailView = selectedSkill != null;
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
-  const [installingPath, setInstallingPath] = useState<string | null>(null);
+  const [modalSkill, setModalSkill] = useState<SkillItem | null>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -142,24 +142,6 @@ export function LibraryPage({
       window.removeEventListener("scroll", handleScroll, { capture: true });
     };
   }, [contextMenu]);
-
-  async function handleContextMenuInstall(skill: SkillItem) {
-    const selected = await openDialog({ directory: true, multiple: false });
-    if (!selected || typeof selected !== "string") {
-      return;
-    }
-    setInstallingPath(skill.path);
-    try {
-      await installSkillToTarget(skill.path, selected);
-      window.alert(text.contextMenuInstallSuccess);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : text.contextMenuInstallFailed;
-      window.alert(message);
-    } finally {
-      setInstallingPath(null);
-      setContextMenu(null);
-    }
-  }
 
   return (
     <section className={styles.pageSection}>
@@ -313,12 +295,12 @@ export function LibraryPage({
                 {text.openFolder}
               </ContextMenuItem>
               <ContextMenuItem
-                disabled={installingPath === contextMenu.skill.path}
-                onClick={() => void handleContextMenuInstall(contextMenu.skill)}
+                onClick={() => {
+                  setModalSkill(contextMenu.skill);
+                  setContextMenu(null);
+                }}
               >
-                {installingPath === contextMenu.skill.path
-                  ? text.installingLabel
-                  : text.installToCustomLocation}
+                {text.installToCustomLocation}
               </ContextMenuItem>
             </div>
           ) : null}
@@ -343,6 +325,17 @@ export function LibraryPage({
           />
         </div>
       )}
+
+      {modalSkill ? (
+        <InstallModal
+          skill={modalSkill}
+          language={language}
+          onClose={() => setModalSkill(null)}
+          onInstall={async (targetPath, targetAgent, targetScope) => {
+            await installSkillToTarget(modalSkill.path, targetPath, targetAgent, targetScope);
+          }}
+        />
+      ) : null}
     </section>
   );
 }

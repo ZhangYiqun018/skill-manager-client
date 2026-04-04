@@ -589,11 +589,13 @@ pub fn repair_install_target(
 pub fn install_managed_skill(
     skill_path: PathBuf,
     target_root: PathBuf,
+    agent_override: Option<AgentKind>,
+    scope_override: Option<SkillScope>,
     scan_options: &ScanOptions,
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, scan_options, index_options)?;
+    let target = resolve_target_root(&managed_skill, &target_root, agent_override, scope_override, scan_options, index_options)?;
     let destination = target.target_root.join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
@@ -642,7 +644,7 @@ pub fn remove_managed_skill_install(
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, scan_options, index_options)?;
+    let target = resolve_target_root(&managed_skill, &target_root, None, None, scan_options, index_options)?;
     let destination = target.target_root.join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
@@ -680,7 +682,7 @@ pub fn repair_managed_skill_install(
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, scan_options, index_options)?;
+    let target = resolve_target_root(&managed_skill, &target_root, None, None, scan_options, index_options)?;
     let destination = target.target_root.join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
@@ -1762,6 +1764,8 @@ fn resolve_catalog_target(
 fn resolve_target_root(
     managed_skill: &InstalledSkill,
     target_root: &Path,
+    agent_override: Option<AgentKind>,
+    scope_override: Option<SkillScope>,
     scan_options: &ScanOptions,
     index_options: &IndexOptions,
 ) -> Result<TargetRootDescriptor, IndexError> {
@@ -1772,23 +1776,25 @@ fn resolve_target_root(
     }
 
     let canonical_path = fs::canonicalize(target_root).unwrap_or_else(|_| target_root.to_path_buf());
+    let agent = agent_override.unwrap_or_else(|| managed_skill.agent.clone());
+    let scope = scope_override.unwrap_or_else(|| managed_skill.scope.clone());
     add_custom_target(
         canonical_path.clone(),
-        managed_skill.agent.clone(),
-        managed_skill.scope.clone(),
+        agent.clone(),
+        scope.clone(),
         None,
         index_options,
     )?;
 
-    let project_root = if managed_skill.scope == SkillScope::Project {
+    let project_root = if scope == SkillScope::Project {
         canonical_path.parent().and_then(Path::parent).map(Path::to_path_buf)
     } else {
         None
     };
 
     Ok(TargetRootDescriptor {
-        agent: managed_skill.agent.clone(),
-        scope: managed_skill.scope.clone(),
+        agent,
+        scope,
         target_root: canonical_path,
         project_root,
     })
@@ -3829,6 +3835,8 @@ mod tests {
         let after_install = install_managed_skill(
             adopted.path.clone(),
             project_target.target_root.clone(),
+            None,
+            None,
             &scan_options,
             &index_options,
         )
@@ -3938,6 +3946,8 @@ mod tests {
         install_managed_skill(
             adopted.path.clone(),
             project_target.target_root.clone(),
+            None,
+            None,
             &scan_options,
             &index_options,
         )
