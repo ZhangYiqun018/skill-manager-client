@@ -936,42 +936,8 @@ export function LibraryDetailsPanel({
               {installsError ? (
                 <div className={styles.inlineMessage}>{installsError}</div>
               ) : null}
-              {installStatuses && installStatuses.length > 0 ? (
-                <div className={styles.installGrid}>
-                  {installStatuses.map((status) => (
-                    <InstallCard
-                      key={status.target_id}
-                      actionBusy={installActionTarget === status.target_id}
-                      language={language}
-                      onOpenPath={onOpenPath}
-                      onRunAction={async (action) => {
-                        setInstallActionTarget(status.target_id);
-                        setInstallsError(null);
-                        try {
-                          const next =
-                            action === "install"
-                              ? await installSkillToTarget(selectedSkill.path, status.target_root)
-                              : action === "remove"
-                                ? await removeSkillFromTarget(selectedSkill.path, status.target_root)
-                                : await repairSkillTarget(selectedSkill.path, status.target_root);
-                          setInstallStatuses(next);
-                        } catch (error: unknown) {
-                          setInstallsError(
-                            error instanceof Error ? error.message : text.defaultScanError,
-                          );
-                        } finally {
-                          setInstallActionTarget(null);
-                        }
-                      }}
-                      status={status}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className={styles.emptyPanel}>{text.noTargetsBody}</div>
-              )}
 
-              <div className={styles.variantFamilyPanel} style={{ marginTop: 20 }}>
+              <div className={styles.variantFamilyPanel} style={{ marginBottom: 20 }}>
                 {showCustomInstall ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     <p className={styles.sectionLabel}>{text.customInstallTitle}</p>
@@ -1082,6 +1048,41 @@ export function LibraryDetailsPanel({
                   </button>
                 )}
               </div>
+
+              {installStatuses && installStatuses.length > 0 ? (
+                <div className={styles.installGrid}>
+                  {installStatuses.map((status) => (
+                    <InstallCard
+                      key={status.target_id}
+                      actionBusy={installActionTarget === status.target_id}
+                      language={language}
+                      onOpenPath={onOpenPath}
+                      onRunAction={async (action) => {
+                        setInstallActionTarget(status.target_id);
+                        setInstallsError(null);
+                        try {
+                          const next =
+                            action === "install"
+                              ? await installSkillToTarget(selectedSkill.path, status.target_root)
+                              : action === "remove"
+                                ? await removeSkillFromTarget(selectedSkill.path, status.target_root)
+                                : await repairSkillTarget(selectedSkill.path, status.target_root);
+                          setInstallStatuses(next);
+                        } catch (error: unknown) {
+                          setInstallsError(
+                            error instanceof Error ? error.message : text.defaultScanError,
+                          );
+                        } finally {
+                          setInstallActionTarget(null);
+                        }
+                      }}
+                      status={status}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyPanel}>{text.noTargetsBody}</div>
+              )}
             </>
           )}
         </section>

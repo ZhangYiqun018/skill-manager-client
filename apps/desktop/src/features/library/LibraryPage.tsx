@@ -1,5 +1,7 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import styles from "../../App.module.css";
+import { installSkillToTarget } from "../../api/library";
 import { FilterPill } from "../../components/FilterPill";
 import { SearchField } from "../../components/SearchField";
 import { copy, scopeLabel, agentLabel, sourceLabel, type Language } from "../../i18n";
@@ -39,6 +41,12 @@ type LibraryFamilyGroup = {
   displayName: string;
   skills: SkillItem[];
 };
+
+type ContextMenuState = {
+  x: number;
+  y: number;
+  skill: SkillItem;
+} | null;
 
 export function LibraryPage({
   agentCounts,
@@ -104,6 +112,54 @@ export function LibraryPage({
   );
 
   const isDetailView = selectedSkill != null;
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
+  const [installingPath, setInstallingPath] = useState<string | null>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(event: MouseEvent) {
+      const target = event.target as Node;
+      const clickedInsideMenu = (event.currentTarget as HTMLElement | null)?.querySelector(
+        `[data-context-menu="true"]`,
+      )?.contains(target);
+      if (clickedInsideMenu) {
+        return;
+      }
+      setContextMenu(null);
+    }
+
+    function handleScroll() {
+      setContextMenu(null);
+    }
+
+    if (contextMenu) {
+      window.addEventListener("click", handleClick, { capture: true });
+      window.addEventListener("scroll", handleScroll, { capture: true });
+    }
+
+    return () => {
+      window.removeEventListener("click", handleClick, { capture: true });
+      window.removeEventListener("scroll", handleScroll, { capture: true });
+    };
+  }, [contextMenu]);
+
+  async function handleContextMenuInstall(skill: SkillItem) {
+    const selected = await openDialog({ directory: true, multiple: false });
+    if (!selected || typeof selected !== "string") {
+      return;
+    }
+    setInstallingPath(skill.path);
+    try {
+      await installSkillToTarget(skill.path, selected);
+      window.alert(text.contextMenuInstallSuccess);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : text.contextMenuInstallFailed;
+      window.alert(message);
+    } finally {
+      setInstallingPath(null);
+      setContextMenu(null);
+    }
+  }
 
   return (
     <section className={styles.pageSection}>
@@ -172,7 +228,7 @@ export function LibraryPage({
               </p>
             </div>
           ) : (
-            <div className={styles.skillGalleryGrid}>
+            <div ref={galleryRef} className={styles.skillGalleryGrid}>
               {familyGroups.map((group, index) => {
                 const representative = group.skills[0];
                 const delay = Math.min(index * 40, 600);
@@ -183,6 +239,10 @@ export function LibraryPage({
                     className={styles.skillGalleryCard}
                     style={{ "--delay": `${delay}ms` } as React.CSSProperties}
                     onClick={() => onSelectSkill(representative.path)}
+                    onContextMenu={(event) => {
+                      event.preventDefault();
+                      setContextMenu({ x: event.clientX, y: event.clientY, skill: representative });
+                    }}
                   >
                     <div className={styles.skillCardHeader}>
                       <div
@@ -218,6 +278,50 @@ export function LibraryPage({
               })}
             </div>
           )}
+
+          {contextMenu ? (
+            <div
+              data-context-menu="true"
+              className={styles.contextMenu}
+              style={{
+                position: "fixed",
+                top: contextMenu.y,
+                left: contextMenu.x,
+                zIndex: 1000,
+                minWidth: 180,
+                background: "var(--sm-surface)",
+                border: "1px solid var(--sm-border)",
+                borderRadius: 8,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                padding: "6px 0",
+              }}
+            >
+              <ContextMenuItem
+                onClick={() => {
+                  onSelectSkill(contextMenu.skill.path);
+                  setContextMenu(null);
+                }}
+              >
+                {text.viewDetails}
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  onOpenPath(contextMenu.skill.path);
+                  setContextMenu(null);
+                }}
+              >
+                {text.openFolder}
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={installingPath === contextMenu.skill.path}
+                onClick={() => void handleContextMenuInstall(contextMenu.skill)}
+              >
+                {installingPath === contextMenu.skill.path
+                  ? text.installingLabel
+                  : text.installToCustomLocation}
+              </ContextMenuItem>
+            </div>
+          ) : null}
         </>
       ) : (
         <div className={styles.detailViewFull}>
@@ -240,6 +344,46 @@ export function LibraryPage({
         </div>
       )}
     </section>
+  );
+}
+
+function ContextMenuItem({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      style={{
+        display: "block",
+        width: "100%",
+        textAlign: "left",
+        padding: "8px 14px",
+        fontSize: "0.9rem",
+        color: disabled ? "var(--sm-text-muted)" : "var(--sm-text)",
+        background: "transparent",
+        border: "none",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = "var(--sm-surface-hover)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+    >
+      {children}
+    </button>
   );
 }
 

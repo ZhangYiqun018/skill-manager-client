@@ -322,6 +322,9 @@ export type Copy = {
   customInstallConfirm: string;
   manageCustomTargetsTitle: string;
   manageCustomTargetsBody: string;
+  viewDetails: string;
+  contextMenuInstallSuccess: string;
+  contextMenuInstallFailed: string;
 };
 
 export const copy: Record<Language, Copy> = {
@@ -681,6 +684,9 @@ export const copy: Record<Language, Copy> = {
     manageCustomTargetsTitle: "Managed custom targets",
     manageCustomTargetsBody:
       "These are directories you have previously installed skills into. You can remove records here; existing symlinks on disk will not be deleted.",
+    viewDetails: "View details",
+    contextMenuInstallSuccess: "Installed successfully.",
+    contextMenuInstallFailed: "Install failed.",
   },
   zh: {
     appName: "Skill Manager",
@@ -1010,6 +1016,9 @@ export const copy: Record<Language, Copy> = {
     manageCustomTargetsTitle: "已管理的自定义目标",
     manageCustomTargetsBody:
       "这些是你曾经安装过技能的目录。你可以在这里删除记录；磁盘上已有的软链接不会被删除。",
+    viewDetails: "查看详情",
+    contextMenuInstallSuccess: "安装成功。",
+    contextMenuInstallFailed: "安装失败。",
   },
 };
 
