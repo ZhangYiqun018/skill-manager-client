@@ -6,15 +6,17 @@ use anyhow::{Context, Result};
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use skill_manager_core::{
-    AdoptionResolution, AgentKind, DiscoveryReport, IndexOptions, IndexedScanSummary,
+    AdoptionResolution, AgentKind, CustomInstallTarget, DiscoveryReport, IndexOptions, IndexedScanSummary,
     InstallTargetInventory, ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin,
     RemoteUpdateCheck, ScanOptions, ScanSummary, SkillComparison, SkillDirectoryDiff,
     SkillFileNode, SkillInstallStatus, SkillScope, SkillSourceType,
     adopt_skill as adopt_skill_core, adopt_skills as adopt_skills_core,
+    add_custom_target as add_custom_target_core,
     apply_adoption_resolutions as apply_adoption_resolutions_core, check_managed_skill_updates as check_managed_skill_updates_core,
     compare_skills as compare_skills_core, diff_skill_directories as diff_skill_directories_core,
     import_git_skill as import_git_skill_core,
     import_skill_directory as import_skill_directory_core, install_managed_skill as install_managed_skill_core,
+    load_custom_targets as load_custom_targets_core,
     load_discovery_report as load_discovery_report_core, load_install_target_inventory as load_install_target_inventory_core,
     load_managed_skill_history as load_managed_skill_history_core, load_skill_index as load_skill_index_core,
     load_managed_git_source as load_managed_git_source_core,
@@ -22,6 +24,7 @@ use skill_manager_core::{
     load_skill_install_statuses as load_skill_install_statuses_core,
     promote_managed_skill_variant as promote_managed_skill_variant_core,
     read_skill_text_file as read_skill_text_file_core, refresh_skill_index as refresh_skill_index_core,
+    remove_custom_target as remove_custom_target_core,
     repair_install_target as repair_install_target_core, remove_managed_skill_install as remove_managed_skill_install_core,
     repair_managed_skill_install as repair_managed_skill_install_core, scan_local_skills as scan_local_skills_core,
     sync_install_target as sync_install_target_core, update_managed_skill_from_git as update_managed_skill_from_git_core,
@@ -602,6 +605,45 @@ async fn open_in_finder(path: String, project_root: Option<String>) -> Result<()
 }
 
 #[tauri::command]
+async fn list_custom_targets(project_root: Option<String>) -> Result<Vec<CustomInstallTarget>, String> {
+    let _scan_options = build_scan_options(project_root);
+    run_blocking(move || {
+        load_custom_targets_core(&IndexOptions::default()).map_err(error_chain)
+    })
+    .await
+}
+
+#[tauri::command]
+async fn add_custom_target(
+    path: String,
+    agent: String,
+    scope: String,
+    label: Option<String>,
+    project_root: Option<String>,
+) -> Result<CustomInstallTarget, String> {
+    let agent = parse_agent(&agent).map_err(error_chain)?;
+    let scope = parse_scope(&scope).map_err(error_chain)?;
+    let _scan_options = build_scan_options(project_root);
+    run_blocking(move || {
+        add_custom_target_core(PathBuf::from(path), agent, scope, label, &IndexOptions::default())
+            .map_err(error_chain)
+    })
+    .await
+}
+
+#[tauri::command]
+async fn remove_custom_target(
+    id: i64,
+    project_root: Option<String>,
+) -> Result<(), String> {
+    let _scan_options = build_scan_options(project_root);
+    run_blocking(move || {
+        remove_custom_target_core(id, &IndexOptions::default()).map_err(error_chain)
+    })
+    .await
+}
+
+#[tauri::command]
 fn load_runtime_settings() -> RuntimeSettingsSnapshot {
     RuntimeSettingsSnapshot {
         index_path: skill_manager_core::default_index_path()
@@ -649,7 +691,10 @@ pub fn run() {
             update_managed_skill_variant_label,
             promote_managed_skill_variant,
             open_in_finder,
-            load_runtime_settings
+            load_runtime_settings,
+            list_custom_targets,
+            add_custom_target,
+            remove_custom_target,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

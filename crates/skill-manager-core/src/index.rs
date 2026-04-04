@@ -16,7 +16,7 @@ use crate::models::{
     DiscoveryGroupKind, DiscoveryReport, DiscoveryReviewState, DiscoverySummary, IndexOptions,
     IndexStatus, IndexedScanSummary, InstallHealthState, InstallMethod,
     InstallTargetHealthState, InstallTargetInventory, InstallTargetInventoryItem, InstalledSkill,
-    ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin, ManagedSkillRevision,
+    CustomInstallTarget, ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin, ManagedSkillRevision,
     ManagedVariantHistory, RemoteUpdateCheck, ScanOptions, ScanSummary, ScanWarning,
     SkillComparison, SkillDescriptor, SkillDirectoryDiff, SkillFileDiff, SkillFileDiffKind,
     SkillFileKind, SkillFileNode, SkillInstallStatus, SkillMetadata, SkillScope, SkillSourceType,
@@ -1226,6 +1226,15 @@ fn init_schema(connection: &Connection) -> Result<(), rusqlite::Error> {
           updated_unix_ms INTEGER NOT NULL,
           PRIMARY KEY (managed_skill_path, target_root)
         );
+
+        CREATE TABLE IF NOT EXISTS custom_targets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          path TEXT NOT NULL UNIQUE,
+          agent TEXT NOT NULL,
+          scope TEXT NOT NULL,
+          label TEXT,
+          created_unix_ms INTEGER NOT NULL
+        );
         ",
     )?;
 
@@ -1646,6 +1655,8 @@ fn derive_target_roots(
             });
     }
 
+    merge_custom_targets_into_derived(&mut targets, index_options)?;
+
     Ok(targets.into_values().collect())
 }
 
@@ -1709,6 +1720,8 @@ fn derive_target_catalog(
                 project_root,
             });
     }
+
+    merge_custom_targets_into_derived(&mut targets, index_options)?;
 
     Ok(targets.into_values().collect())
 }
@@ -1872,6 +1885,129 @@ fn read_all_install_records(connection: &Connection) -> Result<Vec<InstallRecord
     })?;
 
     rows.collect::<Result<Vec<_>, _>>().map_err(IndexError::from)
+}
+
+fn read_custom_target_records(connection: &Connection) -> Result<Vec<CustomInstallTarget>, IndexError> {
+    let mut statement = connection.prepare(
+        "
+        SELECT id, path, agent, scope, label, created_unix_ms
+        FROM custom_targets
+        ORDER BY created_unix_ms DESC
+        ",
+    )?;
+
+    let rows = statement.query_map([], |row| {
+        let agent: String = row.get(2)?;
+        let scope: String = row.get(3)?;
+        Ok(CustomInstallTarget {
+            id: row.get(0)?,
+            path: PathBuf::from(row.get::<_, String>(1)?),
+            agent: AgentKind::from_key(&agent).ok_or_else(|| {
+                rusqlite::Error::FromSqlConversionFailure(
+                    2,
+                    rusqlite::types::Type::Text,
+                    format!("unknown agent kind: {agent}").into(),
+                )
+            })?,
+            scope: SkillScope::from_key(&scope).ok_or_else(|| {
+                rusqlite::Error::FromSqlConversionFailure(
+                    3,
+                    rusqlite::types::Type::Text,
+                    format!("unknown skill scope: {scope}").into(),
+                )
+            })?,
+            label: row.get(4)?,
+            created_unix_ms: row.get(5)?,
+        })
+    })?;
+
+    rows.collect::<Result<Vec<_>, _>>().map_err(IndexError::from)
+}
+
+pub fn load_custom_targets(index_options: &IndexOptions) -> Result<Vec<CustomInstallTarget>, IndexError> {
+    let index_path = resolve_index_path(index_options);
+    let connection = Connection::open(&index_path)?;
+    read_custom_target_records(&connection)
+}
+
+pub fn add_custom_target(
+    path: PathBuf,
+    agent: AgentKind,
+    scope: SkillScope,
+    label: Option<String>,
+    index_options: &IndexOptions,
+) -> Result<CustomInstallTarget, IndexError> {
+    let index_path = resolve_index_path(index_options);
+    let connection = Connection::open(&index_path)?;
+    let canonical_path = fs::canonicalize(&path).unwrap_or(path);
+    let path_key = canonical_path.to_string_lossy().into_owned();
+    let created_unix_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as i64;
+
+    connection.execute(
+        "
+        INSERT INTO custom_targets (path, agent, scope, label, created_unix_ms)
+        VALUES (?1, ?2, ?3, ?4, ?5)
+        ON CONFLICT(path) DO UPDATE SET agent = excluded.agent, scope = excluded.scope, label = excluded.label
+        ",
+        rusqlite::params![
+            path_key,
+            agent.as_key(),
+            scope.as_key(),
+            label,
+            created_unix_ms,
+        ],
+    )?;
+
+    let id: i64 = connection.query_row(
+        "SELECT id FROM custom_targets WHERE path = ?1",
+        [path_key],
+        |row| row.get(0),
+    )?;
+
+    Ok(CustomInstallTarget {
+        id,
+        path: canonical_path,
+        agent,
+        scope,
+        label,
+        created_unix_ms,
+    })
+}
+
+pub fn remove_custom_target(id: i64, index_options: &IndexOptions) -> Result<(), IndexError> {
+    let index_path = resolve_index_path(index_options);
+    let connection = Connection::open(&index_path)?;
+    connection.execute(
+        "DELETE FROM custom_targets WHERE id = ?1",
+        [id],
+    )?;
+    Ok(())
+}
+
+fn merge_custom_targets_into_derived(
+    targets: &mut BTreeMap<String, TargetRootDescriptor>,
+    index_options: &IndexOptions,
+) -> Result<(), IndexError> {
+    for target in load_custom_targets(index_options)? {
+        let project_root = if target.scope == SkillScope::Project {
+            target.path.parent().and_then(Path::parent).map(Path::to_path_buf)
+        } else {
+            None
+        };
+        targets.insert(
+            target.path.to_string_lossy().into_owned(),
+            TargetRootDescriptor {
+                agent: target.agent,
+                scope: target.scope,
+                target_root: target.path,
+                project_root,
+            },
+        );
+    }
+    Ok(())
 }
 
 fn read_origin_records(

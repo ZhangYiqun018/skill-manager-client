@@ -301,6 +301,19 @@ export type Copy = {
   guideTargetsBody: string;
   guideSettingsTitle: string;
   guideSettingsBody: string;
+  customTargetsTitle: string;
+  customTargetsBody: string;
+  addCustomTarget: string;
+  removeCustomTarget: string;
+  customTargetLabel: string;
+  customTargetPath: string;
+  customTargetAgent: string;
+  customTargetScope: string;
+  noCustomTargets: string;
+  selectFolder: string;
+  customTargetAdded: string;
+  customTargetRemoved: string;
+  customTargetDeleteConfirm: string;
 };
 
 export const copy: Record<Language, Copy> = {
@@ -637,6 +650,20 @@ export const copy: Record<Language, Copy> = {
     guideSettingsTitle: "Settings — preferences and paths",
     guideSettingsBody:
       "Change language and theme, and review the local index path and managed store path. Your preferences are saved locally.",
+    customTargetsTitle: "Custom install targets",
+    customTargetsBody:
+      "Add arbitrary directories as install targets. Skills can be symlink-installed into any custom target you define here.",
+    addCustomTarget: "Add target",
+    removeCustomTarget: "Remove",
+    customTargetLabel: "Label",
+    customTargetPath: "Path",
+    customTargetAgent: "Agent",
+    customTargetScope: "Scope",
+    noCustomTargets: "No custom targets yet. Add one to install skills anywhere.",
+    selectFolder: "Select folder",
+    customTargetAdded: "Target added",
+    customTargetRemoved: "Target removed",
+    customTargetDeleteConfirm: "Remove this install target? Existing symlinks will not be deleted.",
   },
   zh: {
     appName: "Skill Manager",
@@ -943,6 +970,20 @@ export const copy: Record<Language, Copy> = {
     guideSettingsTitle: "设置 — 偏好与路径",
     guideSettingsBody:
       "更改语言和主题，查看本地索引路径和托管仓库路径。偏好设置会保存在本地。",
+    customTargetsTitle: "自定义安装目标",
+    customTargetsBody:
+      "将任意目录添加为安装目标。你可以把技能通过软链接安装到任何在这里定义的目录。",
+    addCustomTarget: "添加目标",
+    removeCustomTarget: "删除",
+    customTargetLabel: "名称",
+    customTargetPath: "路径",
+    customTargetAgent: "代理",
+    customTargetScope: "范围",
+    noCustomTargets: "还没有自定义目标。添加一个，就可以把技能安装到任意目录。",
+    selectFolder: "选择文件夹",
+    customTargetAdded: "目标已添加",
+    customTargetRemoved: "目标已删除",
+    customTargetDeleteConfirm: "确定删除这个安装目标？已有的软链接不会被删除。",
   },
 };
 

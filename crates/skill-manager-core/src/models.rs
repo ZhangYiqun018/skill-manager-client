@@ -188,6 +188,16 @@ pub struct InstallTargetInventory {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CustomInstallTarget {
+    pub id: i64,
+    pub path: PathBuf,
+    pub agent: AgentKind,
+    pub scope: SkillScope,
+    pub label: Option<String>,
+    pub created_unix_ms: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ManagedSkillOrigin {
     pub origin: String,
     pub source_type: SkillSourceType,

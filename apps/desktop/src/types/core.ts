@@ -143,6 +143,15 @@ export interface InstallTargetInventory {
   items: InstallTargetInventoryItem[];
 }
 
+export interface CustomInstallTarget {
+  id: number;
+  path: string;
+  agent: AgentKind;
+  scope: SkillScope;
+  label?: string | null;
+  created_unix_ms: number;
+}
+
 export interface ManagedSkillOrigin {
   origin: string;
   source_type: SkillSourceType;

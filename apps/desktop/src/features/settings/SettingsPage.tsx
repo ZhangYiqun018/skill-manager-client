@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import styles from "../../App.module.css";
-import { loadRuntimeSettings } from "../../api";
-import { copy, type Language } from "../../i18n";
-import type { IndexStatus, RuntimeSettingsSnapshot } from "../../types";
+import { loadRuntimeSettings, listCustomTargets, addCustomTarget, removeCustomTarget } from "../../api";
+import { agentLabel, copy, scopeLabel, type Language } from "../../i18n";
+import type { CustomInstallTarget, IndexStatus, RuntimeSettingsSnapshot } from "../../types";
 import type { ThemeMode } from "../../hooks/useTheme";
 
 type SettingsPageProps = {
@@ -24,6 +25,16 @@ export function SettingsPage({
   const [runtimeSettings, setRuntimeSettings] =
     useState<RuntimeSettingsSnapshot | null>(null);
 
+  const [customTargets, setCustomTargets] = useState<CustomInstallTarget[]>([]);
+  const [customTargetsLoading, setCustomTargetsLoading] = useState(false);
+  const [customTargetsError, setCustomTargetsError] = useState<string | null>(null);
+  const [addingTarget, setAddingTarget] = useState(false);
+  const [newTargetPath, setNewTargetPath] = useState("");
+  const [newTargetAgent, setNewTargetAgent] = useState<"codex" | "claude_code">("codex");
+  const [newTargetScope, setNewTargetScope] = useState<"global" | "project">("global");
+  const [newTargetLabel, setNewTargetLabel] = useState("");
+  const [addTargetBusy, setAddTargetBusy] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -37,6 +48,86 @@ export function SettingsPage({
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setCustomTargetsLoading(true);
+    setCustomTargetsError(null);
+
+    void listCustomTargets()
+      .then((targets) => {
+        if (!cancelled) {
+          setCustomTargets(targets);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setCustomTargetsError(
+            error instanceof Error ? error.message : text.defaultScanError,
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setCustomTargetsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [text.defaultScanError]);
+
+  async function handleSelectFolder() {
+    const selected = await openDialog({
+      directory: true,
+      multiple: false,
+    });
+    if (selected && typeof selected === "string") {
+      setNewTargetPath(selected);
+    }
+  }
+
+  async function handleAddTarget() {
+    if (!newTargetPath.trim()) {
+      return;
+    }
+    setAddTargetBusy(true);
+    setCustomTargetsError(null);
+    try {
+      const added = await addCustomTarget(
+        newTargetPath.trim(),
+        newTargetAgent,
+        newTargetScope,
+        newTargetLabel.trim() || null,
+      );
+      setCustomTargets((current) => [added, ...current]);
+      setNewTargetPath("");
+      setNewTargetLabel("");
+      setAddingTarget(false);
+    } catch (error: unknown) {
+      setCustomTargetsError(
+        error instanceof Error ? error.message : text.defaultScanError,
+      );
+    } finally {
+      setAddTargetBusy(false);
+    }
+  }
+
+  async function handleRemoveTarget(id: number) {
+    if (!window.confirm(text.customTargetDeleteConfirm)) {
+      return;
+    }
+    setCustomTargetsError(null);
+    try {
+      await removeCustomTarget(id);
+      setCustomTargets((current) => current.filter((t) => t.id !== id));
+    } catch (error: unknown) {
+      setCustomTargetsError(
+        error instanceof Error ? error.message : text.defaultScanError,
+      );
+    }
+  }
 
   return (
     <section className={styles.pageSection}>
@@ -121,6 +212,137 @@ export function SettingsPage({
                   : "—"}
               </strong>
             </div>
+          </div>
+        </article>
+
+        <article className={styles.settingsCard}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <p className={styles.sectionLabel}>{text.customTargetsTitle}</p>
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={() => setAddingTarget((v) => !v)}
+            >
+              {addingTarget ? text.cancelVariantLabel : text.addCustomTarget}
+            </button>
+          </div>
+          <p className={styles.helperText}>{text.customTargetsBody}</p>
+
+          {addingTarget ? (
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input
+                  type="text"
+                  className={styles.searchField}
+                  value={newTargetPath}
+                  onChange={(e) => setNewTargetPath(e.target.value)}
+                  placeholder={text.customTargetPath}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={() => void handleSelectFolder()}
+                >
+                  {text.selectFolder}
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <select
+                  className={styles.searchField}
+                  value={newTargetAgent}
+                  onChange={(e) => setNewTargetAgent(e.target.value as "codex" | "claude_code")}
+                  style={{ flex: 1 }}
+                >
+                  <option value="codex">{agentLabel("codex")}</option>
+                  <option value="claude_code">{agentLabel("claude_code")}</option>
+                </select>
+                <select
+                  className={styles.searchField}
+                  value={newTargetScope}
+                  onChange={(e) => setNewTargetScope(e.target.value as "global" | "project")}
+                  style={{ flex: 1 }}
+                >
+                  <option value="global">{scopeLabel("global", language)}</option>
+                  <option value="project">{scopeLabel("project", language)}</option>
+                </select>
+              </div>
+              <input
+                type="text"
+                className={styles.searchField}
+                value={newTargetLabel}
+                onChange={(e) => setNewTargetLabel(e.target.value)}
+                placeholder={text.customTargetLabel}
+              />
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={() => {
+                    setAddingTarget(false);
+                    setNewTargetPath("");
+                    setNewTargetLabel("");
+                    setCustomTargetsError(null);
+                  }}
+                >
+                  {text.cancelVariantLabel}
+                </button>
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  disabled={!newTargetPath.trim() || addTargetBusy}
+                  onClick={() => void handleAddTarget()}
+                >
+                  {addTargetBusy ? text.refreshingIndex : text.addCustomTarget}
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {customTargetsError ? (
+            <div className={styles.emptyPanel} style={{ marginTop: 12 }}>
+              {customTargetsError}
+            </div>
+          ) : null}
+
+          <div style={{ marginTop: 16 }}>
+            {customTargetsLoading ? (
+              <div className={styles.emptyPanel}>{text.loadingPreview}</div>
+            ) : customTargets.length === 0 ? (
+              <div className={styles.emptyPanel}>{text.noCustomTargets}</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {customTargets.map((target) => (
+                  <div
+                    key={target.id}
+                    className={styles.targetItemCard}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {target.label || target.path}
+                      </strong>
+                      <div className={styles.groupMetaRow}>
+                        <span className={styles.inlineTag}>{agentLabel(target.agent)}</span>
+                        <span className={styles.inlineTag}>{scopeLabel(target.scope, language)}</span>
+                        {target.label ? (
+                          <span className={styles.inlineTag} style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {target.path}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.secondaryButton}
+                      onClick={() => void handleRemoveTarget(target.id)}
+                    >
+                      {text.removeCustomTarget}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </article>
       </div>
