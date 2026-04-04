@@ -1732,14 +1732,31 @@ fn resolve_catalog_target(
     index_options: &IndexOptions,
 ) -> Result<TargetRootDescriptor, IndexError> {
     let snapshot = load_skill_index(scan_options, index_options)?;
-    derive_target_catalog(&snapshot.summary, scan_options, index_options)?
+    if let Some(derived) = derive_target_catalog(&snapshot.summary, scan_options, index_options)?
         .into_iter()
         .find(|target| {
             path_equals(&target.target_root, &target_root.to_path_buf()) || target.target_root == target_root
-        })
-        .ok_or_else(|| {
-            IndexError::Message("Target root is outside the known install targets.".to_string())
-        })
+        }) {
+        return Ok(derived);
+    }
+
+    for custom in load_custom_targets(index_options)? {
+        if path_equals(&custom.path, &target_root.to_path_buf()) || custom.path == target_root {
+            let project_root = if custom.scope == SkillScope::Project {
+                custom.path.parent().and_then(Path::parent).map(Path::to_path_buf)
+            } else {
+                None
+            };
+            return Ok(TargetRootDescriptor {
+                agent: custom.agent,
+                scope: custom.scope,
+                target_root: custom.path,
+                project_root,
+            });
+        }
+    }
+
+    Err(IndexError::Message("Target root is outside the known install targets.".to_string()))
 }
 
 fn resolve_target_root(
@@ -1748,12 +1765,33 @@ fn resolve_target_root(
     scan_options: &ScanOptions,
     index_options: &IndexOptions,
 ) -> Result<TargetRootDescriptor, IndexError> {
-    derive_target_roots(managed_skill, scan_options, index_options)?
+    if let Some(derived) = derive_target_roots(managed_skill, scan_options, index_options)?
         .into_iter()
-        .find(|target| path_equals(&target.target_root, &target_root.to_path_buf()) || target.target_root == target_root)
-        .ok_or_else(|| {
-            IndexError::Message("Target root is outside the known install targets.".to_string())
-        })
+        .find(|target| path_equals(&target.target_root, &target_root.to_path_buf()) || target.target_root == target_root) {
+        return Ok(derived);
+    }
+
+    let canonical_path = fs::canonicalize(target_root).unwrap_or_else(|_| target_root.to_path_buf());
+    add_custom_target(
+        canonical_path.clone(),
+        managed_skill.agent.clone(),
+        managed_skill.scope.clone(),
+        None,
+        index_options,
+    )?;
+
+    let project_root = if managed_skill.scope == SkillScope::Project {
+        canonical_path.parent().and_then(Path::parent).map(Path::to_path_buf)
+    } else {
+        None
+    };
+
+    Ok(TargetRootDescriptor {
+        agent: managed_skill.agent.clone(),
+        scope: managed_skill.scope.clone(),
+        target_root: canonical_path,
+        project_root,
+    })
 }
 
 fn install_records_for_path(

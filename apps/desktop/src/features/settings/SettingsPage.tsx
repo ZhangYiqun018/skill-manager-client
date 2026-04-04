@@ -217,16 +217,16 @@ export function SettingsPage({
 
         <article className={styles.settingsCard}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <p className={styles.sectionLabel}>{text.customTargetsTitle}</p>
+            <p className={styles.sectionLabel}>{text.manageCustomTargetsTitle}</p>
             <button
               type="button"
-              className={styles.primaryButton}
+              className={styles.secondaryButton}
               onClick={() => setAddingTarget((v) => !v)}
             >
               {addingTarget ? text.cancelVariantLabel : text.addCustomTarget}
             </button>
           </div>
-          <p className={styles.helperText}>{text.customTargetsBody}</p>
+          <p className={styles.helperText}>{text.manageCustomTargetsBody}</p>
 
           {addingTarget ? (
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>

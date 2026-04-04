@@ -314,6 +314,14 @@ export type Copy = {
   customTargetAdded: string;
   customTargetRemoved: string;
   customTargetDeleteConfirm: string;
+  installToCustomLocation: string;
+  customInstallTitle: string;
+  customInstallAgent: string;
+  customInstallScope: string;
+  customInstallLabel: string;
+  customInstallConfirm: string;
+  manageCustomTargetsTitle: string;
+  manageCustomTargetsBody: string;
 };
 
 export const copy: Record<Language, Copy> = {
@@ -664,6 +672,15 @@ export const copy: Record<Language, Copy> = {
     customTargetAdded: "Target added",
     customTargetRemoved: "Target removed",
     customTargetDeleteConfirm: "Remove this install target? Existing symlinks will not be deleted.",
+    installToCustomLocation: "Install to custom location",
+    customInstallTitle: "Install skill to a custom directory",
+    customInstallAgent: "Agent",
+    customInstallScope: "Scope",
+    customInstallLabel: "Label (optional)",
+    customInstallConfirm: "Install",
+    manageCustomTargetsTitle: "Managed custom targets",
+    manageCustomTargetsBody:
+      "These are directories you have previously installed skills into. You can remove records here; existing symlinks on disk will not be deleted.",
   },
   zh: {
     appName: "Skill Manager",
@@ -984,6 +1001,15 @@ export const copy: Record<Language, Copy> = {
     customTargetAdded: "目标已添加",
     customTargetRemoved: "目标已删除",
     customTargetDeleteConfirm: "确定删除这个安装目标？已有的软链接不会被删除。",
+    installToCustomLocation: "安装到自定义目录",
+    customInstallTitle: "将技能安装到自定义目录",
+    customInstallAgent: "代理",
+    customInstallScope: "范围",
+    customInstallLabel: "名称（可选）",
+    customInstallConfirm: "安装",
+    manageCustomTargetsTitle: "已管理的自定义目标",
+    manageCustomTargetsBody:
+      "这些是你曾经安装过技能的目录。你可以在这里删除记录；磁盘上已有的软链接不会被删除。",
   },
 };
 
