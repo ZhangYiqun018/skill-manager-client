@@ -6,7 +6,13 @@ import {
   importLocalSkillFolder,
   searchSkillsRegistry,
 } from "../api";
-import type { AdoptionResolution, DiscoveryRecord, IndexedScanSummary, SkillItem } from "../types";
+import type {
+  AdoptionResolution,
+  AgentKind,
+  DiscoveryRecord,
+  IndexedScanSummary,
+  SkillItem,
+} from "../types";
 
 export function useDiscoveryState({
   applySnapshotWithDerived,

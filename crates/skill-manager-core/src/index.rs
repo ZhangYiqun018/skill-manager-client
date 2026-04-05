@@ -1939,10 +1939,27 @@ fn resolve_target_root(
     )?;
 
     let project_root = if managed_skill.scope == SkillScope::Project {
-        canonical_path
-            .parent()
-            .and_then(Path::parent)
-            .map(Path::to_path_buf)
+        // OpenClaw uses 3-level path (.openclaw/workspace/skills),
+        // other agents use 2-level (.codex/skills, .claude/skills, etc.)
+        let depth = match agent {
+            AgentKind::OpenClaw => 3,
+            _ => 2,
+        };
+        let mut path = canonical_path.as_path();
+        for _ in 0..depth {
+            match path.parent() {
+                Some(p) => path = p,
+                None => {
+                    return Ok(TargetRootDescriptor {
+                        agent,
+                        scope: managed_skill.scope.clone(),
+                        target_root: canonical_path,
+                        project_root: None,
+                    });
+                }
+            }
+        }
+        Some(path.to_path_buf())
     } else {
         None
     };

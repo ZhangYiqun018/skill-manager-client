@@ -156,7 +156,7 @@ export function LibraryPage({
           const statuses = await loadSkillInstallStatuses(skill.path);
           return { path: skill.path, statuses } as const;
         } catch {
-          return { path: skill.path, statuses: [] } as const;
+          return { path: skill.path, statuses: [] as SkillInstallStatus[] } as const;
         }
       })
     ).then((results) => {

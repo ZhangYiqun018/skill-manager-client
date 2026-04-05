@@ -2,6 +2,7 @@ import forms from "../../styles/_forms.module.css";
 import layout from "../../styles/_layout.module.css";
 import { FilterPill } from "../../components/FilterPill";
 import { agentLabel, copy, scopeLabel, type Language } from "../../i18n";
+import type { AgentKind } from "../../types";
 
 type SourceConfigProps = {
   agent: AgentKind;

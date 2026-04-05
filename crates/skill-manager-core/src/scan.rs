@@ -440,10 +440,18 @@ fn root_project_root(root: &RootSpec) -> Option<PathBuf> {
         return None;
     }
 
-    root.base_dir
-        .parent()
-        .and_then(Path::parent)
-        .map(Path::to_path_buf)
+    // Most agents use a 2-level structure (e.g. `.codex/skills`),
+    // but OpenClaw uses 3 levels (`.openclaw/workspace/skills`).
+    let depth = match root.agent {
+        AgentKind::OpenClaw => 3,
+        _ => 2,
+    };
+
+    let mut path = root.base_dir.as_path();
+    for _ in 0..depth {
+        path = path.parent()?;
+    }
+    Some(path.to_path_buf())
 }
 
 fn read_skill_metadata(path: &Path) -> Result<SkillMetadata, String> {

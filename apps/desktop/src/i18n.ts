@@ -93,6 +93,7 @@ export type Copy = {
   tagsLabel: string;
   addTagPlaceholder: string;
   exportByTag: string;
+  exportToOpenClawLabel: string;
   exportSuccess: string;
   noTags: string;
   filterByTag: string;
