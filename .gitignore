@@ -4,3 +4,17 @@ target/
 **/dist/
 apps/desktop/src-tauri/gen/
 tmp/
+
+# Review / planning artifacts
+reviews/
+.agents/
+findings.md
+progress.md
+task_plan.md
+skills-lock.json
+*REVIEW*.md
+*FINDINGS*.md
+*ARCHITECTURE_REPORT*.md
+
+# Early design docs (kept locally, not in repo)
+docs/*.md
