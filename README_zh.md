@@ -1,7 +1,6 @@
 <div align="center">
 
-<!-- BANNER: 替换为实际截图或 hero 图 -->
-<!-- <img src="./docs/assets/banner.png" width="800" alt="Skill Manager Banner" /> -->
+<img src="./docs/assets/banner.png" width="800" alt="Skill Manager Banner" />
 
 # ⚡ Skill Manager
 
@@ -25,10 +24,7 @@
 
 <br/>
 
-<!-- SCREENSHOT: 替换为实际应用截图 -->
-<!-- <img src="./docs/assets/screenshot-light.png" width="90%" alt="Skill Manager 截图" /> -->
-
-> 🖼️ **截图占位** — 请替换为应用的实际截图（推荐展示技能库或市场页面）。建议尺寸：1280×860，提供浅色和深色两个版本。
+<img src="./docs/assets/screenshot-light.png" width="90%" alt="Skill Manager — 技能市场" />
 
 </div>
 

@@ -1,7 +1,6 @@
 <div align="center">
 
-<!-- BANNER: Replace with actual screenshot or hero image -->
-<!-- <img src="./docs/assets/banner.png" width="800" alt="Skill Manager Banner" /> -->
+<img src="./docs/assets/banner.png" width="800" alt="Skill Manager Banner" />
 
 # ⚡ Skill Manager
 
@@ -25,10 +24,7 @@ Discover, install, and sync skills across **Codex · Claude Code · Agent** — 
 
 <br/>
 
-<!-- SCREENSHOT: Replace with actual app screenshot -->
-<!-- <img src="./docs/assets/screenshot-light.png" width="90%" alt="Skill Manager Screenshot" /> -->
-
-> 🖼️ **Screenshot placeholder** — Replace this with an actual screenshot of the app showing the Library or Marketplace view. Ideal size: 1280×860, both light and dark variants.
+<img src="./docs/assets/screenshot-light.png" width="90%" alt="Skill Manager — Marketplace" />
 
 </div>
 

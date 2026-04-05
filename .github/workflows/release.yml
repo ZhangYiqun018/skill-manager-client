@@ -50,17 +50,61 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      # Build with code signing (when Apple certificate is configured)
       - uses: tauri-apps/tauri-action@v0.5
+        if: runner.os != 'macOS' || env.HAVE_APPLE_CERT == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS code signing (optional — set these secrets to enable)
+          HAVE_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # Tauri updater signing (optional)
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        with:
+          projectPath: apps/desktop
+          tagName: v__VERSION__
+          releaseName: "Skill Manager v__VERSION__"
+          releaseBody: |
+            ## What's New / 更新内容
+
+            ### EN
+            - Initial release of Skill Manager desktop app
+            - Marketplace: search and adopt skills from skills.sh registry
+            - Library: manage, install, and update skills for Codex, Claude Code, and Agent
+            - Multi-agent installs with symlink or copy method
+            - Variant management: track, promote, and compare skill variants
+            - Dark / Light themes with glass-morphism UI
+            - Full keyboard navigation (Cmd/Ctrl+1~5, Cmd/Ctrl+K, Cmd/Ctrl+R)
+            - Bilingual interface (English / 中文)
+
+            ### 中文
+            - Skill Manager 桌面应用首次发布
+            - 技能市场：从 skills.sh 搜索并采纳技能
+            - 技能库：管理、安装和更新 Codex、Claude Code 和 Agent 的技能
+            - 多智能体安装，支持符号链接或复制
+            - 变体管理：跟踪、推广和比较技能变体
+            - 深色/浅色主题，玻璃拟态 UI
+            - 完整键盘导航（Cmd/Ctrl+1~5、Cmd/Ctrl+K、Cmd/Ctrl+R）
+            - 双语界面（English / 中文）
+
+            ---
+            > Pick the asset for your platform below.
+            > 请在下方选择对应平台的安装包。
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+      # Build without code signing (macOS fallback — ad-hoc sign with "-")
+      - uses: tauri-apps/tauri-action@v0.5
+        if: runner.os == 'macOS' && env.HAVE_APPLE_CERT != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAVE_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
+          # Ad-hoc signing: no certificate needed, required for aarch64 binaries to run
+          APPLE_SIGNING_IDENTITY: "-"
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         with:
           projectPath: apps/desktop
