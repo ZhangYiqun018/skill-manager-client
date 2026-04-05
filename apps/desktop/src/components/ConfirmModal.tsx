@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import buttons from "../styles/_buttons.module.css";
 import layout from "../styles/_layout.module.css";
 import panels from "../styles/_panels.module.css";
@@ -25,7 +26,7 @@ export function ConfirmModal({
     return null;
   }
 
-  return (
+  return createPortal(
     <div className={panels.modalOverlay} role="presentation">
       <div
         aria-modal="true"
@@ -52,6 +53,7 @@ export function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

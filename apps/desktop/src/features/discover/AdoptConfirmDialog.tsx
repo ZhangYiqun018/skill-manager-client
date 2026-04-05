@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import buttons from "../../styles/_buttons.module.css";
 import forms from "../../styles/_forms.module.css";
 import panels from "../../styles/_panels.module.css";
@@ -46,7 +47,7 @@ export function AdoptConfirmDialog({
     }
   }
 
-  return (
+  return createPortal(
     <div className={panels.modalOverlay} role="presentation" onClick={onClose}>
       <div
         className={panels.modalCard}
@@ -127,6 +128,7 @@ export function AdoptConfirmDialog({
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

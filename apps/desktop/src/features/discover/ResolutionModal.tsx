@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import badges from "../../styles/_badges.module.css";
 import buttons from "../../styles/_buttons.module.css";
 import cards from "../../styles/_cards.module.css";
@@ -42,7 +43,7 @@ export function ResolutionModal({
 }: ResolutionModalProps) {
   const text = copy[language];
 
-  return (
+  return createPortal(
     <div className={panels.modalOverlay} role="presentation">
       <section className={panels.resolutionModal} role="dialog" aria-modal="true">
         <div className={panels.panelHeader}>
@@ -256,6 +257,7 @@ export function ResolutionModal({
           )}
         </section>
       </section>
-    </div>
+    </div>,
+    document.body
   );
 }
