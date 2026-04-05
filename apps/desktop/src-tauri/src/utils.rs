@@ -189,6 +189,7 @@ pub(crate) fn parse_agent(value: &str) -> Result<AgentKind, AppError> {
         "agent" => Ok(AgentKind::Agent),
         "codex" => Ok(AgentKind::Codex),
         "claude_code" => Ok(AgentKind::ClaudeCode),
+        "open_claw" => Ok(AgentKind::OpenClaw),
         _ => Err(AppError::validation(format!("Unsupported agent: {value}"))),
     }
 }

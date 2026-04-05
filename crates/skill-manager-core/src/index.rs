@@ -1926,6 +1926,7 @@ fn agent_install_prefix(agent: &AgentKind, scope: &SkillScope) -> PathBuf {
         (AgentKind::Codex, SkillScope::Global) => PathBuf::from(".codex/skills"),
         (AgentKind::ClaudeCode, _) => PathBuf::from(".claude/skills"),
         (AgentKind::Agent, _) => PathBuf::from(".agent/skills"),
+        (AgentKind::OpenClaw, _) => PathBuf::from(".openclaw/workspace/skills"),
     }
 }
 
@@ -3032,7 +3033,7 @@ fn score_occurrence(skill: &InstalledSkill) -> i32 {
         score += 20;
     }
 
-    if skill.agent == AgentKind::Codex {
+    if skill.agent == AgentKind::Codex || skill.agent == AgentKind::OpenClaw {
         score += 10;
     }
 
@@ -3051,6 +3052,8 @@ fn build_suggested_version_label(skill: &InstalledSkill) -> String {
                 project_name,
                 if skill.agent == AgentKind::Codex {
                     "codex"
+                } else if skill.agent == AgentKind::OpenClaw {
+                    "openclaw"
                 } else {
                     "claude"
                 }
@@ -3061,6 +3064,8 @@ fn build_suggested_version_label(skill: &InstalledSkill) -> String {
     if skill.scope == SkillScope::Global {
         return if skill.agent == AgentKind::Codex {
             "global-codex".to_string()
+        } else if skill.agent == AgentKind::OpenClaw {
+            "global-openclaw".to_string()
         } else {
             "global-claude".to_string()
         };

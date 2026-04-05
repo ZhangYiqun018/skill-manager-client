@@ -40,6 +40,11 @@ export function SourceConfig({
             label={agentLabel("agent")}
             onClick={() => onAgentChange("agent")}
           />
+          <FilterPill
+            active={agent === "open_claw"}
+            label={agentLabel("open_claw")}
+            onClick={() => onAgentChange("open_claw")}
+          />
         </div>
       </div>
 

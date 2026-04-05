@@ -429,6 +429,9 @@ export function agentLabel(agent: AgentKind): string {
   if (agent === "agent") {
     return "Agent";
   }
+  if (agent === "open_claw") {
+    return "OpenClaw";
+  }
   return "Claude Code";
 }
 

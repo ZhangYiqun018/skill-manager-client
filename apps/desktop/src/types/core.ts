@@ -1,4 +1,4 @@
-export type AgentKind = "agent" | "claude_code" | "codex";
+export type AgentKind = "agent" | "claude_code" | "codex" | "open_claw";
 export type SkillScope = "global" | "project";
 export type SkillSourceType = "disk" | "import" | "remote";
 

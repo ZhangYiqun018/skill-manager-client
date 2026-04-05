@@ -202,6 +202,7 @@ function App() {
       agent: librarySkills.filter((skill) => skill.agent === "agent").length,
       codex: librarySkills.filter((skill) => skill.agent === "codex").length,
       claude_code: librarySkills.filter((skill) => skill.agent === "claude_code").length,
+      open_claw: librarySkills.filter((skill) => skill.agent === "open_claw").length,
     }),
     [librarySkills]
   );

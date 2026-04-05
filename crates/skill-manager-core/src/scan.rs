@@ -73,6 +73,11 @@ pub(crate) fn build_scan_roots(options: &ScanOptions) -> Vec<RootSpec> {
             scope: SkillScope::Global,
             base_dir: home.join(".agent/skills"),
         });
+        roots.push(RootSpec {
+            agent: AgentKind::OpenClaw,
+            scope: SkillScope::Global,
+            base_dir: home.join(".openclaw/workspace/skills"),
+        });
     }
 
     if let Some(project_root) = &options.project_root {
@@ -95,6 +100,11 @@ pub(crate) fn build_scan_roots(options: &ScanOptions) -> Vec<RootSpec> {
             agent: AgentKind::Agent,
             scope: SkillScope::Project,
             base_dir: project_root.join(".agent/skills"),
+        });
+        roots.push(RootSpec {
+            agent: AgentKind::OpenClaw,
+            scope: SkillScope::Project,
+            base_dir: project_root.join(".openclaw/workspace/skills"),
         });
     }
 
@@ -255,8 +265,17 @@ pub(crate) fn classify_discovered_skill_path(
     }
 
     let container_dir = source_root.parent()?.to_path_buf();
-    let container_name = container_dir.file_name()?.to_str()?;
+    let mut container_name = container_dir.file_name()?.to_str()?;
     let resolved_home = options.home_dir.clone().or_else(home_dir);
+
+    // OpenClaw uses `.openclaw/workspace/skills/{skill}/SKILL.md`
+    if container_name == "workspace" {
+        if let Some(parent) = container_dir.parent() {
+            if parent.file_name()?.to_str()? == ".openclaw" {
+                container_name = ".openclaw";
+            }
+        }
+    }
 
     match container_name {
         ".agents" => Some(SkillDescriptor {
@@ -301,6 +320,30 @@ pub(crate) fn classify_discovered_skill_path(
             Some(SkillDescriptor {
                 source_type: SkillSourceType::Disk,
                 agent: AgentKind::Codex,
+                scope: if is_global {
+                    SkillScope::Global
+                } else {
+                    SkillScope::Project
+                },
+                skill_dir,
+                skill_md: path.to_path_buf(),
+                source_root,
+                project_root: if is_global {
+                    None
+                } else {
+                    container_dir.parent().map(Path::to_path_buf)
+                },
+            })
+        }
+        ".openclaw" => {
+            let is_global = resolved_home
+                .as_ref()
+                .map(|home| source_root == home.join(".openclaw/workspace/skills"))
+                .unwrap_or(false);
+
+            Some(SkillDescriptor {
+                source_type: SkillSourceType::Disk,
+                agent: AgentKind::OpenClaw,
                 scope: if is_global {
                     SkillScope::Global
                 } else {
@@ -525,6 +568,60 @@ mod tests {
         assert_eq!(descriptor.agent, AgentKind::ClaudeCode);
         assert_eq!(descriptor.scope, SkillScope::Project);
         assert_eq!(descriptor.project_root.as_deref(), Some(project.path()));
+    }
+
+    #[test]
+    fn scans_global_openclaw_skill_root() {
+        let home = TempDir::new().expect("home dir");
+
+        write_skill(
+            &home
+                .path()
+                .join(".openclaw/workspace/skills/openclaw-helper"),
+            "openclaw-helper",
+            "OpenClaw workspace skill",
+        );
+
+        let summary = scan_local_skills(&ScanOptions {
+            project_root: None,
+            home_dir: Some(home.path().to_path_buf()),
+        });
+
+        assert_eq!(summary.skills.len(), 1);
+        assert!(summary.roots.iter().any(|root| {
+            root.agent == AgentKind::OpenClaw && root.scope == SkillScope::Global && root.exists
+        }));
+        assert!(summary.skills.iter().any(|skill| {
+            skill.agent == AgentKind::OpenClaw
+                && skill.scope == SkillScope::Global
+                && skill.slug == "openclaw-helper"
+        }));
+    }
+
+    #[test]
+    fn classifies_global_openclaw_skill_path() {
+        let home = TempDir::new().expect("home dir");
+        let skill_md = home
+            .path()
+            .join(".openclaw/workspace/skills/helper/SKILL.md");
+        write_skill(
+            skill_md.parent().expect("skill dir"),
+            "helper",
+            "OpenClaw helper",
+        );
+
+        let descriptor = classify_discovered_skill_path(
+            &skill_md,
+            &ScanOptions {
+                project_root: None,
+                home_dir: Some(home.path().to_path_buf()),
+            },
+        )
+        .expect("descriptor");
+
+        assert_eq!(descriptor.agent, AgentKind::OpenClaw);
+        assert_eq!(descriptor.scope, SkillScope::Global);
+        assert!(descriptor.project_root.is_none());
     }
 
     fn write_skill(skill_dir: &std::path::Path, name: &str, description: &str) {

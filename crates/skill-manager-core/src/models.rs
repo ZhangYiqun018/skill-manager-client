@@ -8,6 +8,7 @@ pub enum AgentKind {
     Agent,
     ClaudeCode,
     Codex,
+    OpenClaw,
 }
 
 impl AgentKind {
@@ -16,6 +17,7 @@ impl AgentKind {
             Self::Agent => "Agent",
             Self::ClaudeCode => "Claude Code",
             Self::Codex => "Codex",
+            Self::OpenClaw => "OpenClaw",
         }
     }
 
@@ -24,6 +26,7 @@ impl AgentKind {
             Self::Agent => "agent",
             Self::ClaudeCode => "claude_code",
             Self::Codex => "codex",
+            Self::OpenClaw => "open_claw",
         }
     }
 
@@ -32,6 +35,7 @@ impl AgentKind {
             "agent" => Some(Self::Agent),
             "claude_code" => Some(Self::ClaudeCode),
             "codex" => Some(Self::Codex),
+            "open_claw" => Some(Self::OpenClaw),
             _ => None,
         }
     }
