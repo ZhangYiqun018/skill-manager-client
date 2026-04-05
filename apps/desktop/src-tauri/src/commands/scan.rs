@@ -4,45 +4,65 @@ use skill_manager_core::{
     refresh_skill_index as refresh_skill_index_core, scan_local_skills as scan_local_skills_core,
 };
 
-use crate::utils::{build_scan_options, error_chain, get_registry_url, run_blocking};
 use crate::RuntimeSettingsSnapshot;
+use crate::utils::{build_scan_options, get_registry_url, log_err, run_blocking};
 
 #[tauri::command]
 #[tracing::instrument(skip(project_root))]
 pub async fn scan_local_skills(project_root: Option<String>) -> Result<ScanSummary, AppError> {
     tracing::info!("scanning local skills");
     let scan_options = build_scan_options(project_root);
-    run_blocking(move || Ok(scan_local_skills_core(&scan_options))).await
+    run_blocking(move || Ok(scan_local_skills_core(&scan_options)))
+        .await
+        .map_err(log_err("scan_local_skills"))
 }
 
 #[tauri::command]
 #[tracing::instrument(skip(project_root))]
-pub async fn load_skill_index(project_root: Option<String>) -> Result<IndexedScanSummary, AppError> {
+pub async fn load_skill_index(
+    project_root: Option<String>,
+) -> Result<IndexedScanSummary, AppError> {
     let scan_options = build_scan_options(project_root);
     run_blocking(move || {
-        load_skill_index_core(&scan_options, &IndexOptions::default()).map_err(error_chain)
+        Ok(load_skill_index_core(
+            &scan_options,
+            &IndexOptions::default(),
+        )?)
     })
     .await
+    .map_err(log_err("load_skill_index"))
 }
 
 #[tauri::command]
 #[tracing::instrument(skip(project_root))]
-pub async fn refresh_skill_index(project_root: Option<String>) -> Result<IndexedScanSummary, AppError> {
+pub async fn refresh_skill_index(
+    project_root: Option<String>,
+) -> Result<IndexedScanSummary, AppError> {
     let scan_options = build_scan_options(project_root);
     run_blocking(move || {
-        refresh_skill_index_core(&scan_options, &IndexOptions::default()).map_err(error_chain)
+        Ok(refresh_skill_index_core(
+            &scan_options,
+            &IndexOptions::default(),
+        )?)
     })
     .await
+    .map_err(log_err("refresh_skill_index"))
 }
 
 #[tauri::command]
 #[tracing::instrument(skip(project_root))]
-pub async fn load_discovery_report(project_root: Option<String>) -> Result<DiscoveryReport, AppError> {
+pub async fn load_discovery_report(
+    project_root: Option<String>,
+) -> Result<DiscoveryReport, AppError> {
     let scan_options = build_scan_options(project_root);
     run_blocking(move || {
-        load_discovery_report_core(&scan_options, &IndexOptions::default()).map_err(error_chain)
+        Ok(load_discovery_report_core(
+            &scan_options,
+            &IndexOptions::default(),
+        )?)
     })
     .await
+    .map_err(log_err("load_discovery_report"))
 }
 
 #[tauri::command]

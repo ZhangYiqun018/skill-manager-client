@@ -6,28 +6,18 @@ import {
   importLocalSkillFolder,
   searchSkillsRegistry,
 } from "../api";
-import { buildPresetSelection } from "../features/discover/report";
-import type {
-  AdoptionResolution,
-  DiscoveryPreset,
-  DiscoveryRecord,
-  DiscoveryReport,
-  IndexedScanSummary,
-  SkillItem,
-} from "../types";
+import type { AdoptionResolution, DiscoveryRecord, IndexedScanSummary, SkillItem } from "../types";
 
 export function useDiscoveryState({
   applySnapshotWithDerived,
   selectLibrarySkillFromSnapshot,
-  discoveryReport,
   discoveryRepresentativeSkills,
 }: {
   applySnapshotWithDerived: (result: IndexedScanSummary) => void | Promise<void>;
   selectLibrarySkillFromSnapshot: (
     result: IndexedScanSummary,
-    predicate: (skill: SkillItem) => boolean,
+    predicate: (skill: SkillItem) => boolean
   ) => void;
-  discoveryReport: DiscoveryReport;
   discoveryRepresentativeSkills: DiscoveryRecord[];
 }) {
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
@@ -35,14 +25,8 @@ export function useDiscoveryState({
 
   function toggleSelection(path: string) {
     setSelectedPaths((current) =>
-      current.includes(path)
-        ? current.filter((value) => value !== path)
-        : [...current, path],
+      current.includes(path) ? current.filter((value) => value !== path) : [...current, path]
     );
-  }
-
-  function selectPreset(preset: DiscoveryPreset) {
-    setSelectedPaths(buildPresetSelection(discoveryReport.all_groups, preset));
   }
 
   function clearSelection() {
@@ -58,23 +42,19 @@ export function useDiscoveryState({
 
     try {
       const selectedCandidates = discoveryRepresentativeSkills.filter((skill) =>
-        paths.includes(skill.path),
+        paths.includes(skill.path)
       );
       const result = await adoptSkills(paths);
       await applySnapshotWithDerived(result);
       setSelectedPaths([]);
 
-      const selectedFamilyKeys = new Set(
-        selectedCandidates.map((skill) => skill.family_key),
-      );
-      const selectedHashes = new Set(
-        selectedCandidates.map((skill) => skill.content_hash),
-      );
+      const selectedFamilyKeys = new Set(selectedCandidates.map((skill) => skill.family_key));
+      const selectedHashes = new Set(selectedCandidates.map((skill) => skill.content_hash));
       const adoptedSkill = result.summary.skills.find(
         (candidate) =>
           candidate.source_type !== "disk" &&
           selectedFamilyKeys.has(candidate.family_key) &&
-          selectedHashes.has(candidate.content_hash),
+          selectedHashes.has(candidate.content_hash)
       );
 
       if (adoptedSkill) {
@@ -85,9 +65,7 @@ export function useDiscoveryState({
     }
   }
 
-  async function handleApplyAdoptionResolutions(
-    resolutions: AdoptionResolution[],
-  ) {
+  async function handleApplyAdoptionResolutions(resolutions: AdoptionResolution[]) {
     if (resolutions.length === 0) {
       return;
     }
@@ -105,10 +83,9 @@ export function useDiscoveryState({
           resolutions.some((resolution) =>
             resolution.action === "merge"
               ? resolution.merge_target_path === candidate.path
-              : discoveryRepresentativeSkills.find(
-                  (skill) => skill.path === resolution.source_path,
-                )?.content_hash === candidate.content_hash,
-          ),
+              : discoveryRepresentativeSkills.find((skill) => skill.path === resolution.source_path)
+                  ?.content_hash === candidate.content_hash
+          )
       );
 
       if (adoptedSkill) {
@@ -122,7 +99,7 @@ export function useDiscoveryState({
   async function handleImportFolder(
     path: string,
     agent: "agent" | "codex" | "claude_code",
-    scope: "global" | "project",
+    scope: "global" | "project"
   ) {
     const result = await importLocalSkillFolder(path, agent, scope);
     await applySnapshotWithDerived(result);
@@ -138,31 +115,25 @@ export function useDiscoveryState({
       id: string;
       skillId: string;
       name: string;
+      source: string;
     },
     agent: "agent" | "codex" | "claude_code",
-    scope: "global" | "project",
+    scope: "global" | "project"
   ) {
-    const result = await adoptRegistrySkill(
-      skill.name,
-      skill.skillId,
-      skill.id,
-      agent,
-      scope,
-    );
+    const result = await adoptRegistrySkill(skill.source, skill.skillId, skill.id, agent, scope);
     await applySnapshotWithDerived(result);
     selectLibrarySkillFromSnapshot(
       result,
       (candidate) =>
-          candidate.source_type === "remote" &&
-          candidate.display_name.toLowerCase() === skill.name.toLowerCase(),
-      );
+        candidate.source_type === "remote" &&
+        candidate.display_name.toLowerCase() === skill.name.toLowerCase()
+    );
   }
 
   return {
     selectedPaths,
     adoptingSkillPaths,
     toggleSelection,
-    selectPreset,
     clearSelection,
     handleAdoptPaths,
     handleApplyAdoptionResolutions,

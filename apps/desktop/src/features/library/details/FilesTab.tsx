@@ -1,4 +1,7 @@
-import styles from "../../../App.module.css";
+import buttons from "../../../styles/_buttons.module.css";
+import layout from "../../../styles/_layout.module.css";
+import lists from "../../../styles/_lists.module.css";
+import panels from "../../../styles/_panels.module.css";
 import { copy, type Language } from "../../../i18n";
 import type { SkillFileNode } from "../../../types";
 import { agentLabelLabel } from "./utils";
@@ -31,15 +34,15 @@ export function FilesTab({
   const text = copy[language];
 
   return (
-    <section className={styles.detailSection}>
+    <section className={panels.detailSection}>
       {fileTreeLoading ? (
-        <div className={styles.emptyPanel}>{text.loadingFiles}</div>
+        <div className={panels.emptyPanel}>{text.loadingFiles}</div>
       ) : fileTreeError ? (
-        <div className={styles.emptyPanel}>{fileTreeError}</div>
+        <div className={panels.emptyPanel}>{fileTreeError}</div>
       ) : fileTree ? (
-        <div className={styles.fileBrowser}>
-          <div className={styles.fileTreePane}>
-            <p className={styles.sectionLabel}>{text.fileTreeTitle}</p>
+        <div className={panels.fileBrowser}>
+          <div className={lists.fileTreePane}>
+            <p className={layout.sectionLabel}>{text.fileTreeTitle}</p>
             <FileTreeView
               language={language}
               onSelectFile={onSelectFile}
@@ -48,34 +51,34 @@ export function FilesTab({
             />
           </div>
 
-          <div className={styles.fileViewerPane}>
-            <div className={styles.previewHeader}>
-              <p className={styles.sectionLabel}>{text.fileViewerTitle}</p>
+          <div className={lists.fileViewerPane}>
+            <div className={panels.previewHeader}>
+              <p className={layout.sectionLabel}>{text.fileViewerTitle}</p>
               {selectedFilePath ? (
                 <button
                   type="button"
-                  className={styles.secondaryButton}
+                  className={buttons.secondaryButton}
                   onClick={() => onOpenPath(selectedFilePath)}
                 >
                   {text.openSkillFile}
                 </button>
               ) : null}
             </div>
-            <div className={styles.previewFrame}>
+            <div className={panels.previewFrame}>
               {selectedFileLoading ? (
-                <p className={styles.previewState}>{text.loadingFile}</p>
+                <p className={panels.previewState}>{text.loadingFile}</p>
               ) : selectedFileError ? (
-                <p className={styles.previewState}>{selectedFileError}</p>
+                <p className={panels.previewState}>{selectedFileError}</p>
               ) : selectedFileContent ? (
-                <pre className={styles.previewContent}>{selectedFileContent}</pre>
+                <pre className={panels.previewContent}>{selectedFileContent}</pre>
               ) : (
-                <p className={styles.previewState}>{text.filePreviewUnavailable}</p>
+                <p className={panels.previewState}>{text.filePreviewUnavailable}</p>
               )}
             </div>
           </div>
         </div>
       ) : (
-        <div className={styles.emptyPanel}>{text.noFilesBody}</div>
+        <div className={panels.emptyPanel}>{text.noFilesBody}</div>
       )}
     </section>
   );
@@ -88,14 +91,9 @@ type FileTreeViewProps = {
   tree: SkillFileNode;
 };
 
-function FileTreeView({
-  language,
-  onSelectFile,
-  selectedFilePath,
-  tree,
-}: FileTreeViewProps) {
+function FileTreeView({ language, onSelectFile, selectedFilePath, tree }: FileTreeViewProps) {
   return (
-    <div className={styles.fileTreeList}>
+    <div className={lists.fileTreeList}>
       <FileTreeNodeView
         language={language}
         node={tree}
@@ -123,16 +121,16 @@ function FileTreeNodeView({
   const isActive = selectedFilePath === node.path;
 
   return (
-    <div className={styles.fileTreeNode}>
+    <div className={lists.fileTreeNode}>
       {isDirectory ? (
-        <div className={styles.fileTreeDirectory}>
+        <div className={lists.fileTreeDirectory}>
           <strong>{node.name}</strong>
           <span>{node.children.length}</span>
         </div>
       ) : (
         <button
           type="button"
-          className={isActive ? styles.fileTreeButtonActive : styles.fileTreeButton}
+          className={isActive ? lists.fileTreeButtonActive : lists.fileTreeButton}
           onClick={() => onSelectFile(node.path)}
         >
           <span>{node.name}</span>
@@ -141,7 +139,7 @@ function FileTreeNodeView({
       )}
 
       {node.children.length > 0 ? (
-        <div className={styles.fileTreeChildren}>
+        <div className={lists.fileTreeChildren}>
           {node.children.map((child) => (
             <FileTreeNodeView
               key={child.path}

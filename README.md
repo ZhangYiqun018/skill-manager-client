@@ -1,34 +1,43 @@
 # Skill Manager
 
-A desktop application for managing AI agent skills across Codex, Claude Code, and generic Agent workspaces. Built with Tauri v2 + React + Rust.
+[中文文档](./README_zh.md)
 
-## What it does
+A desktop application for managing AI agent skills across Codex, Claude Code, and generic Agent workspaces. Built with Tauri v2 + React 19 + Rust.
 
-Skill Manager helps you organize, install, and update skills (plugins) for your AI coding agents. It bridges the gap between discovering skills and keeping them in sync across multiple projects and agent configurations.
+## What's New in v0.1.0
 
-### Key features
+- **Marketplace** — Search and adopt skills directly from the [skills.sh](https://skills.sh) registry
+- **Glass UI** — Morandi color palette with glass-morphism surfaces, paper-warm light theme, and ink-blue dark theme
+- **Multi-agent installs** — Install a skill to Codex, Claude Code, and Agent in one step with symlink or copy
+- **Variant management** — Track and promote skill variants, compare diffs across versions
+- **Bilingual interface** — Full English and Chinese support, switchable at runtime
+- **Keyboard driven** — `Cmd/Ctrl+1~5` tabs, `Cmd/Ctrl+K` search, `Cmd/Ctrl+R` refresh
+
+## Key Features
 
 - **Library** — Browse all managed skills with health status, variants, and install history
 - **Discover** — Scan your disk for existing skills, import local folders, or search the remote registry
 - **Targets** — Manage install targets and repair broken symlinks with one click
 - **Settings** — Switch language (EN / 中文), toggle themes (system / light / dark), and configure custom install targets
-- **Multi-agent support** — Install the same skill to Codex, Claude Code, and Agent simultaneously
 - **Offline mode** — Disk scanning and local imports work without an internet connection
-- **Keyboard shortcuts** — `Ctrl/Cmd+1~5` to switch tabs, `Ctrl/Cmd+K` to focus search, `Ctrl/Cmd+R` to refresh index
+- **Built-in guide** — Collapsible accordion reference for every feature
 
-## Tech stack
+## Tech Stack
 
-- **Frontend**: React 19 + TypeScript + Vite
-- **Backend**: Tauri v2 + Rust
-- **Core crates**: `skill-manager-core` (scan, index, install logic), `skill-manager-cli` (command-line interface)
-- **Styling**: CSS Modules with Morandi design tokens
+| Layer    | Technology                                  |
+| -------- | ------------------------------------------- |
+| Frontend | React 19, TypeScript, Vite                  |
+| Backend  | Tauri v2, Rust                              |
+| Core     | `skill-manager-core` (scan, index, install) |
+| CLI      | `skill-manager-cli`                         |
+| Styling  | CSS Modules + Morandi design tokens         |
 
-## Getting started
+## Getting Started
 
 ### Prerequisites
 
 - [Rust](https://rustup.rs/)
-- [Node.js](https://nodejs.org/) + [pnpm](https://pnpm.io/)
+- [Node.js](https://nodejs.org/) (20+) + [pnpm](https://pnpm.io/)
 
 ### Install dependencies
 
@@ -67,7 +76,7 @@ pnpm test
 cargo test
 ```
 
-## Project structure
+## Project Structure
 
 ```
 skill-manager-client/
@@ -83,10 +92,10 @@ skill-manager-client/
 └── docs/                      # Product requirements and architecture docs
 ```
 
-## Custom registry
+## Custom Registry
 
 By default, remote skill search uses `https://skills.sh/api/search`. You can change this in **Settings → Registry URL**.
 
 ## License
 
-MIT
+[MIT](./LICENSE)

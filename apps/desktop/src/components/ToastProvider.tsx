@@ -1,10 +1,5 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import styles from "./ToastProvider.module.css";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -24,10 +19,15 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const counterRef = useRef(0);
 
   const showToast = useCallback((message: string, type: ToastType = "info") => {
-    const id = `${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, message, type }]);
+    const id = `${Date.now()}-${counterRef.current++}`;
+    setToasts((prev) => {
+      const next = [...prev, { id, message, type }];
+      // Keep at most 3 toasts visible
+      return next.length > 3 ? next.slice(-3) : next;
+    });
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
@@ -40,45 +40,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toasts, showToast, removeToast }}>
       {children}
-      <div
-        style={{
-          position: "fixed",
-          top: 16,
-          right: 16,
-          zIndex: 9999,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-          pointerEvents: "none",
-        }}
-      >
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            onClick={() => removeToast(toast.id)}
-            style={{
-              pointerEvents: "auto",
-              minWidth: 240,
-              maxWidth: 360,
-              padding: "12px 16px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 500,
-              color: "#fff",
-              background:
-                toast.type === "success"
-                  ? "#16a34a"
-                  : toast.type === "error"
-                    ? "#dc2626"
-                    : "#4b5563",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              cursor: "pointer",
-              transition: "opacity 200ms ease",
-            }}
-          >
-            {toast.message}
-          </div>
-        ))}
+      <div className={styles.toastContainer} role="status" aria-live="polite">
+        {toasts.map((toast) => {
+          const toastClass =
+            toast.type === "success"
+              ? styles.toastSuccess
+              : toast.type === "error"
+                ? styles.toastError
+                : styles.toastInfo;
+          return (
+            <div
+              key={toast.id}
+              role="alert"
+              onClick={() => removeToast(toast.id)}
+              className={`${styles.toast} ${toastClass}`}
+            >
+              {toast.message}
+            </div>
+          );
+        })}
       </div>
     </ToastContext.Provider>
   );

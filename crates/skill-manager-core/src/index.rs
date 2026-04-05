@@ -12,14 +12,15 @@ use thiserror::Error;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::models::{
-    AdoptionResolution, AdoptionResolutionAction, AgentKind, DiscoveryCandidate, DiscoveryGroup,
-    DiscoveryGroupKind, DiscoveryReport, DiscoveryReviewState, DiscoverySummary, IndexOptions,
-    IndexStatus, IndexedScanSummary, InstallHealthState, InstallMethod,
-    InstallTargetHealthState, InstallTargetInventory, InstallTargetInventoryItem, InstalledSkill,
-    CustomInstallTarget, ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin, ManagedSkillRevision,
-    ManagedVariantHistory, RemoteUpdateCheck, ScanOptions, ScanSummary, ScanWarning,
-    SkillComparison, SkillDescriptor, SkillDirectoryDiff, SkillFileDiff, SkillFileDiffKind,
-    SkillFileKind, SkillFileNode, SkillInstallStatus, SkillMetadata, SkillScope, SkillSourceType,
+    AdoptionResolution, AdoptionResolutionAction, AgentKind, CustomInstallTarget,
+    DiscoveryCandidate, DiscoveryGroup, DiscoveryGroupKind, DiscoveryReport, DiscoveryReviewState,
+    DiscoverySummary, IndexOptions, IndexStatus, IndexedScanSummary, InstallHealthState,
+    InstallMethod, InstallTargetHealthState, InstallTargetInventory, InstallTargetInventoryItem,
+    InstalledSkill, ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin,
+    ManagedSkillRevision, ManagedVariantHistory, RemoteUpdateCheck, ScanOptions, ScanSummary,
+    ScanWarning, SkillComparison, SkillDescriptor, SkillDirectoryDiff, SkillFileDiff,
+    SkillFileDiffKind, SkillFileKind, SkillFileNode, SkillInstallStatus, SkillMetadata, SkillScope,
+    SkillSourceType,
 };
 use crate::scan::{
     build_installed_skill, build_scan_roots, classify_discovered_skill_path, hash_skill_directory,
@@ -62,6 +63,22 @@ pub enum IndexError {
     Io(#[from] std::io::Error),
     #[error("{0}")]
     Message(String),
+}
+
+impl From<IndexError> for crate::models::AppError {
+    fn from(error: IndexError) -> Self {
+        use std::io::ErrorKind;
+        match error {
+            IndexError::Sql(e) => Self::unknown(format!("Database error: {e}")),
+            IndexError::Io(e) => match e.kind() {
+                ErrorKind::NotFound => Self::not_found(e.to_string()),
+                ErrorKind::PermissionDenied => Self::permission_denied(e.to_string()),
+                ErrorKind::AlreadyExists => Self::already_exists(e.to_string()),
+                _ => Self::io(e.to_string()),
+            },
+            IndexError::Message(msg) => Self::unknown(msg),
+        }
+    }
 }
 
 pub fn default_index_path() -> PathBuf {
@@ -125,7 +142,11 @@ pub fn adopt_skills(
                 index_options,
             )?);
         } else {
-            import_skill_from_candidate(&candidate, &candidate.path.to_string_lossy(), index_options)?;
+            import_skill_from_candidate(
+                &candidate,
+                &candidate.path.to_string_lossy(),
+                index_options,
+            )?;
         }
     }
 
@@ -303,7 +324,8 @@ pub fn load_managed_skill_history(
         .skills
         .into_iter()
         .filter(|skill| {
-            skill.source_type != SkillSourceType::Disk && skill.family_key == managed_skill.family_key
+            skill.source_type != SkillSourceType::Disk
+                && skill.family_key == managed_skill.family_key
         })
         .collect::<Vec<_>>();
 
@@ -424,7 +446,12 @@ pub fn load_skill_install_statuses(
     Ok(targets
         .into_iter()
         .map(|target| {
-            build_install_status(&managed_skill, &target, &install_records, &family_promotions)
+            build_install_status(
+                &managed_skill,
+                &target,
+                &install_records,
+                &family_promotions,
+            )
         })
         .collect())
 }
@@ -470,9 +497,14 @@ pub fn load_install_target_inventory(
                         .iter()
                         .find(|skill| path_equals(&record.managed_skill_path, &skill.path))
                         .map(|skill| {
-                            let skill_records = install_records_for_path(&install_records, &skill.path);
-                            let status =
-                                build_install_status(skill, &target, &skill_records, &family_promotions);
+                            let skill_records =
+                                install_records_for_path(&install_records, &skill.path);
+                            let status = build_install_status(
+                                skill,
+                                &target,
+                                &skill_records,
+                                &family_promotions,
+                            );
                             InstallTargetInventoryItem {
                                 managed_skill_path: skill.path.clone(),
                                 managed_skill_md: skill.skill_md.clone(),
@@ -497,9 +529,7 @@ pub fn load_install_target_inventory(
             let exists = target.target_root.exists();
             let needs_attention_count = items
                 .iter()
-                .filter(|item| {
-                    item.health_state != InstallHealthState::Healthy
-                })
+                .filter(|item| item.health_state != InstallHealthState::Healthy)
                 .count();
             let discovered_skill_count = discovered_counts
                 .get(&target.target_root.to_string_lossy().into_owned())
@@ -562,7 +592,9 @@ pub fn sync_install_target(
 
         if matches!(
             status.health_state,
-            InstallHealthState::Healthy | InstallHealthState::Conflict | InstallHealthState::MissingTarget
+            InstallHealthState::Healthy
+                | InstallHealthState::Conflict
+                | InstallHealthState::MissingTarget
         ) {
             continue;
         }
@@ -595,7 +627,13 @@ pub fn install_managed_skill(
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, agent_override, scan_options, index_options)?;
+    let target = resolve_target_root(
+        &managed_skill,
+        &target_root,
+        agent_override,
+        scan_options,
+        index_options,
+    )?;
     let prefix = agent_install_prefix(&target.agent, &target.scope);
     let destination = target.target_root.join(&prefix).join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
@@ -616,12 +654,7 @@ pub fn install_managed_skill(
     let method = method_override.unwrap_or(InstallMethod::Symlink);
 
     if destination_symlink_points_to(&destination, &managed_skill.path) {
-        record_install(
-            &managed_skill.path,
-            &target,
-            method,
-            index_options,
-        )?;
+        record_install(&managed_skill.path, &target, method, index_options)?;
         return load_skill_install_statuses(managed_skill.path, scan_options, index_options);
     }
 
@@ -635,12 +668,7 @@ pub fn install_managed_skill(
         InstallMethod::Copy => copy_dir_recursive(&managed_skill.path, &destination)?,
     }
 
-    record_install(
-        &managed_skill.path,
-        &target,
-        method,
-        index_options,
-    )?;
+    record_install(&managed_skill.path, &target, method, index_options)?;
 
     load_skill_install_statuses(managed_skill.path, scan_options, index_options)
 }
@@ -652,7 +680,13 @@ pub fn remove_managed_skill_install(
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, None, scan_options, index_options)?;
+    let target = resolve_target_root(
+        &managed_skill,
+        &target_root,
+        None,
+        scan_options,
+        index_options,
+    )?;
     let prefix = agent_install_prefix(&target.agent, &target.scope);
     let destination = target.target_root.join(&prefix).join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
@@ -664,9 +698,7 @@ pub fn remove_managed_skill_install(
     );
 
     match current_status.health_state {
-        InstallHealthState::Healthy
-        | InstallHealthState::Copied
-        | InstallHealthState::Broken => {
+        InstallHealthState::Healthy | InstallHealthState::Copied | InstallHealthState::Broken => {
             remove_existing_path(&destination)?;
             delete_install_record(&managed_skill.path, &target.target_root, index_options)?;
         }
@@ -691,7 +723,13 @@ pub fn repair_managed_skill_install(
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, None, scan_options, index_options)?;
+    let target = resolve_target_root(
+        &managed_skill,
+        &target_root,
+        None,
+        scan_options,
+        index_options,
+    )?;
     let prefix = agent_install_prefix(&target.agent, &target.scope);
     let destination = target.target_root.join(&prefix).join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
@@ -896,7 +934,7 @@ fn scan_managed_store(index_options: &IndexOptions) -> ScanSummary {
     }
 
     let walker = walkdir::WalkDir::new(&store_root)
-        .follow_links(true)
+        .follow_links(false)
         .max_depth(5)
         .into_iter();
 
@@ -931,7 +969,8 @@ fn scan_managed_store(index_options: &IndexOptions) -> ScanSummary {
         let (Some(agent), Some(scope)) = (agent, scope) else {
             summary.warnings.push(ScanWarning {
                 path: Some(entry.path().to_path_buf()),
-                message: "Managed store entry is not in a supported agent/scope directory.".to_string(),
+                message: "Managed store entry is not in a supported agent/scope directory."
+                    .to_string(),
             });
             continue;
         };
@@ -1066,7 +1105,8 @@ fn discover_hidden_project_skills(
                 continue;
             }
 
-            let Some(descriptor) = classify_discovered_skill_path(entry.path(), scan_options) else {
+            let Some(descriptor) = classify_discovered_skill_path(entry.path(), scan_options)
+            else {
                 continue;
             };
 
@@ -1387,8 +1427,7 @@ fn read_skills_from_db(connection: &Connection) -> Result<Vec<InstalledSkill>, r
 }
 
 fn read_warnings_from_db(connection: &Connection) -> Result<Vec<ScanWarning>, rusqlite::Error> {
-    let mut statement =
-        connection.prepare("SELECT path, message FROM warnings ORDER BY id ASC")?;
+    let mut statement = connection.prepare("SELECT path, message FROM warnings ORDER BY id ASC")?;
     let rows = statement.query_map([], |row| {
         Ok(ScanWarning {
             path: row.get::<_, Option<String>>(0)?.map(PathBuf::from),
@@ -1434,7 +1473,8 @@ fn write_summary_to_db(
                 skill.skill_md.to_string_lossy().into_owned(),
                 skill.path.to_string_lossy().into_owned(),
                 skill.source_root.to_string_lossy().into_owned(),
-                skill.project_root
+                skill
+                    .project_root
                     .as_ref()
                     .map(|path| path.to_string_lossy().into_owned()),
                 skill.source_type.as_key(),
@@ -1447,7 +1487,8 @@ fn write_summary_to_db(
                 skill.description.clone(),
                 skill.metadata.name.clone(),
                 skill.metadata.description.clone(),
-                skill.metadata
+                skill
+                    .metadata
                     .user_invocable
                     .map(|value| if value { 1_i64 } else { 0_i64 })
             ],
@@ -1521,7 +1562,8 @@ fn upsert_skill_record(
             skill.skill_md.to_string_lossy().into_owned(),
             skill.path.to_string_lossy().into_owned(),
             skill.source_root.to_string_lossy().into_owned(),
-            skill.project_root
+            skill
+                .project_root
                 .as_ref()
                 .map(|path| path.to_string_lossy().into_owned()),
             skill.source_type.as_key(),
@@ -1534,7 +1576,8 @@ fn upsert_skill_record(
             skill.description.clone(),
             skill.metadata.name.clone(),
             skill.metadata.description.clone(),
-            skill.metadata
+            skill
+                .metadata
                 .user_invocable
                 .map(|value| if value { 1_i64 } else { 0_i64 }),
         ],
@@ -1555,8 +1598,7 @@ fn build_file_tree(root: &Path, current: &Path) -> Result<SkillFileNode, IndexEr
 
     let mut children = Vec::new();
     if matches!(kind, SkillFileKind::Directory) {
-        let mut entries = fs::read_dir(current)?
-            .collect::<Result<Vec<_>, _>>()?;
+        let mut entries = fs::read_dir(current)?.collect::<Result<Vec<_>, _>>()?;
         entries.sort_by_key(|entry| entry.path());
         for entry in entries {
             children.push(build_file_tree(root, &entry.path())?);
@@ -1569,10 +1611,7 @@ fn build_file_tree(root: &Path, current: &Path) -> Result<SkillFileNode, IndexEr
             .map(|name| name.to_string_lossy().into_owned())
             .unwrap_or_else(|| current.to_string_lossy().into_owned()),
         path: current.to_path_buf(),
-        relative_path: current
-            .strip_prefix(root)
-            .unwrap_or(current)
-            .to_path_buf(),
+        relative_path: current.strip_prefix(root).unwrap_or(current).to_path_buf(),
         kind,
         children,
     })
@@ -1613,7 +1652,10 @@ fn derive_target_roots(
         }
 
         let project_root = if root.scope == SkillScope::Project {
-            root.base_dir.parent().and_then(Path::parent).map(Path::to_path_buf)
+            root.base_dir
+                .parent()
+                .and_then(Path::parent)
+                .map(Path::to_path_buf)
         } else {
             None
         };
@@ -1660,7 +1702,11 @@ fn derive_target_roots(
                 scope: record.scope.clone(),
                 target_root: record.target_root.clone(),
                 project_root: if record.scope == SkillScope::Project {
-                    record.target_root.parent().and_then(Path::parent).map(Path::to_path_buf)
+                    record
+                        .target_root
+                        .parent()
+                        .and_then(Path::parent)
+                        .map(Path::to_path_buf)
                 } else {
                     None
                 },
@@ -1682,7 +1728,10 @@ fn derive_target_catalog(
 
     for root in build_scan_roots(scan_options) {
         let project_root = if root.scope == SkillScope::Project {
-            root.base_dir.parent().and_then(Path::parent).map(Path::to_path_buf)
+            root.base_dir
+                .parent()
+                .and_then(Path::parent)
+                .map(Path::to_path_buf)
         } else {
             None
         };
@@ -1698,7 +1747,11 @@ fn derive_target_catalog(
         );
     }
 
-    for skill in summary.skills.iter().filter(|skill| skill.source_type == SkillSourceType::Disk) {
+    for skill in summary
+        .skills
+        .iter()
+        .filter(|skill| skill.source_type == SkillSourceType::Disk)
+    {
         if skill.source_root.starts_with(&store_root) {
             continue;
         }
@@ -1747,15 +1800,21 @@ fn resolve_catalog_target(
     if let Some(derived) = derive_target_catalog(&snapshot.summary, scan_options, index_options)?
         .into_iter()
         .find(|target| {
-            path_equals(&target.target_root, &target_root.to_path_buf()) || target.target_root == target_root
-        }) {
+            path_equals(&target.target_root, &target_root.to_path_buf())
+                || target.target_root == target_root
+        })
+    {
         return Ok(derived);
     }
 
     for custom in load_custom_targets(index_options)? {
         if path_equals(&custom.path, &target_root.to_path_buf()) || custom.path == target_root {
             let project_root = if custom.scope == SkillScope::Project {
-                custom.path.parent().and_then(Path::parent).map(Path::to_path_buf)
+                custom
+                    .path
+                    .parent()
+                    .and_then(Path::parent)
+                    .map(Path::to_path_buf)
             } else {
                 None
             };
@@ -1768,7 +1827,9 @@ fn resolve_catalog_target(
         }
     }
 
-    Err(IndexError::Message("Target root is outside the known install targets.".to_string()))
+    Err(IndexError::Message(
+        "Target root is outside the known install targets.".to_string(),
+    ))
 }
 
 fn agent_install_prefix(agent: &AgentKind, scope: &SkillScope) -> PathBuf {
@@ -1789,11 +1850,16 @@ fn resolve_target_root(
 ) -> Result<TargetRootDescriptor, IndexError> {
     if let Some(derived) = derive_target_roots(managed_skill, scan_options, index_options)?
         .into_iter()
-        .find(|target| path_equals(&target.target_root, &target_root.to_path_buf()) || target.target_root == target_root) {
+        .find(|target| {
+            path_equals(&target.target_root, &target_root.to_path_buf())
+                || target.target_root == target_root
+        })
+    {
         return Ok(derived);
     }
 
-    let canonical_path = fs::canonicalize(target_root).unwrap_or_else(|_| target_root.to_path_buf());
+    let canonical_path =
+        fs::canonicalize(target_root).unwrap_or_else(|_| target_root.to_path_buf());
     let agent = agent_override.unwrap_or_else(|| managed_skill.agent.clone());
     add_custom_target(
         canonical_path.clone(),
@@ -1804,7 +1870,10 @@ fn resolve_target_root(
     )?;
 
     let project_root = if managed_skill.scope == SkillScope::Project {
-        canonical_path.parent().and_then(Path::parent).map(Path::to_path_buf)
+        canonical_path
+            .parent()
+            .and_then(Path::parent)
+            .map(Path::to_path_buf)
     } else {
         None
     };
@@ -1823,7 +1892,12 @@ fn install_records_for_path(
 ) -> Vec<InstallRecordRow> {
     install_records
         .iter()
-        .filter(|record| path_equals(&record.managed_skill_path, &managed_skill_path.to_path_buf()))
+        .filter(|record| {
+            path_equals(
+                &record.managed_skill_path,
+                &managed_skill_path.to_path_buf(),
+            )
+        })
         .map(|record| InstallRecordRow {
             target_root: record.target_root.clone(),
             agent: record.agent.clone(),
@@ -1847,7 +1921,9 @@ fn load_install_records_for_skill(
     read_install_records(&connection, managed_skill_path)
 }
 
-fn load_all_install_records(index_options: &IndexOptions) -> Result<Vec<InstallRecordWithSkillRow>, IndexError> {
+fn load_all_install_records(
+    index_options: &IndexOptions,
+) -> Result<Vec<InstallRecordWithSkillRow>, IndexError> {
     let index_path = resolve_index_path(index_options);
     if !index_path.exists() {
         return Ok(Vec::new());
@@ -1858,7 +1934,9 @@ fn load_all_install_records(index_options: &IndexOptions) -> Result<Vec<InstallR
     read_all_install_records(&connection)
 }
 
-fn load_family_promotions(index_options: &IndexOptions) -> Result<BTreeMap<String, PathBuf>, IndexError> {
+fn load_family_promotions(
+    index_options: &IndexOptions,
+) -> Result<BTreeMap<String, PathBuf>, IndexError> {
     let index_path = resolve_index_path(index_options);
     if !index_path.exists() {
         return Ok(BTreeMap::new());
@@ -1909,10 +1987,13 @@ fn read_install_records(
         })
     })?;
 
-    rows.collect::<Result<Vec<_>, _>>().map_err(IndexError::from)
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(IndexError::from)
 }
 
-fn read_all_install_records(connection: &Connection) -> Result<Vec<InstallRecordWithSkillRow>, IndexError> {
+fn read_all_install_records(
+    connection: &Connection,
+) -> Result<Vec<InstallRecordWithSkillRow>, IndexError> {
     let mut statement = connection.prepare(
         "
         SELECT managed_skill_path, target_root, agent, scope, updated_unix_ms
@@ -1945,10 +2026,13 @@ fn read_all_install_records(connection: &Connection) -> Result<Vec<InstallRecord
         })
     })?;
 
-    rows.collect::<Result<Vec<_>, _>>().map_err(IndexError::from)
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(IndexError::from)
 }
 
-fn read_custom_target_records(connection: &Connection) -> Result<Vec<CustomInstallTarget>, IndexError> {
+fn read_custom_target_records(
+    connection: &Connection,
+) -> Result<Vec<CustomInstallTarget>, IndexError> {
     let mut statement = connection.prepare(
         "
         SELECT id, path, agent, scope, label, created_unix_ms
@@ -1982,10 +2066,13 @@ fn read_custom_target_records(connection: &Connection) -> Result<Vec<CustomInsta
         })
     })?;
 
-    rows.collect::<Result<Vec<_>, _>>().map_err(IndexError::from)
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(IndexError::from)
 }
 
-pub fn load_custom_targets(index_options: &IndexOptions) -> Result<Vec<CustomInstallTarget>, IndexError> {
+pub fn load_custom_targets(
+    index_options: &IndexOptions,
+) -> Result<Vec<CustomInstallTarget>, IndexError> {
     let index_path = resolve_index_path(index_options);
     let connection = Connection::open(&index_path)?;
     read_custom_target_records(&connection)
@@ -2041,10 +2128,7 @@ pub fn add_custom_target(
 pub fn remove_custom_target(id: i64, index_options: &IndexOptions) -> Result<(), IndexError> {
     let index_path = resolve_index_path(index_options);
     let connection = Connection::open(&index_path)?;
-    connection.execute(
-        "DELETE FROM custom_targets WHERE id = ?1",
-        [id],
-    )?;
+    connection.execute("DELETE FROM custom_targets WHERE id = ?1", [id])?;
     Ok(())
 }
 
@@ -2054,7 +2138,11 @@ fn merge_custom_targets_into_derived(
 ) -> Result<(), IndexError> {
     for target in load_custom_targets(index_options)? {
         let project_root = if target.scope == SkillScope::Project {
-            target.path.parent().and_then(Path::parent).map(Path::to_path_buf)
+            target
+                .path
+                .parent()
+                .and_then(Path::parent)
+                .map(Path::to_path_buf)
         } else {
             None
         };
@@ -2100,12 +2188,11 @@ fn read_origin_records(
         })
     })?;
 
-    rows.collect::<Result<Vec<_>, _>>().map_err(IndexError::from)
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(IndexError::from)
 }
 
-fn read_variant_records(
-    connection: &Connection,
-) -> Result<BTreeMap<String, String>, IndexError> {
+fn read_variant_records(connection: &Connection) -> Result<BTreeMap<String, String>, IndexError> {
     let mut statement = connection.prepare(
         "
         SELECT managed_skill_path, variant_label
@@ -2166,11 +2253,13 @@ fn read_managed_revision_records(
 
     Ok(grouped
         .into_iter()
-        .map(|((family_key, variant_label), revisions)| ManagedVariantHistory {
-            family_key,
-            variant_label,
-            revisions,
-        })
+        .map(
+            |((family_key, variant_label), revisions)| ManagedVariantHistory {
+                family_key,
+                variant_label,
+                revisions,
+            },
+        )
         .collect())
 }
 
@@ -2656,8 +2745,10 @@ fn is_stale(last_refresh_unix_ms: Option<i64>, index_options: &IndexOptions) -> 
     };
 
     let now = now_unix_ms();
-    let stale_after_ms =
-        (index_options.stale_after_secs.unwrap_or(DEFAULT_STALE_AFTER_SECS) as i64) * 1000;
+    let stale_after_ms = (index_options
+        .stale_after_secs
+        .unwrap_or(DEFAULT_STALE_AFTER_SECS) as i64)
+        * 1000;
 
     now.saturating_sub(last_refresh_unix_ms) > stale_after_ms
 }
@@ -2721,7 +2812,8 @@ fn build_discovery_report(
             exact_duplicate_group_count: all_groups
                 .iter()
                 .map(|group| {
-                    group.candidates
+                    group
+                        .candidates
                         .iter()
                         .filter(|candidate| candidate.occurrence_count > 1)
                         .count()
@@ -2824,7 +2916,10 @@ fn build_discovery_candidate(
         id: format!("{family_key}:{content_hash}"),
         content_hash,
         occurrence_count: occurrences.len(),
-        provenance_paths: occurrences.into_iter().map(|occurrence| occurrence.path).collect(),
+        provenance_paths: occurrences
+            .into_iter()
+            .map(|occurrence| occurrence.path)
+            .collect(),
         suggested_version_label: build_suggested_version_label(&representative),
         representative,
     }
@@ -2895,11 +2990,15 @@ fn normalize_variant_label(value: &str) -> Option<String> {
     Some(trimmed.to_string())
 }
 
-fn find_disk_candidate(skills: &[InstalledSkill], skill_path: &Path) -> Result<InstalledSkill, IndexError> {
+fn find_disk_candidate(
+    skills: &[InstalledSkill],
+    skill_path: &Path,
+) -> Result<InstalledSkill, IndexError> {
     skills
         .iter()
         .find(|skill| {
-            skill.source_type == SkillSourceType::Disk && path_matches_skill(&skill_path.to_path_buf(), skill)
+            skill.source_type == SkillSourceType::Disk
+                && path_matches_skill(&skill_path.to_path_buf(), skill)
         })
         .cloned()
         .ok_or_else(|| {
@@ -2909,11 +3008,15 @@ fn find_disk_candidate(skills: &[InstalledSkill], skill_path: &Path) -> Result<I
         })
 }
 
-fn find_managed_skill(skills: &[InstalledSkill], skill_path: &Path) -> Result<InstalledSkill, IndexError> {
+fn find_managed_skill(
+    skills: &[InstalledSkill],
+    skill_path: &Path,
+) -> Result<InstalledSkill, IndexError> {
     skills
         .iter()
         .find(|skill| {
-            skill.source_type != SkillSourceType::Disk && path_matches_skill(&skill_path.to_path_buf(), skill)
+            skill.source_type != SkillSourceType::Disk
+                && path_matches_skill(&skill_path.to_path_buf(), skill)
         })
         .cloned()
         .ok_or_else(|| {
@@ -2923,7 +3026,10 @@ fn find_managed_skill(skills: &[InstalledSkill], skill_path: &Path) -> Result<In
         })
 }
 
-fn find_any_skill(skills: &[InstalledSkill], skill_path: &Path) -> Result<InstalledSkill, IndexError> {
+fn find_any_skill(
+    skills: &[InstalledSkill],
+    skill_path: &Path,
+) -> Result<InstalledSkill, IndexError> {
     skills
         .iter()
         .find(|skill| path_matches_skill(&skill_path.to_path_buf(), skill))
@@ -2991,12 +3097,7 @@ fn import_skill_from_candidate_with_variant(
         &candidate.source_type,
         now,
     )?;
-    ensure_variant_record(
-        &transaction,
-        &adopted.path,
-        resolved_variant_label,
-        now,
-    )?;
+    ensure_variant_record(&transaction, &adopted.path, resolved_variant_label, now)?;
     upsert_revision_record(
         &transaction,
         &adopted.family_key,
@@ -3082,7 +3183,9 @@ fn path_equals(left: &PathBuf, right: &PathBuf) -> bool {
 
     let left_canonical = fs::canonicalize(left).ok();
     let right_canonical = fs::canonicalize(right).ok();
-    left_canonical.zip(right_canonical).is_some_and(|(a, b)| a == b)
+    left_canonical
+        .zip(right_canonical)
+        .is_some_and(|(a, b)| a == b)
 }
 
 fn managed_skill_dir(skill: &InstalledSkill, store_root: &PathBuf) -> PathBuf {
@@ -3141,14 +3244,12 @@ fn repo_cache_dir(git_url: &str) -> String {
 }
 
 fn run_git_command(mut command: Command) -> Result<(), IndexError> {
-    let output = command.output().map_err(|e| {
-        IndexError::Message(format!("Failed to run git command: {e}"))
-    })?;
+    let output = command
+        .output()
+        .map_err(|e| IndexError::Message(format!("Failed to run git command: {e}")))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(IndexError::Message(format!(
-            "Git command failed: {stderr}"
-        )));
+        return Err(IndexError::Message(format!("Git command failed: {stderr}")));
     }
     Ok(())
 }
@@ -3180,7 +3281,9 @@ fn clone_or_update_repo_cache(git_url: &str, branch: Option<&str>) -> Result<Pat
         run_git_command(clone_cmd)?;
     }
 
-    let checkout_ref = branch.map(|b| format!("origin/{b}")).unwrap_or_else(|| "origin/HEAD".to_string());
+    let checkout_ref = branch
+        .map(|b| format!("origin/{b}"))
+        .unwrap_or_else(|| "origin/HEAD".to_string());
     let mut reset_cmd = Command::new("git");
     reset_cmd
         .arg("-C")
@@ -3233,8 +3336,7 @@ pub fn load_managed_git_source(
     }
     let connection = Connection::open(&index_path)?;
     init_schema(&connection)?;
-    read_managed_git_source(&connection, &managed_skill_path)
-        .map_err(IndexError::Sql)
+    read_managed_git_source(&connection, &managed_skill_path).map_err(IndexError::Sql)
 }
 
 fn read_managed_git_source(
@@ -3395,13 +3497,11 @@ pub fn check_managed_skill_updates(
 
     let mut checks = Vec::new();
     for source in sources {
-        let cache_dir = match clone_or_update_repo_cache(
-            &source.git_url,
-            source.git_branch.as_deref(),
-        ) {
-            Ok(dir) => dir,
-            Err(_) => continue,
-        };
+        let cache_dir =
+            match clone_or_update_repo_cache(&source.git_url, source.git_branch.as_deref()) {
+                Ok(dir) => dir,
+                Err(_) => continue,
+            };
 
         let repo = match git2::Repository::open(&cache_dir) {
             Ok(r) => r,
@@ -3442,9 +3542,8 @@ pub fn update_managed_skill_from_git(
     let connection = Connection::open(&index_path)?;
     init_schema(&connection)?;
 
-    let git_source = read_managed_git_source(&connection, &skill_path)?.ok_or_else(|| {
-        IndexError::Message("Skill does not have a Git source.".to_string())
-    })?;
+    let git_source = read_managed_git_source(&connection, &skill_path)?
+        .ok_or_else(|| IndexError::Message("Skill does not have a Git source.".to_string()))?;
 
     let cache_dir =
         clone_or_update_repo_cache(&git_source.git_url, git_source.git_branch.as_deref())?;
@@ -3518,7 +3617,9 @@ fn hash_file(path: &Path) -> Result<String, IndexError> {
     let mut file = fs::File::open(path)?;
     let mut buffer = [0_u8; 8192];
     loop {
-        let bytes_read = file.read(&mut buffer).map_err(|e| IndexError::Message(e.to_string()))?;
+        let bytes_read = file
+            .read(&mut buffer)
+            .map_err(|e| IndexError::Message(e.to_string()))?;
         if bytes_read == 0 {
             break;
         }
@@ -3719,7 +3820,9 @@ mod tests {
         let index_dir = TempDir::new().expect("index dir");
         let store_dir = TempDir::new().expect("store dir");
         write_skill(
-            &home.path().join("code/demo-project/.agents/skills/local-helper"),
+            &home
+                .path()
+                .join("code/demo-project/.agents/skills/local-helper"),
             "local-helper",
             "Hidden project skill",
         );
@@ -3772,11 +3875,13 @@ mod tests {
         assert!(adopted.skill_md.exists());
 
         let refreshed = refresh_skill_index(&scan_options, &index_options).expect("refresh");
-        assert!(refreshed
-            .summary
-            .skills
-            .iter()
-            .any(|skill| skill.source_type == SkillSourceType::Import));
+        assert!(
+            refreshed
+                .summary
+                .skills
+                .iter()
+                .any(|skill| skill.source_type == SkillSourceType::Import)
+        );
     }
 
     #[test]
@@ -3807,8 +3912,8 @@ mod tests {
         };
 
         refresh_skill_index(&scan_options, &index_options).expect("refresh cache");
-        let adopted = adopt_skill(skill_dir.clone(), &scan_options, &index_options)
-            .expect("adopt skill");
+        let adopted =
+            adopt_skill(skill_dir.clone(), &scan_options, &index_options).expect("adopt skill");
         let origins =
             load_managed_skill_origins(adopted.path.clone(), &index_options).expect("origins");
 
@@ -3848,7 +3953,10 @@ mod tests {
             .iter()
             .find(|status| status.scope == SkillScope::Project)
             .expect("project target");
-        assert_eq!(project_target.health_state, InstallHealthState::MissingTarget);
+        assert_eq!(
+            project_target.health_state,
+            InstallHealthState::MissingTarget
+        );
 
         let after_install = install_managed_skill(
             adopted.path.clone(),
@@ -3864,7 +3972,10 @@ mod tests {
             .find(|status| status.target_root == project_target.target_root)
             .expect("installed status");
         assert_eq!(installed_status.health_state, InstallHealthState::Healthy);
-        assert_eq!(installed_status.install_method, Some(InstallMethod::Symlink));
+        assert_eq!(
+            installed_status.install_method,
+            Some(InstallMethod::Symlink)
+        );
         assert!(installed_status.install_path.exists());
 
         let after_remove = remove_managed_skill_install(
@@ -3878,7 +3989,10 @@ mod tests {
             .iter()
             .find(|status| status.target_root == project_target.target_root)
             .expect("removed status");
-        assert_eq!(removed_status.health_state, InstallHealthState::NotInstalled);
+        assert_eq!(
+            removed_status.health_state,
+            InstallHealthState::NotInstalled
+        );
         assert!(!removed_status.install_path.exists());
     }
 
@@ -3888,17 +4002,23 @@ mod tests {
         let index_dir = TempDir::new().expect("index dir");
         let store_dir = TempDir::new().expect("store dir");
         write_skill(
-            &home.path().join("code/app-one/.agents/skills/frontend-design"),
+            &home
+                .path()
+                .join("code/app-one/.agents/skills/frontend-design"),
             "frontend-design",
             "UI system skill",
         );
         write_skill(
-            &home.path().join("code/app-two/.agents/skills/frontend-design"),
+            &home
+                .path()
+                .join("code/app-two/.agents/skills/frontend-design"),
             "frontend-design",
             "UI system skill",
         );
         write_skill(
-            &home.path().join("code/app-three/.agents/skills/frontend-design-v2"),
+            &home
+                .path()
+                .join("code/app-three/.agents/skills/frontend-design-v2"),
             "frontend-design",
             "UI system skill variant",
         );
@@ -3924,8 +4044,18 @@ mod tests {
         assert_eq!(family.display_name, "frontend-design");
         assert_eq!(family.variant_count, 2);
         assert_eq!(family.occurrence_count, 3);
-        assert!(family.candidates.iter().any(|candidate| candidate.occurrence_count == 2));
-        assert!(family.candidates.iter().any(|candidate| candidate.occurrence_count == 1));
+        assert!(
+            family
+                .candidates
+                .iter()
+                .any(|candidate| candidate.occurrence_count == 2)
+        );
+        assert!(
+            family
+                .candidates
+                .iter()
+                .any(|candidate| candidate.occurrence_count == 1)
+        );
     }
 
     #[test]
@@ -3989,16 +4119,25 @@ mod tests {
             .find(|inventory| inventory.path == project_target.target_root)
             .expect("broken target");
         assert_eq!(broken_target.needs_attention_count, 1);
-        assert_eq!(broken_target.health_state, InstallTargetHealthState::Warning);
+        assert_eq!(
+            broken_target.health_state,
+            InstallTargetHealthState::Warning
+        );
 
-        let repaired =
-            sync_install_target(project_target.target_root.clone(), &scan_options, &index_options)
-                .expect("sync target");
+        let repaired = sync_install_target(
+            project_target.target_root.clone(),
+            &scan_options,
+            &index_options,
+        )
+        .expect("sync target");
         let repaired_target = repaired
             .iter()
             .find(|inventory| inventory.path == project_target.target_root)
             .expect("repaired target");
-        assert_eq!(repaired_target.health_state, InstallTargetHealthState::Healthy);
+        assert_eq!(
+            repaired_target.health_state,
+            InstallTargetHealthState::Healthy
+        );
         assert!(project_target.install_path.exists());
     }
 

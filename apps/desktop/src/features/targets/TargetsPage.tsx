@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import styles from "../../App.module.css";
-import {
-  loadInstallTargetInventory,
-  repairInstallTarget,
-  syncInstallTarget,
-} from "../../api";
+import badges from "../../styles/_badges.module.css";
+import buttons from "../../styles/_buttons.module.css";
+import cards from "../../styles/_cards.module.css";
+import layout from "../../styles/_layout.module.css";
+import { EmptyState } from "../../components/EmptyState";
+import lists from "../../styles/_lists.module.css";
+import panels from "../../styles/_panels.module.css";
+import { loadInstallTargetInventory, repairInstallTarget, syncInstallTarget } from "../../api";
 import {
   agentLabel,
   copy,
@@ -22,10 +24,7 @@ type TargetsPageProps = {
   onOpenDirectory: (path: string) => void;
 };
 
-export function TargetsPage({
-  language,
-  onOpenDirectory,
-}: TargetsPageProps) {
+export function TargetsPage({ language, onOpenDirectory }: TargetsPageProps) {
   const text = copy[language];
   const [inventories, setInventories] = useState<InstallTargetInventory[]>([]);
   const [loadingInventory, setLoadingInventory] = useState(true);
@@ -57,15 +56,12 @@ export function TargetsPage({
     return () => {
       cancelled = true;
     };
-  }, [language, text.defaultScanError]);
+  }, [language]);
 
   const globalTargets = inventories.filter((target) => target.scope === "global");
   const projectTargets = inventories.filter((target) => target.scope === "project");
 
-  async function runTargetAction(
-    targetPath: string,
-    action: "sync" | "repair",
-  ) {
+  async function runTargetAction(targetPath: string, action: "sync" | "repair") {
     setTargetActionPath(targetPath);
     setInventoryError(null);
 
@@ -83,18 +79,18 @@ export function TargetsPage({
   }
 
   return (
-    <section className={styles.pageSection}>
-      <header className={styles.pageHeader}>
+    <section className={layout.pageSection}>
+      <header className={layout.pageHeader}>
         <div>
-          <p className={styles.sectionLabel}>{text.targetsTitle}</p>
-          <h1 className={styles.pageTitle}>{text.targetsBody}</h1>
+          <p className={layout.sectionLabel}>{text.targetsTitle}</p>
+          <h1 className={layout.pageTitle}>{text.targetsBody}</h1>
         </div>
       </header>
 
       {loadingInventory ? (
-        <div className={styles.emptyPanel}>{text.loadingTargets}</div>
+        <div className={panels.emptyPanel}>{text.loadingTargets}</div>
       ) : inventoryError ? (
-        <div className={styles.emptyPanel}>{inventoryError}</div>
+        <div className={panels.emptyPanel}>{inventoryError}</div>
       ) : (
         <>
           <TargetGroup
@@ -139,21 +135,17 @@ function TargetGroup({
   const text = copy[language];
 
   return (
-    <section className={styles.targetGroup}>
-      <div className={styles.panelHeader}>
+    <section className={layout.targetGroup}>
+      <div className={panels.panelHeader}>
         <div>
-          <p className={styles.sectionLabel}>{title}</p>
+          <p className={layout.sectionLabel}>{title}</p>
         </div>
       </div>
 
       {targets.length === 0 ? (
-        <div className={styles.emptyState}>
-          <span className={styles.emptyStateIcon}>🎯</span>
-          <strong>{text.emptyTargetsTitle}</strong>
-          <p>{text.emptyTargetsBody}</p>
-        </div>
+        <EmptyState icon="target" title={text.emptyTargetsTitle} body={text.emptyTargetsBody} />
       ) : (
-        <div className={styles.targetGrid}>
+        <div className={lists.targetGrid}>
           {targets.map((target) => (
             <TargetCard
               actionBusy={actionPath === target.path}
@@ -187,39 +179,42 @@ function TargetCard({
 }: TargetCardProps) {
   const text = copy[language];
   const [expanded, setExpanded] = useState(false);
-  const attentionItems = target.items.filter((item) =>
-    item.health_state === "broken" ||
-    item.health_state === "copied" ||
-    item.health_state === "not_installed",
+  const attentionItems = target.items.filter(
+    (item) =>
+      item.health_state === "broken" ||
+      item.health_state === "copied" ||
+      item.health_state === "not_installed"
   );
   const canRepair = attentionItems.length > 0;
   const canSync = target.items.some((item) => item.health_state !== "healthy");
 
   return (
-    <article className={styles.targetCard}>
-      <div className={styles.targetCardHeader}>
-        <div className={styles.badgeRow}>
-          <span className={styles.scopeBadge} data-scope={target.scope}>{scopeLabel(target.scope, language)}</span>
-          <span className={styles.agentBadge} data-agent={target.agent}>
+    <article className={cards.targetCard}>
+      <div className={cards.targetCardHeader}>
+        <div className={badges.badgeRow}>
+          <span className={badges.scopeBadge} data-scope={target.scope}>
+            {scopeLabel(target.scope, language)}
+          </span>
+          <span className={badges.agentBadge} data-agent={target.agent}>
             {agentLabel(target.agent)}
           </span>
         </div>
         <span
           className={
             target.health_state === "healthy"
-              ? styles.statusHealthy
+              ? badges.statusHealthy
               : target.health_state === "warning"
-                ? styles.statusWarning
-                : styles.statusMissing
+                ? badges.statusWarning
+                : badges.statusMissing
           }
         >
           {healthLabel(target.health_state, language)}
         </span>
       </div>
 
-      <p className={styles.directoryPath}>{target.path}</p>
+      <p className={layout.directoryPath}>{target.path}</p>
 
-      <div className={styles.targetInventoryMeta}>
+      <div className={cards.targetInventoryMeta}>
         <span>
           {target.managed_install_count} {text.managedInstallsLabel}
         </span>
@@ -231,10 +226,10 @@ function TargetCard({
         </span>
       </div>
 
-      <div className={styles.targetCardActions}>
+      <div className={cards.targetCardActions}>
         <button
           type="button"
-          className={styles.secondaryButton}
+          className={buttons.secondaryButton}
           onClick={() => onOpenDirectory(target.path)}
           disabled={!target.exists}
         >
@@ -242,7 +237,7 @@ function TargetCard({
         </button>
         <button
           type="button"
-          className={styles.secondaryButton}
+          className={buttons.secondaryButton}
           disabled={!canSync || actionBusy}
           onClick={() => void onRunAction(target.path, "sync")}
         >
@@ -250,7 +245,7 @@ function TargetCard({
         </button>
         <button
           type="button"
-          className={styles.primaryButton}
+          className={buttons.primaryButton}
           disabled={!canRepair || actionBusy}
           onClick={() => void onRunAction(target.path, "repair")}
         >
@@ -258,60 +253,61 @@ function TargetCard({
         </button>
       </div>
 
-      <div className={styles.targetRecordedList}>
-        <div className={styles.targetListHeader}>
-          <p className={styles.sectionLabel}>{text.brokenTargetsLabel}</p>
+      <div className={lists.targetRecordedList}>
+        <div className={lists.targetListHeader}>
+          <p className={layout.sectionLabel}>{text.brokenTargetsLabel}</p>
           {target.items.length > 0 && (
             <button
               type="button"
-              className={styles.ghostButton}
+              className={buttons.ghostButton}
               onClick={() => setExpanded((v) => !v)}
             >
-              {expanded
-                ? text.collapse
-                : `${text.expand} (${attentionItems.length})`}
+              {expanded ? text.collapse : `${text.expand} (${attentionItems.length})`}
             </button>
           )}
         </div>
         {!expanded ? null : attentionItems.length === 0 ? (
-          <div className={styles.emptyPanel}>{text.healthOkay}</div>
+          <div className={panels.emptyPanel}>{text.healthOkay}</div>
         ) : (
           attentionItems.map((item) => (
-            <article key={`${target.id}-${item.managed_skill_path}`} className={styles.targetItemCard}>
-              <div className={styles.discoveryGroupHeader}>
+            <article
+              key={`${target.id}-${item.managed_skill_path}`}
+              className={lists.targetItemCard}
+            >
+              <div className={layout.discoveryGroupHeader}>
                 <div>
                   <strong>{item.display_name}</strong>
-                  <p className={styles.helperText}>{item.family_key}</p>
+                  <p className={layout.helperText}>{item.family_key}</p>
                 </div>
                 <span
                   className={
                     item.health_state === "healthy"
-                      ? styles.statusHealthy
+                      ? badges.statusHealthy
                       : item.health_state === "missing_target"
-                        ? styles.statusMissing
-                        : styles.statusWarning
+                        ? badges.statusMissing
+                        : badges.statusWarning
                   }
                 >
                   {installHealthLabel(item.health_state, language)}
                 </span>
               </div>
-              <div className={styles.groupMetaRow}>
+              <div className={layout.groupMetaRow}>
                 {item.variant_label ? (
-                  <span className={styles.inlineTag}>
+                  <span className={badges.inlineTag}>
                     {text.variantLabelLabel}: {item.variant_label}
                   </span>
                 ) : null}
                 {item.pinned ? (
-                  <span className={styles.inlineTag}>{text.pinnedInstallLabel}</span>
+                  <span className={badges.inlineTag}>{text.pinnedInstallLabel}</span>
                 ) : null}
                 {item.is_family_default ? (
-                  <span className={styles.inlineTag}>{text.promotedVariantLabel}</span>
+                  <span className={badges.inlineTag}>{text.promotedVariantLabel}</span>
                 ) : null}
-                <span className={styles.inlineTag}>
+                <span className={badges.inlineTag}>
                   {installMethodLabel(item.install_method ?? "symlink", language)}
                 </span>
               </div>
-              <p className={styles.directoryPath}>{item.install_path}</p>
+              <p className={layout.directoryPath}>{item.install_path}</p>
             </article>
           ))
         )}

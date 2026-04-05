@@ -1,7 +1,12 @@
-import styles from "../App.module.css";
+import badges from "../styles/_badges.module.css";
+import layout from "../styles/_layout.module.css";
+import navigation from "../styles/_navigation.module.css";
 import { copy, type Language } from "../i18n";
 import type { AppTab } from "../types";
 import type { ThemeMode } from "../hooks/useTheme";
+import { version } from "../../package.json";
+import { LogoMark } from "./LogoMark";
+import { Tooltip } from "./Tooltip";
 
 type TopBarProps = {
   activeTab: AppTab;
@@ -35,20 +40,18 @@ export function TopBar({
   const text = copy[language];
 
   return (
-    <aside className={styles.topBar}>
-      <div className={styles.sidebarSection}>
-        <div className={styles.brand}>
-          <div className={styles.brandMark}>S</div>
-          <div className={styles.brandCopy}>
+    <aside className={navigation.topBar}>
+      <div className={navigation.sidebarSection}>
+        <div className={navigation.brand}>
+          <LogoMark size={28} />
+          <div className={navigation.brandCopy}>
             <strong>{text.appName}</strong>
-            <span className={styles.helperText}>
-              {text.brandTagline}
-            </span>
+            <span className={layout.helperText}>{text.brandTagline}</span>
           </div>
         </div>
       </div>
 
-      <nav className={styles.tabNav} role="tablist" aria-label={text.tabs.guide ?? "Primary"}>
+      <nav className={navigation.tabNav} role="tablist" aria-label={text.tabs.guide ?? "Primary"}>
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -57,12 +60,15 @@ export function TopBar({
             aria-selected={activeTab === tab}
             aria-current={activeTab === tab ? "page" : undefined}
             tabIndex={activeTab === tab ? 0 : -1}
-            className={activeTab === tab ? styles.tabButtonActive : styles.tabButton}
+            className={activeTab === tab ? navigation.tabButtonActive : navigation.tabButton}
             onClick={() => onTabChange(tab)}
           >
-            <span className={styles.tabButtonLabel}>{text.tabs[tab]}</span>
+            <span className={navigation.tabButtonLabel}>{text.tabs[tab]}</span>
             {tab === "library" && updateCount > 0 ? (
-              <span className={styles.navBadge} aria-label={`${updateCount} ${text.warningsInline ?? "updates"}`}>
+              <span
+                className={badges.navBadge}
+                aria-label={`${updateCount} ${text.warningsInline ?? "updates"}`}
+              >
                 {updateCount}
               </span>
             ) : null}
@@ -70,21 +76,21 @@ export function TopBar({
         ))}
       </nav>
 
-      <div className={styles.quickActions}>
-        <p className={styles.quickActionsLabel}>
-          {text.quickActionsTitle}
-        </p>
+      <div className={navigation.quickActions}>
+        <p className={navigation.quickActionsLabel}>{text.quickActionsTitle}</p>
+        <Tooltip content={text.tooltipRefreshIndex} position="right">
+          <button
+            type="button"
+            className={navigation.quickActionButton}
+            onClick={() => onRefreshIndex && onRefreshIndex()}
+          >
+            <span>↻</span>
+            {text.refreshIndex}
+          </button>
+        </Tooltip>
         <button
           type="button"
-          className={styles.quickActionButton}
-          onClick={() => onRefreshIndex && onRefreshIndex()}
-        >
-          <span>↻</span>
-          {text.refreshIndex}
-        </button>
-        <button
-          type="button"
-          className={styles.quickActionButton}
+          className={navigation.quickActionButton}
           onClick={() => onGoToDiscover && onGoToDiscover()}
         >
           <span>＋</span>
@@ -92,51 +98,62 @@ export function TopBar({
         </button>
       </div>
 
-      <div className={styles.sidebarStats}>
-        <div className={styles.statsCard}>
+      <div className={navigation.sidebarStats}>
+        <div className={navigation.statsCard}>
           <div>
             <strong>{skillCount}</strong>
-            <span style={{ display: "block" }}>
-              {text.managedSkillsLabel}
-            </span>
+            <span className={layout.displayBlock}>{text.managedSkillsLabel}</span>
           </div>
         </div>
 
-        <div
-          className={styles.statsCard}
-          onClick={onHealthClick}
-          style={{ cursor: "pointer" }}
-        >
-          <div>
-            <strong style={{ color: healthCount > 0 ? "var(--sm-danger)" : "var(--sm-success)" }}>
-              {healthCount > 0 ? healthCount : "OK"}
-            </strong>
-            <span style={{ display: "block" }}>
-              {text.workspaceHealthLabel}
-            </span>
-          </div>
-          <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 999,
-              background: healthCount > 0 ? "var(--sm-danger)" : "var(--sm-success)",
+        <Tooltip content={text.tooltipHealthStatus} position="right">
+          <div
+            className={`${navigation.statsCard} ${layout.cursorPointer}`}
+            onClick={onHealthClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onHealthClick();
+              }
             }}
-          />
-        </div>
+            role="button"
+            tabIndex={0}
+          >
+            <div>
+              <strong style={{ color: healthCount > 0 ? "var(--sm-danger)" : "var(--sm-success)" }}>
+                {healthCount > 0 ? healthCount : "OK"}
+              </strong>
+              <span className={layout.displayBlock}>{text.workspaceHealthLabel}</span>
+            </div>
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 999,
+                background: healthCount > 0 ? "var(--sm-danger)" : "var(--sm-success)",
+              }}
+            />
+          </div>
+        </Tooltip>
 
         {onThemeChange ? (
-          <div className={styles.miniThemeToggle}>
+          <div className={navigation.miniThemeToggle}>
             <button
               type="button"
-              className={themeMode === "light" ? styles.miniThemeButtonActive : styles.miniThemeButton}
+              className={
+                themeMode === "light"
+                  ? navigation.miniThemeButtonActive
+                  : navigation.miniThemeButton
+              }
               onClick={() => onThemeChange("light")}
             >
               {text.themeLight}
             </button>
             <button
               type="button"
-              className={themeMode === "dark" ? styles.miniThemeButtonActive : styles.miniThemeButton}
+              className={
+                themeMode === "dark" ? navigation.miniThemeButtonActive : navigation.miniThemeButton
+              }
               onClick={() => onThemeChange("dark")}
             >
               {text.themeDark}
@@ -144,7 +161,9 @@ export function TopBar({
           </div>
         ) : null}
 
-        <p className={styles.sidebarFootnote}>Skill Manager v0.1.0</p>
+        <p className={navigation.sidebarFootnote}>
+          {text.appName} v{version}
+        </p>
       </div>
     </aside>
   );

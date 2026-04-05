@@ -38,6 +38,7 @@ pub(crate) struct RuntimeSettingsSnapshot {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             commands::scan::scan_local_skills,
             commands::scan::load_skill_index,
@@ -50,6 +51,9 @@ pub fn run() {
             commands::import::search_skills_registry,
             commands::import::adopt_registry_skill,
             commands::import::save_registry_url,
+            commands::import::fetch_popular_skills,
+            commands::import::fetch_skill_readme,
+            commands::import::fetch_registry_stats,
             commands::skill::check_skill_updates,
             commands::skill::update_managed_skill,
             commands::skill::compare_skills,

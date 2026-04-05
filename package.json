@@ -3,9 +3,29 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "prepare": "husky",
     "desktop:install": "pnpm --dir apps/desktop install",
     "desktop:dev": "pnpm --dir apps/desktop tauri dev",
     "desktop:build": "pnpm --dir apps/desktop tauri build",
-    "cli:scan": "cargo run -p skill-manager-cli -- scan"
+    "cli:scan": "cargo run -p skill-manager-cli -- scan",
+    "lint": "pnpm --dir apps/desktop lint && cargo clippy --workspace -- -D warnings",
+    "format": "pnpm --dir apps/desktop format && cargo fmt --workspace",
+    "test": "pnpm --dir apps/desktop test && cargo test --workspace"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.rs": [
+      "cargo fmt --"
+    ],
+    "*.{ts,tsx,css,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0"
   }
 }

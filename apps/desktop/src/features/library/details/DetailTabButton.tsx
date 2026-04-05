@@ -1,4 +1,4 @@
-import styles from "../../../App.module.css";
+import buttons from "../../../styles/_buttons.module.css";
 
 type DetailTabButtonProps = {
   active: boolean;
@@ -10,7 +10,7 @@ export function DetailTabButton({ active, label, onClick }: DetailTabButtonProps
   return (
     <button
       type="button"
-      className={active ? styles.detailTabUnderlineActive : styles.detailTabUnderline}
+      className={active ? buttons.detailTabUnderlineActive : buttons.detailTabUnderline}
       onClick={onClick}
     >
       {label}

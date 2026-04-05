@@ -1,4 +1,5 @@
-import styles from "../../../App.module.css";
+import layout from "../../../styles/_layout.module.css";
+import panels from "../../../styles/_panels.module.css";
 import { copy, type Language } from "../../../i18n";
 
 type ContentTabProps = {
@@ -17,19 +18,19 @@ export function ContentTab({
   const text = copy[language];
 
   return (
-    <section className={styles.previewSection}>
-      <div className={styles.previewHeader}>
-        <p className={styles.sectionLabel}>{text.previewLabel}</p>
+    <section className={panels.previewSection}>
+      <div className={panels.previewHeader}>
+        <p className={layout.sectionLabel}>{text.previewLabel}</p>
       </div>
-      <div className={styles.previewFrame}>
+      <div className={panels.previewFrame}>
         {previewLoading ? (
-          <p className={styles.previewState}>{text.loadingPreview}</p>
+          <p className={panels.previewState}>{text.loadingPreview}</p>
         ) : previewError ? (
-          <p className={styles.previewState}>{previewError}</p>
+          <p className={panels.previewState}>{previewError}</p>
         ) : previewContent ? (
-          <pre className={styles.previewContent}>{previewContent}</pre>
+          <pre className={panels.previewContent}>{previewContent}</pre>
         ) : (
-          <p className={styles.previewState}>{text.previewUnavailable}</p>
+          <p className={panels.previewState}>{text.previewUnavailable}</p>
         )}
       </div>
     </section>

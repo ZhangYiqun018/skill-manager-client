@@ -2,12 +2,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use skill_manager_core::{
     AgentKind, AppError, IndexOptions, ScanOptions, SkillScope,
-    load_skill_index as load_skill_index_core,
-    scan_local_skills as scan_local_skills_core,
+    load_skill_index as load_skill_index_core, scan_local_skills as scan_local_skills_core,
 };
 
 const DEFAULT_REGISTRY_URL: &str = "https://skills.sh/api/search";
@@ -31,19 +29,23 @@ pub(crate) fn load_app_config() -> AppConfig {
     }
 }
 
-pub(crate) fn save_app_config(config: &AppConfig) -> Result<()> {
+pub(crate) fn save_app_config(config: &AppConfig) -> Result<(), AppError> {
     let path = config_path();
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    let contents = serde_json::to_string_pretty(config)?;
+    let contents =
+        serde_json::to_string_pretty(config).map_err(|e| AppError::validation(e.to_string()))?;
     fs::write(&path, contents)?;
     Ok(())
 }
 
 pub(crate) fn get_registry_url() -> String {
     let config = load_app_config();
-    config.registry_url.filter(|u| !u.trim().is_empty()).unwrap_or_else(|| DEFAULT_REGISTRY_URL.to_string())
+    config
+        .registry_url
+        .filter(|u| !u.trim().is_empty())
+        .unwrap_or_else(|| DEFAULT_REGISTRY_URL.to_string())
 }
 
 pub(crate) fn build_scan_options(project_root: Option<String>) -> ScanOptions {
@@ -62,11 +64,23 @@ where
 {
     match tauri::async_runtime::spawn_blocking(task).await {
         Ok(result) => result,
-        Err(join_error) => Err(AppError::unknown(format!("Background task failed: {join_error}"))),
+        Err(join_error) => Err(AppError::unknown(format!(
+            "Background task failed: {join_error}"
+        ))),
     }
 }
 
-pub(crate) fn collect_allowed_roots(scan_options: &ScanOptions, index_options: &IndexOptions) -> Vec<PathBuf> {
+pub(crate) fn log_err(context: &str) -> impl Fn(AppError) -> AppError + '_ {
+    move |err| {
+        tracing::error!(kind = ?err.kind, "{context}: {}", err.message);
+        err
+    }
+}
+
+pub(crate) fn collect_allowed_roots(
+    scan_options: &ScanOptions,
+    index_options: &IndexOptions,
+) -> Vec<PathBuf> {
     let mut allowed_roots = scan_local_skills_core(scan_options)
         .roots
         .into_iter()
@@ -88,7 +102,9 @@ pub(crate) fn collect_allowed_roots(scan_options: &ScanOptions, index_options: &
                 fs::canonicalize(&skill.path).ok(),
                 fs::canonicalize(&skill.skill_md).ok(),
                 fs::canonicalize(&skill.source_root).ok(),
-                skill.project_root.and_then(|path| fs::canonicalize(path).ok()),
+                skill
+                    .project_root
+                    .and_then(|path| fs::canonicalize(path).ok()),
             ]
             .into_iter()
             .flatten()
@@ -99,18 +115,23 @@ pub(crate) fn collect_allowed_roots(scan_options: &ScanOptions, index_options: &
     allowed_roots
 }
 
-pub(crate) fn validate_allowed_path_with_roots(path: &str, allowed_roots: &[PathBuf]) -> Result<PathBuf> {
-    let candidate =
-        fs::canonicalize(path).with_context(|| format!("Path does not exist: {path}"))?;
+pub(crate) fn validate_allowed_path_with_roots(
+    path: &str,
+    allowed_roots: &[PathBuf],
+) -> Result<PathBuf, AppError> {
+    let candidate = fs::canonicalize(path)
+        .map_err(|e| AppError::not_found(format!("Path does not exist: {path} ({e})")))?;
 
     if allowed_roots.iter().any(|root| candidate.starts_with(root)) {
         Ok(candidate)
     } else {
-        anyhow::bail!("Path is outside configured skill roots")
+        Err(AppError::validation(
+            "Path is outside configured skill roots".to_string(),
+        ))
     }
 }
 
-pub(crate) fn open_in_file_manager(path: &Path) -> Result<()> {
+pub(crate) fn open_in_file_manager(path: &Path) -> Result<(), AppError> {
     #[cfg(target_os = "macos")]
     {
         let mut command = Command::new("open");
@@ -150,49 +171,33 @@ pub(crate) fn open_in_file_manager(path: &Path) -> Result<()> {
     }
 }
 
-fn run_command(mut command: Command) -> Result<()> {
-    let status = command.status().context("Failed to launch file manager")?;
+fn run_command(mut command: Command) -> Result<(), AppError> {
+    let status = command
+        .status()
+        .map_err(|e| AppError::io(format!("Failed to launch file manager: {e}")))?;
     if status.success() {
         Ok(())
     } else {
-        anyhow::bail!("File manager command exited with status {status}")
+        Err(AppError::unknown(format!(
+            "File manager command exited with status {status}"
+        )))
     }
 }
 
-pub(crate) fn error_chain(error: impl std::fmt::Display) -> AppError {
-    let message = error.to_string();
-    let lower = message.to_lowercase();
-    if lower.contains("network") || lower.contains("request") || lower.contains("http") || lower.contains("timeout") || lower.contains("dns") {
-        AppError::network(message)
-    } else if lower.contains("not found") || lower.contains("no such file") || lower.contains("does not exist") {
-        AppError::not_found(message)
-    } else if lower.contains("permission") || lower.contains("denied") || lower.contains("access") {
-        AppError::permission_denied(message)
-    } else if lower.contains("already exists") || lower.contains("conflict") {
-        AppError::already_exists(message)
-    } else if lower.contains("cancelled") || lower.contains("canceled") || lower.contains("abort") {
-        AppError::cancelled(message)
-    } else if lower.contains("unsupported") || lower.contains("invalid") || lower.contains("validation") {
-        AppError::validation(message)
-    } else {
-        AppError::unknown(message)
-    }
-}
-
-pub(crate) fn parse_agent(value: &str) -> Result<AgentKind> {
+pub(crate) fn parse_agent(value: &str) -> Result<AgentKind, AppError> {
     match value {
         "agent" => Ok(AgentKind::Agent),
         "codex" => Ok(AgentKind::Codex),
         "claude_code" => Ok(AgentKind::ClaudeCode),
-        _ => anyhow::bail!("Unsupported agent: {value}"),
+        _ => Err(AppError::validation(format!("Unsupported agent: {value}"))),
     }
 }
 
-pub(crate) fn parse_scope(value: &str) -> Result<SkillScope> {
+pub(crate) fn parse_scope(value: &str) -> Result<SkillScope, AppError> {
     match value {
         "global" => Ok(SkillScope::Global),
         "project" => Ok(SkillScope::Project),
-        _ => anyhow::bail!("Unsupported scope: {value}"),
+        _ => Err(AppError::validation(format!("Unsupported scope: {value}"))),
     }
 }
 

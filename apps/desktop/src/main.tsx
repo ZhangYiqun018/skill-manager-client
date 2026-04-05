@@ -13,7 +13,9 @@ import { LANGUAGE_STORAGE_KEY } from "./i18n";
 import { ToastProvider } from "./components/ToastProvider";
 
 const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-const initialLanguage = savedLanguage === "zh" ? "zh" : "en";
+const detectedLanguage = navigator.language.startsWith("zh") ? "zh" : "en";
+const initialLanguage =
+  savedLanguage === "zh" || savedLanguage === "en" ? savedLanguage : detectedLanguage;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -22,5 +24,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <App />
       </ToastProvider>
     </ErrorBoundary>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

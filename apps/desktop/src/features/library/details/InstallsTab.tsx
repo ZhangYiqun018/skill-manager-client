@@ -1,4 +1,8 @@
-import styles from "../../../App.module.css";
+import badges from "../../../styles/_badges.module.css";
+import buttons from "../../../styles/_buttons.module.css";
+import layout from "../../../styles/_layout.module.css";
+import lists from "../../../styles/_lists.module.css";
+import panels from "../../../styles/_panels.module.css";
 import {
   agentLabel,
   copy,
@@ -20,7 +24,7 @@ type InstallsTabProps = {
   onRunAction: (
     targetId: string,
     targetRoot: string,
-    action: "install" | "remove" | "repair",
+    action: "install" | "remove" | "repair"
   ) => void;
   onOpenPath: (path: string) => void;
 };
@@ -38,27 +42,21 @@ export function InstallsTab({
   const text = copy[language];
 
   return (
-    <section className={styles.detailSection}>
+    <section className={panels.detailSection}>
       {installsLoading ? (
-        <div className={styles.emptyPanel}>{text.loadingInstalls}</div>
+        <div className={panels.emptyPanel}>{text.loadingInstalls}</div>
       ) : (
         <>
-          {installsError ? (
-            <div className={styles.inlineMessage}>{installsError}</div>
-          ) : null}
+          {installsError ? <div className={panels.inlineMessage}>{installsError}</div> : null}
 
-          <div className={styles.variantFamilyPanel} style={{ marginBottom: 20 }}>
-            <button
-              type="button"
-              className={styles.primaryButton}
-              onClick={onShowInstallModal}
-            >
+          <div className={`${lists.variantFamilyPanel} ${layout.mb20}`}>
+            <button type="button" className={buttons.primaryButton} onClick={onShowInstallModal}>
               {text.installToCustomLocation}
             </button>
           </div>
 
           {installStatuses && installStatuses.length > 0 ? (
-            <div className={styles.installGrid}>
+            <div className={panels.installGrid}>
               {installStatuses.map((status) => (
                 <InstallCard
                   key={status.target_id}
@@ -73,7 +71,7 @@ export function InstallsTab({
               ))}
             </div>
           ) : (
-            <div className={styles.emptyPanel}>{text.noTargetsBody}</div>
+            <div className={panels.emptyPanel}>{text.noTargetsBody}</div>
           )}
         </>
       )}
@@ -89,19 +87,13 @@ type InstallCardProps = {
   status: SkillInstallStatus;
 };
 
-function InstallCard({
-  actionBusy,
-  language,
-  onOpenPath,
-  onRunAction,
-  status,
-}: InstallCardProps) {
+function InstallCard({ actionBusy, language, onOpenPath, onRunAction, status }: InstallCardProps) {
   const text = copy[language];
   const action = primaryActionForStatus(status);
 
   return (
-    <article className={styles.installCard}>
-      <div className={styles.installCardHeader}>
+    <article className={panels.installCard}>
+      <div className={panels.installCardHeader}>
         <div>
           <strong>{status.target_root}</strong>
           <p>
@@ -112,17 +104,17 @@ function InstallCard({
         <span
           className={
             status.health_state === "healthy" || status.health_state === "copied"
-              ? styles.statusHealthy
+              ? badges.statusHealthy
               : status.health_state === "conflict" || status.health_state === "broken"
-                ? styles.statusWarning
-                : styles.statusMissing
+                ? badges.statusWarning
+                : badges.statusMissing
           }
         >
           {installHealthLabel(status.health_state, language)}
         </span>
       </div>
 
-      <div className={styles.metaGrid}>
+      <div className={layout.metaGrid}>
         <div>
           <span>{text.installPath}</span>
           <strong>{status.install_path}</strong>
@@ -130,9 +122,7 @@ function InstallCard({
         <div>
           <span>{text.installMethodLabel}</span>
           <strong>
-            {status.install_method
-              ? installMethodLabel(status.install_method, language)
-              : "—"}
+            {status.install_method ? installMethodLabel(status.install_method, language) : "—"}
           </strong>
         </div>
         <div>
@@ -166,19 +156,18 @@ function InstallCard({
       </div>
 
       {status.health_state === "conflict" ? (
-        <p className={styles.helperText}>{text.conflictInstallBody}</p>
+        <p className={layout.helperText}>{text.conflictInstallBody}</p>
       ) : null}
 
-      <div className={styles.installCardActions}>
+      <div className={panels.installCardActions}>
         <button
           type="button"
-          className={styles.secondaryButton}
+          className={buttons.secondaryButton}
           onClick={() =>
             onOpenPath(
-              status.health_state === "not_installed" ||
-                status.health_state === "missing_target"
+              status.health_state === "not_installed" || status.health_state === "missing_target"
                 ? status.target_root
-                : status.install_path,
+                : status.install_path
             )
           }
         >
@@ -188,7 +177,7 @@ function InstallCard({
         {action ? (
           <button
             type="button"
-            className={styles.primaryButton}
+            className={buttons.primaryButton}
             disabled={actionBusy}
             onClick={() => void onRunAction(action)}
           >
@@ -215,7 +204,7 @@ function InstallCard({
 }
 
 function primaryActionForStatus(
-  status: SkillInstallStatus,
+  status: SkillInstallStatus
 ): "install" | "remove" | "repair" | null {
   if (status.health_state === "not_installed" || status.health_state === "missing_target") {
     return "install";

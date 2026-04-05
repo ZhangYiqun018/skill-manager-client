@@ -1,10 +1,25 @@
 import { useEffect, useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import styles from "../../App.module.css";
-import { loadRuntimeSettings, listCustomTargets, addCustomTarget, removeCustomTarget, saveRegistryUrl } from "../../api";
+import badges from "../../styles/_badges.module.css";
+import buttons from "../../styles/_buttons.module.css";
+import cards from "../../styles/_cards.module.css";
+import forms from "../../styles/_forms.module.css";
+import layout from "../../styles/_layout.module.css";
+import lists from "../../styles/_lists.module.css";
+import navigation from "../../styles/_navigation.module.css";
+import panels from "../../styles/_panels.module.css";
+import {
+  loadRuntimeSettings,
+  listCustomTargets,
+  addCustomTarget,
+  removeCustomTarget,
+  saveRegistryUrl,
+} from "../../api";
 import { agentLabel, copy, scopeLabel, friendlyErrorMessage, type Language } from "../../i18n";
 import type { CustomInstallTarget, IndexStatus, RuntimeSettingsSnapshot } from "../../types";
 import type { ThemeMode } from "../../hooks/useTheme";
+import { ConfirmModal } from "../../components/ConfirmModal";
+import { useToast } from "../../components/ToastProvider";
 
 type SettingsPageProps = {
   indexStatus: IndexStatus | null;
@@ -22,8 +37,8 @@ export function SettingsPage({
   onThemeChange,
 }: SettingsPageProps) {
   const text = copy[language];
-  const [runtimeSettings, setRuntimeSettings] =
-    useState<RuntimeSettingsSnapshot | null>(null);
+  const { showToast } = useToast();
+  const [runtimeSettings, setRuntimeSettings] = useState<RuntimeSettingsSnapshot | null>(null);
 
   const [customTargets, setCustomTargets] = useState<CustomInstallTarget[]>([]);
   const [customTargetsLoading, setCustomTargetsLoading] = useState(false);
@@ -34,6 +49,7 @@ export function SettingsPage({
   const [newTargetScope, setNewTargetScope] = useState<"global" | "project">("global");
   const [newTargetLabel, setNewTargetLabel] = useState("");
   const [addTargetBusy, setAddTargetBusy] = useState(false);
+  const [confirmDeleteTargetId, setConfirmDeleteTargetId] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +90,7 @@ export function SettingsPage({
     return () => {
       cancelled = true;
     };
-  }, [language, text.defaultScanError]);
+  }, [language]);
 
   async function handleSelectFolder() {
     const selected = await openDialog({
@@ -97,7 +113,7 @@ export function SettingsPage({
         newTargetPath.trim(),
         newTargetAgent,
         newTargetScope,
-        newTargetLabel.trim() || null,
+        newTargetLabel.trim() || null
       );
       setCustomTargets((current) => [added, ...current]);
       setNewTargetPath("");
@@ -111,9 +127,6 @@ export function SettingsPage({
   }
 
   async function handleRemoveTarget(id: number) {
-    if (!window.confirm(text.customTargetDeleteConfirm)) {
-      return;
-    }
     setCustomTargetsError(null);
     try {
       await removeCustomTarget(id);
@@ -124,68 +137,76 @@ export function SettingsPage({
   }
 
   return (
-    <section className={styles.pageSection}>
-      <header className={styles.pageHeader}>
+    <section className={layout.pageSection}>
+      <header className={layout.pageHeader}>
         <div>
-          <p className={styles.sectionLabel}>{text.settingsTitle}</p>
-          <h1 className={styles.pageTitle}>{text.settingsBody}</h1>
+          <p className={layout.sectionLabel}>{text.settingsTitle}</p>
+          <h1 className={layout.pageTitle}>{text.settingsBody}</h1>
         </div>
       </header>
 
-      <div className={styles.settingsGrid}>
-        <article className={styles.settingsCard}>
-          <p className={styles.sectionLabel}>{text.activeLanguage}</p>
-          <div className={styles.languageSwitchInline}>
+      <div className={layout.settingsGrid}>
+        {/* Appearance group */}
+        <article className={cards.settingsCard}>
+          <p className={layout.sectionLabel}>{text.activeLanguage}</p>
+          <div className={navigation.languageSwitchInline}>
             <button
               type="button"
-              className={language === "en" ? styles.languageButtonActive : styles.languageButton}
+              className={language === "en" ? buttons.languageButtonActive : buttons.languageButton}
               onClick={() => onLanguageChange("en")}
             >
               {text.english}
             </button>
             <button
               type="button"
-              className={language === "zh" ? styles.languageButtonActive : styles.languageButton}
+              className={language === "zh" ? buttons.languageButtonActive : buttons.languageButton}
               onClick={() => onLanguageChange("zh")}
             >
               {text.chinese}
             </button>
           </div>
-          <p className={styles.helperText}>{text.savedLanguageHint}</p>
+          <p className={layout.helperText}>{text.savedLanguageHint}</p>
         </article>
 
-        <article className={styles.settingsCard}>
-          <p className={styles.sectionLabel}>{text.appearanceTitle}</p>
-          <div className={styles.languageSwitchInline}>
+        <article className={cards.settingsCard}>
+          <p className={layout.sectionLabel}>{text.appearanceTitle}</p>
+          <div className={navigation.languageSwitchInline}>
             <button
               type="button"
-              className={themeMode === "system" ? styles.languageButtonActive : styles.languageButton}
+              className={
+                themeMode === "system" ? buttons.languageButtonActive : buttons.languageButton
+              }
               onClick={() => onThemeChange("system")}
             >
               {text.themeSystem}
             </button>
             <button
               type="button"
-              className={themeMode === "light" ? styles.languageButtonActive : styles.languageButton}
+              className={
+                themeMode === "light" ? buttons.languageButtonActive : buttons.languageButton
+              }
               onClick={() => onThemeChange("light")}
             >
               {text.themeLight}
             </button>
             <button
               type="button"
-              className={themeMode === "dark" ? styles.languageButtonActive : styles.languageButton}
+              className={
+                themeMode === "dark" ? buttons.languageButtonActive : buttons.languageButton
+              }
               onClick={() => onThemeChange("dark")}
             >
               {text.themeDark}
             </button>
           </div>
-          <p className={styles.helperText}>{text.savedThemeHint}</p>
+          <p className={layout.helperText}>{text.savedThemeHint}</p>
         </article>
 
-        <article className={styles.settingsCard}>
-          <p className={styles.sectionLabel}>{text.cacheStatusTitle}</p>
-          <p className={styles.helperText}>{text.cacheStatusBody}</p>
-          <div className={styles.metaGrid}>
+        {/* System group */}
+        <article className={cards.settingsCard}>
+          <p className={layout.sectionLabel}>{text.cacheStatusTitle}</p>
+          <p className={layout.helperText}>{text.cacheStatusBody}</p>
+          <div className={layout.metaGrid}>
             <div>
               <span>{text.indexPathLabel}</span>
               <strong>{indexStatus?.index_path ?? "—"}</strong>
@@ -209,13 +230,12 @@ export function SettingsPage({
           </div>
         </article>
 
-        <article className={styles.settingsCard}>
-          <p className={styles.sectionLabel}>{text.registryUrlTitle}</p>
-          <p className={styles.helperText}>{text.registryUrlBody}</p>
-          <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
+        <article className={cards.settingsCard}>
+          <p className={layout.sectionLabel}>{text.registryUrlTitle}</p>
+          <p className={layout.helperText}>{text.registryUrlBody}</p>
+          <div className={`${forms.formInputRow} ${layout.mt12}`}>
             <input
               type="text"
-              className={styles.searchField}
               value={runtimeSettings?.registry_url ?? ""}
               onChange={(e) =>
                 setRuntimeSettings((prev) =>
@@ -224,63 +244,65 @@ export function SettingsPage({
               }
               onBlur={() => {
                 const url = runtimeSettings?.registry_url ?? "";
-                void saveRegistryUrl(url).catch((error: unknown) => {
-                  setCustomTargetsError(friendlyErrorMessage(error, language));
-                });
+                void saveRegistryUrl(url)
+                  .then(() => {
+                    showToast(text.registryUrlSaved, "success");
+                  })
+                  .catch((error: unknown) => {
+                    showToast(friendlyErrorMessage(error, language), "error");
+                  });
               }}
               placeholder="https://skills.sh/api/search"
-              style={{ flex: 1 }}
+              className={`${forms.searchField} ${layout.flexGrow}`}
             />
           </div>
         </article>
 
-        <article className={styles.settingsCard}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <p className={styles.sectionLabel}>{text.manageCustomTargetsTitle}</p>
+        {/* Custom targets — full width */}
+        <article className={`${cards.settingsCard} ${layout.fullWidthCard}`}>
+          <div className={layout.cardHeaderRow}>
+            <p className={layout.sectionLabel}>{text.manageCustomTargetsTitle}</p>
             <button
               type="button"
-              className={styles.secondaryButton}
+              className={buttons.secondaryButton}
               onClick={() => setAddingTarget((v) => !v)}
             >
               {addingTarget ? text.cancelVariantLabel : text.addCustomTarget}
             </button>
           </div>
-          <p className={styles.helperText}>{text.manageCustomTargetsBody}</p>
+          <p className={layout.helperText}>{text.manageCustomTargetsBody}</p>
 
           {addingTarget ? (
-            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div className={forms.addTargetForm}>
+              <div className={forms.formInputRow}>
                 <input
                   type="text"
-                  className={styles.searchField}
                   value={newTargetPath}
                   onChange={(e) => setNewTargetPath(e.target.value)}
                   placeholder={text.customTargetPath}
-                  style={{ flex: 1 }}
+                  className={`${forms.searchField} ${layout.flexGrow}`}
                 />
                 <button
                   type="button"
-                  className={styles.secondaryButton}
+                  className={buttons.secondaryButton}
                   onClick={() => void handleSelectFolder()}
                 >
                   {text.selectFolder}
                 </button>
               </div>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className={forms.formSelectRow}>
                 <select
-                  className={styles.searchField}
                   value={newTargetAgent}
                   onChange={(e) => setNewTargetAgent(e.target.value as "codex" | "claude_code")}
-                  style={{ flex: 1 }}
+                  className={`${forms.searchField} ${layout.flexGrow}`}
                 >
                   <option value="codex">{agentLabel("codex")}</option>
                   <option value="claude_code">{agentLabel("claude_code")}</option>
                 </select>
                 <select
-                  className={styles.searchField}
                   value={newTargetScope}
                   onChange={(e) => setNewTargetScope(e.target.value as "global" | "project")}
-                  style={{ flex: 1 }}
+                  className={`${forms.searchField} ${layout.flexGrow}`}
                 >
                   <option value="global">{scopeLabel("global", language)}</option>
                   <option value="project">{scopeLabel("project", language)}</option>
@@ -288,15 +310,15 @@ export function SettingsPage({
               </div>
               <input
                 type="text"
-                className={styles.searchField}
+                className={forms.searchField}
                 value={newTargetLabel}
                 onChange={(e) => setNewTargetLabel(e.target.value)}
                 placeholder={text.customTargetLabel}
               />
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <div className={forms.formActionRow}>
                 <button
                   type="button"
-                  className={styles.secondaryButton}
+                  className={buttons.secondaryButton}
                   onClick={() => {
                     setAddingTarget(false);
                     setNewTargetPath("");
@@ -308,7 +330,7 @@ export function SettingsPage({
                 </button>
                 <button
                   type="button"
-                  className={styles.primaryButton}
+                  className={buttons.primaryButton}
                   disabled={!newTargetPath.trim() || addTargetBusy}
                   onClick={() => void handleAddTarget()}
                 >
@@ -319,33 +341,29 @@ export function SettingsPage({
           ) : null}
 
           {customTargetsError ? (
-            <div className={styles.emptyPanel} style={{ marginTop: 12 }}>
-              {customTargetsError}
-            </div>
+            <div className={`${panels.emptyPanel} ${layout.mt12}`}>{customTargetsError}</div>
           ) : null}
 
-          <div style={{ marginTop: 16 }}>
+          <div className={layout.mt16}>
             {customTargetsLoading ? (
-              <div className={styles.emptyPanel}>{text.loadingPreview}</div>
+              <div className={panels.emptyPanel}>{text.loadingPreview}</div>
             ) : customTargets.length === 0 ? (
-              <div className={styles.emptyPanel}>{text.noCustomTargets}</div>
+              <div className={panels.emptyPanel}>{text.noCustomTargets}</div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div className={lists.targetsList}>
                 {customTargets.map((target) => (
-                  <div
-                    key={target.id}
-                    className={styles.targetItemCard}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div key={target.id} className={`${lists.targetItemCard} ${lists.targetItemRow}`}>
+                    <div className={lists.targetInfoMin}>
+                      <strong className={lists.targetLabelEllipsis}>
                         {target.label || target.path}
                       </strong>
-                      <div className={styles.groupMetaRow}>
-                        <span className={styles.inlineTag}>{agentLabel(target.agent)}</span>
-                        <span className={styles.inlineTag}>{scopeLabel(target.scope, language)}</span>
+                      <div className={layout.groupMetaRow}>
+                        <span className={badges.inlineTag}>{agentLabel(target.agent)}</span>
+                        <span className={badges.inlineTag}>
+                          {scopeLabel(target.scope, language)}
+                        </span>
                         {target.label ? (
-                          <span className={styles.inlineTag} style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <span className={`${badges.inlineTag} ${lists.targetPathEllipsis}`}>
                             {target.path}
                           </span>
                         ) : null}
@@ -353,8 +371,8 @@ export function SettingsPage({
                     </div>
                     <button
                       type="button"
-                      className={styles.secondaryButton}
-                      onClick={() => void handleRemoveTarget(target.id)}
+                      className={buttons.secondaryButton}
+                      onClick={() => setConfirmDeleteTargetId(target.id)}
                     >
                       {text.removeCustomTarget}
                     </button>
@@ -365,6 +383,21 @@ export function SettingsPage({
           </div>
         </article>
       </div>
+
+      <ConfirmModal
+        open={confirmDeleteTargetId !== null}
+        title={text.customTargetDeleteConfirm}
+        body={text.customTargetDeleteConfirm}
+        actionLabel={text.removeCustomTarget}
+        cancelLabel={text.cancel}
+        onCancel={() => setConfirmDeleteTargetId(null)}
+        onConfirm={() => {
+          if (confirmDeleteTargetId !== null) {
+            void handleRemoveTarget(confirmDeleteTargetId);
+          }
+          setConfirmDeleteTargetId(null);
+        }}
+      />
     </section>
   );
 }

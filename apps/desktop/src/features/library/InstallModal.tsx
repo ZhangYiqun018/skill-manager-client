@@ -1,18 +1,16 @@
 import { useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import styles from "../../App.module.css";
+import buttons from "../../styles/_buttons.module.css";
+import forms from "../../styles/_forms.module.css";
 import { agentLabel, copy, type Language } from "../../i18n";
 import type { AgentKind, SkillItem } from "../../types";
+import styles from "./InstallModal.module.css";
 
 type InstallModalProps = {
   skill: SkillItem;
   language: Language;
   onClose: () => void;
-  onInstall: (
-    path: string,
-    agents: AgentKind[],
-    method: "symlink" | "copy",
-  ) => Promise<void>;
+  onInstall: (path: string, agents: AgentKind[], method: "symlink" | "copy") => Promise<void>;
 };
 
 const ALL_AGENTS: AgentKind[] = ["codex", "claude_code", "agent"];
@@ -31,13 +29,13 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
         setPath(selected);
       }
     } catch {
-      // Some environments block the dialog; ignore
+      // Dialog can be blocked in some sandboxed environments — safe to ignore
     }
   }
 
   function toggleAgent(agent: AgentKind) {
     setAgents((prev) =>
-      prev.includes(agent) ? prev.filter((a) => a !== agent) : [...prev, agent],
+      prev.includes(agent) ? prev.filter((a) => a !== agent) : [...prev, agent]
     );
   }
 
@@ -53,63 +51,39 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
 
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1200,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(0,0,0,0.35)",
-        backdropFilter: "blur(2px)",
-      }}
+      className={styles.overlay}
+      role="presentation"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div
-        style={{
-          width: "min(520px, 92vw)",
-          maxHeight: "90vh",
-          overflow: "auto",
-          background: "var(--sm-surface)",
-          border: "1px solid var(--sm-border)",
-          borderRadius: 14,
-          padding: 24,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
-        }}
-      >
-        <p className={styles.sectionLabel} style={{ marginBottom: 6 }}>
-          {text.customInstallTitle}
-        </p>
-        <p className={styles.helperText} style={{ marginBottom: 16 }}>
-          {skill.display_name}
-        </p>
+      <div className={styles.dialog} role="dialog" aria-modal="true">
+        <div className={styles.dialogHeader}>
+          <p className={styles.dialogTitle}>{text.customInstallTitle}</p>
+          <p className={styles.dialogSubtitle}>{skill.display_name}</p>
+        </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div className={styles.dialogBody}>
+          <div className={styles.formRow}>
             <input
               type="text"
-              className={styles.searchField}
+              className={forms.searchField}
               value={path}
               onChange={(e) => setPath(e.target.value)}
               placeholder={text.customTargetPath}
-              style={{ flex: 1 }}
             />
             <button
               type="button"
-              className={styles.secondaryButton}
+              className={buttons.secondaryButton}
               onClick={() => void handleSelectFolder()}
             >
               {text.selectFolder}
             </button>
           </div>
 
-          <div>
-            <p style={{ fontSize: "0.8rem", color: "var(--sm-text-secondary)", marginBottom: 6 }}>
-              {text.customInstallAgent}
-            </p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className={styles.fieldGroup}>
+            <p className={styles.fieldLabel}>{text.customInstallAgent}</p>
+            <div className={styles.toggleGroup}>
               {ALL_AGENTS.map((a) => (
                 <AgentToggleButton
                   key={a}
@@ -121,24 +95,35 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
             </div>
           </div>
 
-          <div>
-            <p style={{ fontSize: "0.8rem", color: "var(--sm-text-secondary)", marginBottom: 6 }}>
-              {text.customInstallMethod}
-            </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <AgentToggleButton active={method === "symlink"} label={text.installMethodSymlink} onClick={() => setMethod("symlink")} />
-              <AgentToggleButton active={method === "copy"} label={text.installMethodCopy} onClick={() => setMethod("copy")} />
+          <div className={styles.fieldGroup}>
+            <p className={styles.fieldLabel}>{text.customInstallMethod}</p>
+            <div className={styles.toggleGroup}>
+              <AgentToggleButton
+                active={method === "symlink"}
+                label={text.installMethodSymlink}
+                onClick={() => setMethod("symlink")}
+              />
+              <AgentToggleButton
+                active={method === "copy"}
+                label={text.installMethodCopy}
+                onClick={() => setMethod("copy")}
+              />
             </div>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 20 }}>
-          <button type="button" className={styles.secondaryButton} onClick={onClose} disabled={busy}>
+        <div className={styles.dialogFooter}>
+          <button
+            type="button"
+            className={buttons.secondaryButton}
+            onClick={onClose}
+            disabled={busy}
+          >
             {text.cancelVariantLabel}
           </button>
           <button
             type="button"
-            className={styles.primaryButton}
+            className={buttons.primaryButton}
             disabled={!path.trim() || agents.length === 0 || busy}
             onClick={() => void handleConfirm()}
           >
@@ -163,16 +148,7 @@ function AgentToggleButton({
     <button
       type="button"
       onClick={onClick}
-      style={{
-        padding: "8px 14px",
-        borderRadius: 8,
-        border: active ? "1px solid var(--sm-primary)" : "1px solid var(--sm-border)",
-        background: active ? "var(--sm-primary)" : "var(--sm-surface-hover)",
-        color: active ? "#ffffff" : "var(--sm-text)",
-        fontWeight: 600,
-        fontSize: "0.9rem",
-        cursor: "pointer",
-      }}
+      className={active ? styles.toggleButtonActive : styles.toggleButton}
     >
       {label}
     </button>

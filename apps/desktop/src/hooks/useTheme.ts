@@ -41,10 +41,6 @@ export function useTheme() {
     return () => media.removeEventListener("change", listener);
   }, [themeMode]);
 
-  // Apply once on mount and when themeMode changes explicitly
-  useEffect(() => {
-    applyTheme(themeMode);
-  }, [themeMode]);
-
   return { themeMode, setThemeMode };
 }
+// test

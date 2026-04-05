@@ -214,6 +214,17 @@ impl AppError {
     }
 }
 
+impl From<std::io::Error> for AppError {
+    fn from(error: std::io::Error) -> Self {
+        match error.kind() {
+            std::io::ErrorKind::NotFound => Self::not_found(error.to_string()),
+            std::io::ErrorKind::PermissionDenied => Self::permission_denied(error.to_string()),
+            std::io::ErrorKind::AlreadyExists => Self::already_exists(error.to_string()),
+            _ => Self::io(error.to_string()),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum InstallHealthState {

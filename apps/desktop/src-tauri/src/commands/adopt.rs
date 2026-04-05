@@ -5,7 +5,10 @@ use skill_manager_core::{
     load_skill_index as load_skill_index_core,
 };
 
-use crate::utils::{build_scan_options, collect_allowed_roots, error_chain, run_blocking, validate_allowed_path_with_roots};
+use crate::utils::{
+    build_scan_options, collect_allowed_roots, log_err, run_blocking,
+    validate_allowed_path_with_roots,
+};
 
 #[tauri::command]
 #[tracing::instrument(skip(project_root))]
@@ -18,12 +21,12 @@ pub async fn adopt_skill(
     run_blocking(move || {
         let index_options = IndexOptions::default();
         let allowed_roots = collect_allowed_roots(&scan_options, &index_options);
-        let allowed_path =
-            validate_allowed_path_with_roots(&path, &allowed_roots).map_err(error_chain)?;
-        adopt_skill_core(allowed_path, &scan_options, &index_options).map_err(error_chain)?;
-        load_skill_index_core(&scan_options, &index_options).map_err(error_chain)
+        let allowed_path = validate_allowed_path_with_roots(&path, &allowed_roots)?;
+        adopt_skill_core(allowed_path, &scan_options, &index_options)?;
+        Ok(load_skill_index_core(&scan_options, &index_options)?)
     })
     .await
+    .map_err(log_err("adopt_skill"))
 }
 
 #[tauri::command]
@@ -39,12 +42,13 @@ pub async fn adopt_skills(
         let allowed_roots = collect_allowed_roots(&scan_options, &index_options);
         let validated_paths = paths
             .into_iter()
-            .map(|path| validate_allowed_path_with_roots(&path, &allowed_roots).map_err(error_chain))
+            .map(|path| validate_allowed_path_with_roots(&path, &allowed_roots))
             .collect::<Result<Vec<_>, _>>()?;
-        adopt_skills_core(validated_paths, &scan_options, &index_options).map_err(error_chain)?;
-        load_skill_index_core(&scan_options, &index_options).map_err(error_chain)
+        adopt_skills_core(validated_paths, &scan_options, &index_options)?;
+        Ok(load_skill_index_core(&scan_options, &index_options)?)
     })
     .await
+    .map_err(log_err("adopt_skills"))
 }
 
 #[tauri::command]
@@ -62,14 +66,14 @@ pub async fn apply_adoption_resolutions(
         let validated = resolutions
             .into_iter()
             .map(|resolution| {
-                let source_path =
-                    validate_allowed_path_with_roots(&resolution.source_path.to_string_lossy(), &allowed_roots)
-                        .map_err(error_chain)?;
+                let source_path = validate_allowed_path_with_roots(
+                    &resolution.source_path.to_string_lossy(),
+                    &allowed_roots,
+                )?;
                 let merge_target_path = resolution
                     .merge_target_path
                     .map(|path| {
                         validate_allowed_path_with_roots(&path.to_string_lossy(), &allowed_roots)
-                            .map_err(error_chain)
                     })
                     .transpose()?;
 
@@ -82,7 +86,12 @@ pub async fn apply_adoption_resolutions(
             })
             .collect::<Result<Vec<_>, AppError>>()?;
 
-        apply_adoption_resolutions_core(validated, &scan_options, &index_options).map_err(error_chain)
+        Ok(apply_adoption_resolutions_core(
+            validated,
+            &scan_options,
+            &index_options,
+        )?)
     })
     .await
+    .map_err(log_err("apply_adoption_resolutions"))
 }

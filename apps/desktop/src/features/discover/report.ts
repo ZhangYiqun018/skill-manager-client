@@ -1,15 +1,15 @@
 import type {
+  AgentKind,
   DiscoveryGroup,
   DiscoveryGroupKind,
-  DiscoveryPreset,
-  DiscoveryRecord,
   DiscoveryReport,
   DiscoveryReviewState,
+  SkillScope,
 } from "../../types";
 
 export function filterDiscoveryReport(
   report: DiscoveryReport,
-  searchQuery: string,
+  searchQuery: string
 ): DiscoveryReport {
   const normalizedQuery = searchQuery.trim().toLowerCase();
   if (normalizedQuery.length === 0) {
@@ -22,49 +22,59 @@ export function filterDiscoveryReport(
 
   return {
     summary: {
-      occurrence_count: allGroups.reduce(
-        (count, group) => count + group.occurrence_count,
-        0,
-      ),
+      occurrence_count: allGroups.reduce((count, group) => count + group.occurrence_count, 0),
       exact_duplicate_group_count: allGroups.reduce(
         (count, group) =>
-          count +
-          group.candidates.filter((candidate) => candidate.occurrence_count > 1).length,
-        0,
+          count + group.candidates.filter((candidate) => candidate.occurrence_count > 1).length,
+        0
       ),
       family_count: allGroups.length,
       variant_family_count: allGroups.filter((group) => group.kind === "variant").length,
     },
     all_groups: allGroups,
     unique_groups: allGroups.filter((group) => group.kind === "unique"),
-    exact_duplicate_groups: allGroups.filter(
-      (group) => group.kind === "exact_duplicate",
-    ),
+    exact_duplicate_groups: allGroups.filter((group) => group.kind === "exact_duplicate"),
     variant_groups: allGroups.filter((group) => group.kind === "variant"),
   };
 }
 
-export function buildPresetSelection(
+export function filterGroupsByAgentAndScope(
   groups: DiscoveryGroup[],
-  preset: DiscoveryPreset,
-): string[] {
-  const selected = new Set<string>();
-
-  for (const group of groups) {
-    for (const candidate of group.candidates) {
-      if (matchesPreset(candidate.representative, preset)) {
-        selected.add(candidate.representative.path);
-      }
-    }
+  agentFilter: AgentKind | "all",
+  scopeFilter: SkillScope | "all"
+): DiscoveryGroup[] {
+  if (agentFilter === "all" && scopeFilter === "all") {
+    return groups;
   }
 
-  return Array.from(selected);
+  return groups
+    .map((group) => {
+      const candidates = group.candidates.filter((c) => {
+        const agentMatch = agentFilter === "all" || c.representative.agent === agentFilter;
+        const scopeMatch = scopeFilter === "all" || c.representative.scope === scopeFilter;
+        return agentMatch && scopeMatch;
+      });
+      if (candidates.length === 0) return null;
+      return { ...group, candidates };
+    })
+    .filter((group): group is DiscoveryGroup => group !== null);
 }
 
-function filterGroup(
-  group: DiscoveryGroup,
-  normalizedQuery: string,
-): DiscoveryGroup | null {
+const KIND_PRIORITY: Record<DiscoveryGroupKind, number> = {
+  variant: 0,
+  exact_duplicate: 1,
+  unique: 2,
+};
+
+export function sortGroupsByPriority(groups: DiscoveryGroup[]): DiscoveryGroup[] {
+  return [...groups].sort((a, b) => {
+    const pa = KIND_PRIORITY[a.kind] ?? 3;
+    const pb = KIND_PRIORITY[b.kind] ?? 3;
+    return pa - pb;
+  });
+}
+
+function filterGroup(group: DiscoveryGroup, normalizedQuery: string): DiscoveryGroup | null {
   const candidates = group.candidates.filter((candidate) => {
     const haystack = [
       candidate.representative.display_name,
@@ -84,18 +94,13 @@ function filterGroup(
 
   const occurrenceCount = candidates.reduce(
     (count, candidate) => count + candidate.occurrence_count,
-    0,
+    0
   );
   const variantCount = candidates.length;
   const duplicateCount = occurrenceCount - variantCount;
   const kind: DiscoveryGroupKind =
-    variantCount === 1
-      ? occurrenceCount === 1
-        ? "unique"
-        : "exact_duplicate"
-      : "variant";
-  const reviewState: DiscoveryReviewState =
-    kind === "variant" ? "needs_review" : "ready";
+    variantCount === 1 ? (occurrenceCount === 1 ? "unique" : "exact_duplicate") : "variant";
+  const reviewState: DiscoveryReviewState = kind === "variant" ? "needs_review" : "ready";
 
   return {
     ...group,
@@ -107,24 +112,4 @@ function filterGroup(
     candidates,
     recommended_paths: candidates.map((candidate) => candidate.representative.path),
   };
-}
-
-function matchesPreset(skill: DiscoveryRecord, preset: DiscoveryPreset): boolean {
-  if (preset === "recommended") {
-    return true;
-  }
-
-  if (preset === "project") {
-    return skill.scope === "project";
-  }
-
-  if (preset === "agent") {
-    return skill.agent === "agent";
-  }
-
-  if (preset === "codex") {
-    return skill.agent === "codex";
-  }
-
-  return skill.agent === "claude_code";
 }

@@ -26,7 +26,7 @@ export async function adoptSkills(paths: string[]): Promise<IndexedScanSummary> 
 }
 
 export async function applyAdoptionResolutions(
-  resolutions: AdoptionResolution[],
+  resolutions: AdoptionResolution[]
 ): Promise<IndexedScanSummary> {
   return invoke<IndexedScanSummary>("apply_adoption_resolutions", { resolutions });
 }
@@ -34,7 +34,7 @@ export async function applyAdoptionResolutions(
 export async function importLocalSkillFolder(
   path: string,
   agent: AgentKind,
-  scope: SkillScope,
+  scope: SkillScope
 ): Promise<IndexedScanSummary> {
   return invoke<IndexedScanSummary>("import_local_skill_folder", {
     path,
@@ -43,10 +43,23 @@ export async function importLocalSkillFolder(
   });
 }
 
-export async function searchSkillsRegistry(
-  query: string,
-): Promise<RegistrySearchResponse> {
+export async function searchSkillsRegistry(query: string): Promise<RegistrySearchResponse> {
   return invoke<RegistrySearchResponse>("search_skills_registry", { query });
+}
+
+export async function fetchPopularSkills(): Promise<RegistrySearchResponse> {
+  return invoke<RegistrySearchResponse>("fetch_popular_skills");
+}
+
+export async function fetchSkillReadme(source: string, skillId: string): Promise<string> {
+  return invoke<string>("fetch_skill_readme", {
+    source,
+    skillId,
+  });
+}
+
+export async function fetchRegistryStats(): Promise<{ totalSkills: number }> {
+  return invoke<{ totalSkills: number }>("fetch_registry_stats");
 }
 
 export async function adoptRegistrySkill(
@@ -54,15 +67,13 @@ export async function adoptRegistrySkill(
   skillId: string,
   registryId: string,
   agent: AgentKind,
-  scope: SkillScope,
+  scope: SkillScope
 ): Promise<IndexedScanSummary> {
   return invoke<IndexedScanSummary>("adopt_registry_skill", {
     source,
-    skill_id: skillId,
-    registry_id: registryId,
+    skillId,
+    registryId,
     agent,
     scope,
   });
 }
-
-

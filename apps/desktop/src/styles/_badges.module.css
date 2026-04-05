@@ -1,0 +1,509 @@
+.badgeRow {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.navBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--sm-primary);
+  color: #fff;
+  margin-left: 6px;
+}
+
+.scopeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.discoveryStateBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: var(--sm-warning-soft);
+  color: var(--sm-warning);
+}
+
+.inlineTag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  background: var(--sm-warning-soft);
+  color: var(--sm-warning);
+  font-size: 0.78rem;
+}
+
+.badge,
+.agentBadge,
+.sourceBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+}
+
+.badge {
+  background: hsl(220 14% 92%);
+  color: hsl(220 14% 28%);
+}
+
+:root.dark .badge {
+  background: hsl(220 14% 24%);
+  color: hsl(220 14% 86%);
+}
+
+.agentBadge {
+  border: 1px solid transparent;
+}
+
+.agentBadge[data-agent="codex"] {
+  background: hsl(24 70% 94%);
+  border-color: hsl(24 60% 85%);
+  color: hsl(24 70% 32%);
+}
+
+:root.dark .agentBadge[data-agent="codex"] {
+  background: hsl(24 50% 28%);
+  border-color: hsl(24 50% 38%);
+  color: hsl(24 80% 82%);
+}
+
+.agentBadge[data-agent="claude_code"] {
+  background: hsl(205 60% 93%);
+  border-color: hsl(205 50% 85%);
+  color: hsl(205 70% 28%);
+}
+
+:root.dark .agentBadge[data-agent="claude_code"] {
+  background: hsl(205 40% 24%);
+  border-color: hsl(205 40% 34%);
+  color: hsl(205 70% 82%);
+}
+
+.agentBadge[data-agent="agent"] {
+  background: hsl(260 50% 94%);
+  border-color: hsl(260 40% 82%);
+  color: hsl(260 60% 30%);
+}
+
+:root.dark .agentBadge[data-agent="agent"] {
+  background: hsl(260 35% 24%);
+  border-color: hsl(260 30% 38%);
+  color: hsl(260 70% 82%);
+}
+
+.sourceBadge {
+  background: hsl(205 60% 93%);
+  border: 1px solid hsl(205 50% 85%);
+  color: hsl(205 70% 28%);
+}
+
+:root.dark .sourceBadge {
+  background: hsl(205 40% 24%);
+  border-color: hsl(205 40% 34%);
+  color: hsl(205 70% 82%);
+}
+
+.warningBadge {
+  background: hsl(30 90% 96%);
+  border: 1px solid hsl(30 60% 85%);
+  color: hsl(25 70% 35%);
+}
+
+:root.dark .warningBadge {
+  background: hsl(30 40% 22%);
+  border-color: hsl(30 35% 38%);
+  color: hsl(30 80% 72%);
+}
+
+.updateBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: hsl(205 70% 94%);
+  border: 1px solid hsl(205 60% 80%);
+  color: hsl(205 70% 30%);
+}
+
+:root.dark .updateBadge {
+  background: hsl(205 40% 22%);
+  border-color: hsl(205 35% 38%);
+  color: hsl(205 70% 78%);
+}
+
+.scopeBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  border: 1px solid transparent;
+}
+
+.scopeBadge[data-scope="global"] {
+  background: hsl(210 80% 96%);
+  border-color: hsl(210 60% 85%);
+  color: hsl(210 70% 32%);
+}
+
+:root.dark .scopeBadge[data-scope="global"] {
+  background: hsl(210 40% 22%);
+  border-color: hsl(210 35% 38%);
+  color: hsl(210 70% 76%);
+}
+
+.scopeBadge[data-scope="project"] {
+  background: hsl(145 60% 94%);
+  border-color: hsl(145 45% 78%);
+  color: hsl(145 65% 26%);
+}
+
+:root.dark .scopeBadge[data-scope="project"] {
+  background: hsl(145 32% 20%);
+  border-color: hsl(145 28% 34%);
+  color: hsl(145 55% 68%);
+}
+
+.statusHealthy,
+.statusWarning,
+.statusMissing {
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.statusHealthy {
+  color: var(--sm-success);
+}
+
+.statusWarning {
+  color: var(--sm-warning);
+}
+
+.statusMissing {
+  color: var(--sm-danger);
+}
+
+.scopeChip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.34rem 0.68rem;
+  background: var(--sm-bg-elevated);
+  color: var(--sm-text-secondary);
+  font-size: 0.82rem;
+}
+
+/* --- Skill gallery cards (used by SkillGalleryCard.tsx via badges import) --- */
+
+.skillGalleryCard,
+.skillGalleryCardActive {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--sm-radius-lg);
+  background: var(--sm-surface);
+  border: none;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform var(--sm-duration-base) cubic-bezier(0.2, 0, 0, 1),
+    box-shadow var(--sm-duration-base) cubic-bezier(0.2, 0, 0, 1),
+    border-color 0.2s ease;
+  animation: cardEnter 0.4s ease-out backwards;
+}
+
+.skillGalleryCard::before,
+.skillGalleryCardActive::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+:root.dark .skillGalleryCard,
+:root.dark .skillGalleryCardActive {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: hsl(220 10% 44%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.03),
+    0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+:root.dark .skillGalleryCard::before,
+:root.dark .skillGalleryCardActive::before {
+  opacity: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.065) 0%,
+    rgba(255, 255, 255, 0.01) 22%,
+    rgba(255, 255, 255, 0) 38%
+  );
+}
+
+.skillGalleryCard:hover {
+  transform: translateY(-2px) scale(1.005);
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.08),
+    0 3px 6px rgba(0, 0, 0, 0.04);
+}
+
+.skillGalleryCard:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--sm-duration-fast);
+}
+
+:root.dark .skillGalleryCard:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: hsl(220 10% 47%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 20px rgba(0, 0, 0, 0.14);
+}
+
+.skillGalleryCard[data-selected="true"] {
+  background: hsla(var(--sm-primary-raw) / 0.08);
+  border-color: hsla(var(--sm-primary-raw) / 0.3);
+}
+
+:root.dark .skillGalleryCard[data-selected="true"] {
+  background: hsla(var(--sm-primary-raw) / 0.15);
+}
+
+.skillGalleryCardActive {
+  box-shadow:
+    0 0 0 2px hsla(var(--sm-primary-raw) / 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+:root.dark .skillGalleryCardActive {
+  border-color: hsl(205 52% 52%);
+  background: hsl(214 22% 50%);
+  box-shadow:
+    0 0 0 2px hsl(205 55% 52% / 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.045),
+    0 10px 20px rgba(0, 0, 0, 0.14);
+}
+
+.skillCardIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--sm-primary), hsl(205 45% 40%));
+  transition: transform 0.25s ease;
+}
+
+.skillGalleryCard:hover .skillCardIcon {
+  transform: scale(1.08);
+}
+
+.skillCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardInstallButton {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-surface);
+  color: var(--sm-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
+  box-shadow: var(--sm-shadow-sm);
+}
+
+.skillGalleryCard:hover .cardInstallButton,
+.skillGalleryCardActive .cardInstallButton {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardInstallButton:hover {
+  background: var(--sm-surface-hover);
+  border-color: var(--sm-primary);
+  color: var(--sm-primary);
+}
+
+:root.dark .cardInstallButton {
+  background: hsl(220 12% 24% / 0.96);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+:root.dark .cardInstallButton:hover {
+  background: hsl(220 12% 27% / 0.98);
+  border-color: hsl(205 42% 50%);
+  color: hsl(205 72% 70%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .badge {
+  background: rgba(0, 0, 0, 0.16);
+  color: hsl(220 12% 94%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .agentBadge[data-agent="codex"] {
+  background: hsl(24 45% 30%);
+  border-color: hsl(24 48% 48%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .agentBadge[data-agent="claude_code"] {
+  background: hsl(205 34% 28%);
+  border-color: hsl(205 38% 46%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .agentBadge[data-agent="agent"] {
+  background: hsl(260 32% 26%);
+  border-color: hsl(260 36% 44%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .sourceBadge {
+  background: hsl(205 34% 28%);
+  border-color: hsl(205 38% 46%);
+}
+
+.skillCardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sm-text);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skillCardDescription {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--sm-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+
+.skillCardMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.skillCardMeta .badge,
+.skillCardMeta .agentBadge,
+.skillCardMeta .sourceBadge,
+.skillCardMeta .warningBadge,
+.skillCardMeta .scopeBadge {
+  font-size: 0.72rem;
+  padding: 0.22rem 0.55rem;
+}
+
+.actionBadgeReady {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: hsl(145 60% 94%);
+  color: hsl(145 65% 26%);
+  border: 1px solid hsl(145 45% 78%);
+}
+
+:root.dark .actionBadgeReady {
+  background: hsl(145 32% 20%);
+  border-color: hsl(145 28% 34%);
+  color: hsl(145 55% 68%);
+}
+
+.actionBadgeReview {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: var(--sm-warning-soft);
+  color: var(--sm-warning);
+  border: 1px solid transparent;
+}
+
+.actionBadgeDuplicate {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: hsl(220 14% 92%);
+  color: hsl(220 14% 28%);
+  border: 1px solid transparent;
+}
+
+:root.dark .actionBadgeDuplicate {
+  background: hsl(220 14% 24%);
+  color: hsl(220 14% 86%);
+}
+
+/* --- Styled empty class --- */
+
+.diffBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}

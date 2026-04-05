@@ -1,4 +1,9 @@
-import styles from "../../../App.module.css";
+import badges from "../../../styles/_badges.module.css";
+import buttons from "../../../styles/_buttons.module.css";
+import forms from "../../../styles/_forms.module.css";
+import layout from "../../../styles/_layout.module.css";
+import lists from "../../../styles/_lists.module.css";
+import panels from "../../../styles/_panels.module.css";
 import { copy, type Language } from "../../../i18n";
 import type {
   ManagedSkillHistory,
@@ -76,17 +81,17 @@ export function VariantsTab({
   const text = copy[language];
 
   return (
-    <section className={styles.detailStack}>
-      <div className={styles.variantFamilyPanel}>
-        <div className={styles.discoveryGroupHeader}>
+    <section className={panels.detailStack}>
+      <div className={lists.variantFamilyPanel}>
+        <div className={layout.discoveryGroupHeader}>
           <div>
-            <p className={styles.sectionLabel}>{text.familyVariantsTitle}</p>
-            <p className={styles.helperText}>{text.familyVariantsBody}</p>
+            <p className={layout.sectionLabel}>{text.familyVariantsTitle}</p>
+            <p className={layout.helperText}>{text.familyVariantsBody}</p>
           </div>
           {!currentIsPromoted ? (
             <button
               type="button"
-              className={styles.primaryButton}
+              className={buttons.primaryButton}
               disabled={promotingPath === selectedSkill.path}
               title={text.promoteHint}
               onClick={() => void onPromote(selectedSkill.path, true)}
@@ -99,17 +104,15 @@ export function VariantsTab({
           {hasUpdateFor(selectedSkill.path) ? (
             <button
               type="button"
-              className={styles.primaryButton}
+              className={buttons.primaryButton}
               disabled={updatingPath === selectedSkill.path}
               onClick={() => onUpdateSkill(selectedSkill.path)}
             >
-              {updatingPath === selectedSkill.path
-                ? text.updatingSkill
-                : text.updateSkill}
+              {updatingPath === selectedSkill.path ? text.updatingSkill : text.updateSkill}
             </button>
           ) : null}
         </div>
-        <div className={styles.metaGrid}>
+        <div className={layout.metaGrid}>
           <div>
             <span>{text.currentVariantLabel}</span>
             <strong>{currentVariantLabel}</strong>
@@ -129,24 +132,24 @@ export function VariantsTab({
         </div>
       </div>
 
-      <div className={styles.variantEditor}>
-        <div className={styles.sectionIntro}>
-          <p className={styles.sectionLabel}>{text.variantLabelTitle}</p>
-          <p className={styles.helperText}>{text.variantLabelBody}</p>
+      <div className={panels.variantEditor}>
+        <div className={layout.sectionIntro}>
+          <p className={layout.sectionLabel}>{text.variantLabelTitle}</p>
+          <p className={layout.helperText}>{text.variantLabelBody}</p>
         </div>
 
         {editingVariantLabel ? (
-          <div className={styles.variantEditorForm}>
+          <div className={panels.variantEditorForm}>
             <input
-              className={styles.searchField}
+              className={forms.searchField}
               onChange={(event) => onChangeVariantLabelDraft(event.target.value)}
               placeholder={text.variantLabelPlaceholder}
               value={variantLabelDraft}
             />
-            <div className={styles.actionRow}>
+            <div className={buttons.actionRow}>
               <button
                 type="button"
-                className={styles.primaryButton}
+                className={buttons.primaryButton}
                 disabled={variantLabelSaving}
                 onClick={() => void onUpdateVariantLabel()}
               >
@@ -154,7 +157,7 @@ export function VariantsTab({
               </button>
               <button
                 type="button"
-                className={styles.secondaryButton}
+                className={buttons.secondaryButton}
                 disabled={variantLabelSaving}
                 onClick={onCancelVariantLabel}
               >
@@ -162,70 +165,64 @@ export function VariantsTab({
               </button>
             </div>
             {variantLabelError ? (
-              <div className={styles.emptyPanel}>{variantLabelError}</div>
+              <div className={panels.emptyPanel}>{variantLabelError}</div>
             ) : null}
           </div>
         ) : (
-          <div className={styles.actionRow}>
-            <button
-              type="button"
-              className={styles.secondaryButton}
-              onClick={onEditVariantLabel}
-            >
+          <div className={buttons.actionRow}>
+            <button type="button" className={buttons.secondaryButton} onClick={onEditVariantLabel}>
               {text.editVariantLabel}
             </button>
           </div>
         )}
       </div>
 
-      <div className={styles.variantFamilyPanel}>
-        <div className={styles.sectionIntro}>
-          <p className={styles.sectionLabel}>{text.revisionHistoryTitle}</p>
+      <div className={lists.variantFamilyPanel}>
+        <div className={layout.sectionIntro}>
+          <p className={layout.sectionLabel}>{text.revisionHistoryTitle}</p>
         </div>
         {historyLoading ? (
-          <div className={styles.emptyPanel}>{text.loadingPreview}</div>
+          <div className={panels.emptyPanel}>{text.loadingPreview}</div>
         ) : historyError ? (
-          <div className={styles.emptyPanel}>{historyError}</div>
+          <div className={panels.emptyPanel}>{historyError}</div>
         ) : history && history.variants.length > 0 ? (
-          <div className={styles.variantFamilyList}>
+          <div className={lists.variantFamilyList}>
             {history.variants.map((variant) => (
-              <div key={variant.variant_label} className={styles.variantFamilyPanel}>
-                <div className={styles.sectionIntro}>
-                  <p className={styles.sectionLabel}>{variant.variant_label}</p>
+              <div key={variant.variant_label} className={lists.variantFamilyPanel}>
+                <div className={layout.sectionIntro}>
+                  <p className={layout.sectionLabel}>{variant.variant_label}</p>
                 </div>
-                <div className={styles.targetRecordedList}>
+                <div className={lists.targetRecordedList}>
                   {variant.revisions.map((revision) => {
                     const matchingSkill = familySkills.find(
-                      (skill) => skill.path === revision.managed_skill_path,
+                      (skill) => skill.path === revision.managed_skill_path
                     );
                     const isCurrent = selectedSkill.path === revision.managed_skill_path;
 
                     return (
-                      <div key={revision.managed_skill_path} className={styles.targetItemCard}>
-                        <div className={styles.discoveryGroupHeader}>
+                      <div key={revision.managed_skill_path} className={lists.targetItemCard}>
+                        <div className={layout.discoveryGroupHeader}>
                           <div>
                             <strong>{revision.display_name}</strong>
-                            <div className={styles.groupMetaRow}>
-                              <span className={styles.inlineTag}>
+                            <div className={layout.groupMetaRow}>
+                              <span className={badges.inlineTag}>
                                 {text.revisionHashLabel}: {revision.revision_hash.slice(0, 8)}
                               </span>
                               {revision.is_promoted ? (
-                                <span className={styles.inlineTag}>
+                                <span className={badges.inlineTag}>
                                   {text.promotedVariantLabel}
                                 </span>
                               ) : null}
                               {isCurrent ? (
-                                <span className={styles.inlineTag}>
-                                  {text.currentVariantLabel}
-                                </span>
+                                <span className={badges.inlineTag}>{text.currentVariantLabel}</span>
                               ) : null}
                             </div>
                           </div>
-                          <div className={styles.actionRow}>
+                          <div className={buttons.actionRow}>
                             {!isCurrent ? (
                               <button
                                 type="button"
-                                className={styles.secondaryButton}
+                                className={buttons.secondaryButton}
                                 onClick={() => onSelectSkill(revision.managed_skill_path)}
                               >
                                 {text.switchVariantAction}
@@ -234,7 +231,7 @@ export function VariantsTab({
                             {!revision.is_promoted ? (
                               <button
                                 type="button"
-                                className={styles.secondaryButton}
+                                className={buttons.secondaryButton}
                                 disabled={promotingPath === revision.managed_skill_path}
                                 title={text.promoteHint}
                                 onClick={() =>
@@ -249,7 +246,7 @@ export function VariantsTab({
                             {matchingSkill && !isCurrent ? (
                               <button
                                 type="button"
-                                className={styles.primaryButton}
+                                className={buttons.primaryButton}
                                 onClick={() => void onCompareVariant(matchingSkill.path)}
                               >
                                 {text.compareWithCurrent}
@@ -257,8 +254,9 @@ export function VariantsTab({
                             ) : null}
                           </div>
                         </div>
-                        <p className={styles.helperText}>
-                          {text.lastUpdatedLabel}: {formatTimestamp(revision.created_unix_ms, language)}
+                        <p className={layout.helperText}>
+                          {text.lastUpdatedLabel}:{" "}
+                          {formatTimestamp(revision.created_unix_ms, language)}
                         </p>
                       </div>
                     );
@@ -268,65 +266,56 @@ export function VariantsTab({
             ))}
           </div>
         ) : (
-          <div className={styles.emptyPanel}>{text.compareEmptyBody}</div>
+          <div className={panels.emptyPanel}>{text.compareEmptyBody}</div>
         )}
       </div>
 
       {directoryDiffLoading ? (
-        <div className={styles.emptyPanel}>{text.loadingPreview}</div>
+        <div className={panels.emptyPanel}>{text.loadingPreview}</div>
       ) : directoryDiffError ? (
-        <div className={styles.emptyPanel}>{directoryDiffError}</div>
+        <div className={panels.emptyPanel}>{directoryDiffError}</div>
       ) : directoryDiff ? (
-        <section className={styles.comparisonPanel}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.sectionLabel}>{text.diffTitle}</p>
-            <button
-              type="button"
-              className={styles.secondaryButton}
-              onClick={onCloseDiff}
-            >
+        <section className={panels.comparisonPanel}>
+          <div className={layout.sectionIntro}>
+            <p className={layout.sectionLabel}>{text.diffTitle}</p>
+            <button type="button" className={buttons.secondaryButton} onClick={onCloseDiff}>
               {text.closeDiff}
             </button>
           </div>
           {directoryDiff.file_diffs.filter((d) => d.kind !== "unchanged").length === 0 ? (
-            <div className={styles.emptyPanel}>
+            <div className={panels.emptyPanel}>
               <strong>{text.diffEmptyTitle}</strong>
               <p>{text.diffEmptyBody}</p>
             </div>
           ) : (
-            <div className={styles.diffLayout}>
-              <div className={styles.diffFileList}>
+            <div className={layout.diffLayout}>
+              <div className={lists.diffFileList}>
                 {directoryDiff.file_diffs
                   .filter((d) => d.kind !== "unchanged")
                   .map((fileDiff) => (
                     <button
                       key={fileDiff.relative_path}
                       type="button"
-                      className={styles.diffFileButton}
+                      className={buttons.diffFileButton}
                       data-active={selectedDiffFile?.relative_path === fileDiff.relative_path}
                       onClick={() => onSelectDiffFile(fileDiff)}
                     >
-                      <span
-                        className={styles.diffBadge}
-                        data-kind={fileDiff.kind}
-                      >
+                      <span className={badges.diffBadge} data-kind={fileDiff.kind}>
                         {fileDiff.kind === "added" && text.diffAdded}
                         {fileDiff.kind === "removed" && text.diffRemoved}
                         {fileDiff.kind === "modified" && text.diffModified}
                       </span>
-                      <span className={styles.diffFileName}>
-                        {fileDiff.relative_path}
-                      </span>
+                      <span className={lists.diffFileName}>{fileDiff.relative_path}</span>
                     </button>
                   ))}
               </div>
-              <div className={styles.diffContent}>
+              <div className={panels.diffContent}>
                 {selectedDiffFile ? (
                   <>
-                    <div className={styles.diffContentHeader}>
+                    <div className={panels.diffContentHeader}>
                       <strong>{selectedDiffFile.relative_path}</strong>
                       {selectedDiffFile.left_hash && selectedDiffFile.right_hash ? (
-                        <div className={styles.diffHashRow}>
+                        <div className={layout.diffHashRow}>
                           <span>
                             {text.leftHashLabel}: {selectedDiffFile.left_hash.slice(0, 8)}
                           </span>
@@ -337,19 +326,13 @@ export function VariantsTab({
                       ) : null}
                     </div>
                     {selectedDiffFile.unified_diff ? (
-                      <pre className={styles.diffUnified}>
-                        {selectedDiffFile.unified_diff}
-                      </pre>
+                      <pre className={panels.diffUnified}>{selectedDiffFile.unified_diff}</pre>
                     ) : (
-                      <div className={styles.emptyPanel}>
-                        {text.noDiffAvailable}
-                      </div>
+                      <div className={panels.emptyPanel}>{text.noDiffAvailable}</div>
                     )}
                   </>
                 ) : (
-                  <div className={styles.emptyPanel}>
-                    {text.selectVariantToCompare}
-                  </div>
+                  <div className={panels.emptyPanel}>{text.selectVariantToCompare}</div>
                 )}
               </div>
             </div>

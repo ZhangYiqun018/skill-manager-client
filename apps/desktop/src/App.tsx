@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import styles from "./App.module.css";
+import { useEffect, useMemo, useState } from "react";
+import layout from "./styles/_layout.module.css";
+import panels from "./styles/_panels.module.css";
 import {
   compareSkills,
   openInFinder,
@@ -30,6 +31,8 @@ import type {
   ScopeFilter,
   SkillItem,
 } from "./types";
+
+const APP_TABS: AppTab[] = ["library", "discover", "targets", "settings", "guide"];
 
 function App() {
   const { language, setLanguage } = useLanguage();
@@ -67,8 +70,7 @@ function App() {
     () =>
       (summary?.skills ?? []).map((skill) => {
         const warningCount = (summary?.warnings ?? []).filter(
-          (warning) =>
-            warning.path?.startsWith(skill.path) || warning.path === skill.skill_md,
+          (warning) => warning.path?.startsWith(skill.path) || warning.path === skill.skill_md
         ).length;
 
         return {
@@ -77,12 +79,12 @@ function App() {
           warning_count: warningCount,
         };
       }),
-    [summary],
+    [summary]
   );
 
   const librarySkills = useMemo(
     () => indexedSkills.filter((skill) => skill.source_type !== "disk"),
-    [indexedSkills],
+    [indexedSkills]
   );
 
   const filteredSkills = useSkillFilters({
@@ -95,15 +97,15 @@ function App() {
 
   const discoveryReport = useMemo(
     () => filterDiscoveryReport(discoveryReportRaw, discoverSearchQuery),
-    [discoverSearchQuery, discoveryReportRaw],
+    [discoverSearchQuery, discoveryReportRaw]
   );
 
   const discoveryRepresentativeSkills = useMemo(
     () =>
       discoveryReport.all_groups.flatMap((group) =>
-        group.candidates.map((candidate) => candidate.representative),
+        group.candidates.map((candidate) => candidate.representative)
       ),
-    [discoveryReport],
+    [discoveryReport]
   );
 
   const targets = useMemo<InstallTargetRecord[]>(() => {
@@ -145,7 +147,7 @@ function App() {
 
     return Array.from(targetMap.values()).map((target) => {
       const rootWarnings = (summary?.warnings ?? []).filter((warning) =>
-        warning.path?.startsWith(target.path),
+        warning.path?.startsWith(target.path)
       );
       const healthState = !target.exists
         ? "missing"
@@ -160,7 +162,8 @@ function App() {
         path: target.path,
         exists: target.exists,
         health_state: healthState,
-        skill_count: (summary?.skills ?? []).filter((skill) => skill.source_root === target.path).length,
+        skill_count: (summary?.skills ?? []).filter((skill) => skill.source_root === target.path)
+          .length,
       };
     });
   }, [summary]);
@@ -169,29 +172,25 @@ function App() {
     () =>
       targets.filter((target) => target.health_state !== "healthy").length +
       (summary?.warnings ?? []).length,
-    [targets, summary?.warnings],
+    [targets, summary?.warnings]
   );
 
   const updateCount = useMemo(
     () => librarySkills.filter((s) => hasUpdateFor(s.path)).length,
-    [librarySkills, hasUpdateFor],
+    [librarySkills, hasUpdateFor]
   );
 
   const selectedLibrarySkill = useMemo(
-    () =>
-      filteredSkills.find((skill) => skill.path === selectedLibrarySkillPath) ??
-      null,
-    [filteredSkills, selectedLibrarySkillPath],
+    () => filteredSkills.find((skill) => skill.path === selectedLibrarySkillPath) ?? null,
+    [filteredSkills, selectedLibrarySkillPath]
   );
 
   const selectedDiscoverySkill = useMemo(
     () =>
-      discoveryRepresentativeSkills.find(
-        (skill) => skill.path === selectedDiscoverySkillPath,
-      ) ??
+      discoveryRepresentativeSkills.find((skill) => skill.path === selectedDiscoverySkillPath) ??
       discoveryRepresentativeSkills[0] ??
       null,
-    [discoveryRepresentativeSkills, selectedDiscoverySkillPath],
+    [discoveryRepresentativeSkills, selectedDiscoverySkillPath]
   );
 
   const agentCounts = useMemo(
@@ -201,7 +200,7 @@ function App() {
       codex: librarySkills.filter((skill) => skill.agent === "codex").length,
       claude_code: librarySkills.filter((skill) => skill.agent === "claude_code").length,
     }),
-    [librarySkills],
+    [librarySkills]
   );
 
   const scopeCounts = useMemo(
@@ -210,7 +209,7 @@ function App() {
       global: librarySkills.filter((skill) => skill.scope === "global").length,
       project: librarySkills.filter((skill) => skill.scope === "project").length,
     }),
-    [librarySkills],
+    [librarySkills]
   );
 
   const activePreviewSkill =
@@ -221,7 +220,6 @@ function App() {
   const discovery = useDiscoveryState({
     applySnapshotWithDerived,
     selectLibrarySkillFromSnapshot,
-    discoveryReport,
     discoveryRepresentativeSkills,
   });
 
@@ -229,30 +227,21 @@ function App() {
     void bootstrap();
   }, [bootstrap]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     // Synchronize external selection changes into local path state
     if (selectedLibrarySkill && selectedLibrarySkill.path !== selectedLibrarySkillPath) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedLibrarySkillPath(selectedLibrarySkill.path);
     }
 
     if (selectedDiscoverySkill && selectedDiscoverySkill.path !== selectedDiscoverySkillPath) {
       setSelectedDiscoverySkillPath(selectedDiscoverySkill.path);
     }
-  }, [
-    selectedDiscoverySkill,
-    selectedDiscoverySkillPath,
-    selectedLibrarySkill,
-    selectedLibrarySkillPath,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLibrarySkill?.path, selectedDiscoverySkill?.path]);
 
   useEffect(() => {
-    const validPaths = new Set(
-      discoveryRepresentativeSkills.map((skill) => skill.path),
-    );
-    discovery.setSelectedPaths((current) =>
-      current.filter((path) => validPaths.has(path)),
-    );
+    const validPaths = new Set(discoveryRepresentativeSkills.map((skill) => skill.path));
+    discovery.setSelectedPaths((current) => current.filter((path) => validPaths.has(path)));
   }, [discovery, discoveryRepresentativeSkills]);
 
   // Keyboard shortcuts
@@ -264,8 +253,7 @@ function App() {
       if (isMeta && event.key >= "1" && event.key <= "5") {
         event.preventDefault();
         const tabIndex = parseInt(event.key, 10) - 1;
-        const tabs: AppTab[] = ["library", "discover", "targets", "settings", "guide"];
-        const nextTab = tabs[tabIndex];
+        const nextTab = APP_TABS[tabIndex];
         if (nextTab) {
           setActiveTab(nextTab);
         }
@@ -293,15 +281,14 @@ function App() {
 
       // Tab navigation with arrow keys when focus is inside tablist
       if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-        const tabs: AppTab[] = ["library", "discover", "targets", "settings", "guide"];
         const activeElement = document.activeElement;
         const isInTablist = activeElement?.closest('[role="tablist"]') != null;
         if (isInTablist) {
           event.preventDefault();
-          const currentIndex = tabs.indexOf(activeTab);
+          const currentIndex = APP_TABS.indexOf(activeTab);
           const delta = event.key === "ArrowRight" ? 1 : -1;
-          const nextIndex = (currentIndex + delta + tabs.length) % tabs.length;
-          setActiveTab(tabs[nextIndex]);
+          const nextIndex = (currentIndex + delta + APP_TABS.length) % APP_TABS.length;
+          setActiveTab(APP_TABS[nextIndex]);
           // Move focus to the new tab button
           const tabButtons = document.querySelectorAll<HTMLButtonElement>("[role='tab']");
           tabButtons[nextIndex]?.focus();
@@ -315,12 +302,11 @@ function App() {
 
   function selectLibrarySkillFromSnapshot(
     result: IndexedScanSummary,
-    predicate: (skill: SkillItem) => boolean,
+    predicate: (skill: SkillItem) => boolean
   ) {
     const previousLibraryPaths = new Set(librarySkills.map((skill) => skill.path));
     const candidateSkills = result.summary.skills.filter(
-      (skill): skill is SkillItem =>
-        skill.source_type !== "disk" && predicate(skill as SkillItem),
+      (skill): skill is SkillItem => skill.source_type !== "disk" && predicate(skill as SkillItem)
     );
     const nextSelection =
       candidateSkills.find((skill) => !previousLibraryPaths.has(skill.path)) ??
@@ -379,7 +365,7 @@ function App() {
   }
 
   return (
-    <main className={styles.appShell}>
+    <main className={layout.appShell}>
       <TopBar
         activeTab={activeTab}
         healthCount={healthCount}
@@ -394,15 +380,20 @@ function App() {
         onThemeChange={setThemeMode}
       />
 
-      <div className={styles.workspace}>
+      <div className={layout.workspace}>
         {error ? (
-          <section className={styles.errorBanner}>
+          <section className={panels.errorBanner}>
             <strong>{text.scanFailedTitle}</strong>
             <span>{friendlyErrorMessage(error, language)}</span>
           </section>
         ) : null}
 
-        <div data-tab-panel role="tabpanel" aria-hidden={activeTab !== "library"} style={{ display: activeTab === "library" ? "contents" : "none" }}>
+        <div
+          data-tab-panel
+          role="tabpanel"
+          aria-hidden={activeTab !== "library"}
+          style={{ display: activeTab === "library" ? "contents" : "none" }}
+        >
           <LibraryPage
             agentCounts={agentCounts}
             agentFilter={agentFilter}
@@ -420,9 +411,7 @@ function App() {
               void handleUpdateVariantLabel(path, variantLabel)
             }
             previewContent={
-              selectedLibrarySkill
-                ? previewCache[selectedLibrarySkill.skill_md]
-                : undefined
+              selectedLibrarySkill ? previewCache[selectedLibrarySkill.skill_md] : undefined
             }
             previewError={previewError}
             previewLoading={selectedLibrarySkill?.skill_md === previewLoadingPath}
@@ -436,7 +425,12 @@ function App() {
           />
         </div>
 
-        <div data-tab-panel role="tabpanel" aria-hidden={activeTab !== "discover"} style={{ display: activeTab === "discover" ? "contents" : "none" }}>
+        <div
+          data-tab-panel
+          role="tabpanel"
+          aria-hidden={activeTab !== "discover"}
+          style={{ display: activeTab === "discover" ? "contents" : "none" }}
+        >
           <DiscoverPage
             adoptingSkillPaths={discovery.adoptingSkillPaths}
             discoveryReport={discoveryReport}
@@ -448,9 +442,6 @@ function App() {
               discovery.handleApplyAdoptionResolutions(resolutions)
             }
             onAdoptSelected={(paths) => discovery.handleAdoptPaths(paths)}
-            onAdoptRegistrySkill={(skill, agent, scope) =>
-              discovery.handleAdoptRegistrySkill(skill, agent, scope)
-            }
             onCompareSkills={handleCompareSkills}
             onClearSelection={discovery.clearSelection}
             onImportFolder={(path, agent, scope) =>
@@ -464,14 +455,18 @@ function App() {
             }
             onFilterQueryChange={setDiscoverSearchQuery}
             onRefreshIndex={handleRequestFullScan}
-            onSearchRegistry={discovery.handleSearchRegistry}
-            onSelectPreset={discovery.selectPreset}
             onSelectSkill={setSelectedDiscoverySkillPath}
             onToggleSelection={discovery.toggleSelection}
+            onSnapshotUpdate={applySnapshotWithDerived}
+            onAdoptedAndInstall={(skillName) => {
+              setActiveTab("library");
+              setLibrarySearchQuery(skillName);
+            }}
+            onAdoptedLater={() => {
+              // Stay on Discover page; user can navigate to Library manually if needed
+            }}
             previewContent={
-              selectedDiscoverySkill
-                ? previewCache[selectedDiscoverySkill.skill_md]
-                : undefined
+              selectedDiscoverySkill ? previewCache[selectedDiscoverySkill.skill_md] : undefined
             }
             previewError={previewError}
             previewLoading={selectedDiscoverySkill?.skill_md === previewLoadingPath}
@@ -480,14 +475,21 @@ function App() {
           />
         </div>
 
-        <div data-tab-panel role="tabpanel" aria-hidden={activeTab !== "targets"} style={{ display: activeTab === "targets" ? "contents" : "none" }}>
-          <TargetsPage
-            language={language}
-            onOpenDirectory={(path) => void handleOpenPath(path)}
-          />
+        <div
+          data-tab-panel
+          role="tabpanel"
+          aria-hidden={activeTab !== "targets"}
+          style={{ display: activeTab === "targets" ? "contents" : "none" }}
+        >
+          <TargetsPage language={language} onOpenDirectory={(path) => void handleOpenPath(path)} />
         </div>
 
-        <div data-tab-panel role="tabpanel" aria-hidden={activeTab !== "settings"} style={{ display: activeTab === "settings" ? "contents" : "none" }}>
+        <div
+          data-tab-panel
+          role="tabpanel"
+          aria-hidden={activeTab !== "settings"}
+          style={{ display: activeTab === "settings" ? "contents" : "none" }}
+        >
           <SettingsPage
             indexStatus={indexStatus}
             language={language}
@@ -497,7 +499,12 @@ function App() {
           />
         </div>
 
-        <div data-tab-panel role="tabpanel" aria-hidden={activeTab !== "guide"} style={{ display: activeTab === "guide" ? "contents" : "none" }}>
+        <div
+          data-tab-panel
+          role="tabpanel"
+          aria-hidden={activeTab !== "guide"}
+          style={{ display: activeTab === "guide" ? "contents" : "none" }}
+        >
           <GuidePage language={language} />
         </div>
       </div>

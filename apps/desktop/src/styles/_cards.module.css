@@ -1,0 +1,311 @@
+.discoverCard {
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow);
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+}
+
+.discoverCard:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+.discoveryGroup {
+  border: 1px solid var(--sm-border-subtle);
+  border-radius: var(--sm-radius);
+  background: var(--sm-bg-elevated);
+  box-shadow: var(--sm-shadow);
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.settingsCard {
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow);
+  padding: 14px;
+}
+
+.settingsCard:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+.targetCard {
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow);
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.targetCard:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+.targetCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.discoverGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  margin-top: 16px;
+}
+
+.discoverSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.summaryCard {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--sm-radius);
+  border: 1px solid var(--sm-border);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow-sm);
+}
+
+.summaryCard span {
+  color: var(--sm-text-secondary);
+  font-size: 0.84rem;
+}
+
+.summaryCard strong {
+  color: var(--sm-text);
+  font-size: 1.25rem;
+}
+
+.familyGroupCard {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius);
+  background: var(--sm-bg-elevated);
+}
+
+.registryResultCard {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--sm-radius);
+  border: 1px solid var(--sm-border);
+  background: var(--sm-bg-elevated);
+  transition:
+    transform var(--sm-duration-base) cubic-bezier(0.2, 0, 0, 1),
+    box-shadow var(--sm-duration-base) cubic-bezier(0.2, 0, 0, 1);
+}
+
+.registryResultCard:hover {
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: var(--sm-shadow-lg);
+}
+
+.registryResultCard:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--sm-duration-fast);
+}
+
+.targetInventoryMeta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--sm-text-secondary);
+  font-size: 0.82rem;
+}
+
+.targetCardActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillGalleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.discoverGridUnified {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.discoverCardUnified {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--sm-radius-lg);
+  background: var(--sm-surface);
+  border: 1px solid var(--sm-border);
+  box-shadow: var(--sm-shadow-sm);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.discoverCardUnified:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sm-shadow);
+}
+
+.registryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.registryCardSelected {
+  border-color: hsla(var(--sm-primary-raw) / 0.45);
+  box-shadow: 0 0 0 2px hsla(var(--sm-primary-raw) / 0.18);
+}
+
+.registryCardIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--sm-primary), hsl(205 45% 40%));
+}
+
+.registryCardTitle {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--sm-text);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.discoveryGroupHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* --- Styled empty classes --- */
+
+.resolutionEntryList {
+  display: grid;
+  gap: 10px;
+}
+
+.resolutionEntry {
+  padding: 12px;
+  border-radius: var(--sm-radius-sm);
+  border: 1px solid var(--sm-border-subtle);
+  background: var(--sm-bg-elevated);
+  display: grid;
+  gap: 10px;
+}
+
+.comparisonMetaCard {
+  padding: 10px 12px;
+  border-radius: var(--sm-radius-sm);
+  border: 1px solid var(--sm-border-subtle);
+  background: var(--sm-bg-elevated);
+  display: grid;
+  gap: 4px;
+}
+
+.comparisonCard {
+  padding: 14px;
+  border-radius: var(--sm-radius);
+  border: 1px solid var(--sm-border);
+  background: var(--sm-surface);
+  display: grid;
+  gap: 12px;
+}
+
+.actionBadgeReady {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: hsl(145 60% 94%);
+  color: hsl(145 65% 26%);
+  border: 1px solid hsl(145 45% 78%);
+}
+
+:root.dark .actionBadgeReady {
+  background: hsl(145 32% 20%);
+  border-color: hsl(145 28% 34%);
+  color: hsl(145 55% 68%);
+}
+
+.actionBadgeReview {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: var(--sm-warning-soft);
+  color: var(--sm-warning);
+  border: 1px solid transparent;
+}
+
+.actionBadgeDuplicate {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  background: hsl(220 14% 92%);
+  color: hsl(220 14% 28%);
+  border: 1px solid transparent;
+}
+
+:root.dark .actionBadgeDuplicate {
+  background: hsl(220 14% 24%);
+  color: hsl(220 14% 86%);
+}
+
+.skeletonCard {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--sm-radius);
+  border: 1px solid var(--sm-border-subtle);
+  background: var(--sm-bg-elevated);
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 1120px) {
+  .discoverGrid {
+    grid-template-columns: 1fr;
+  }
+}

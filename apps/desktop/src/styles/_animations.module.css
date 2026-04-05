@@ -1,0 +1,3 @@
+/* Animations and keyframes live in index.css (e.g., @keyframes cardEnter).
+   This module is reserved for component-specific transition overrides
+   that must coexist with their base classes in the same file. */

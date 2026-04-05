@@ -327,7 +327,7 @@ fn scan_root(root: &RootSpec, summary: &mut ScanSummary) {
     let mut seen = BTreeSet::new();
 
     for entry in WalkDir::new(&root.base_dir)
-        .follow_links(true)
+        .follow_links(false)
         .max_depth(MAX_SCAN_DEPTH)
         .into_iter()
     {
@@ -414,7 +414,9 @@ fn extract_frontmatter(contents: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{AgentKind, ScanOptions, SkillScope, classify_discovered_skill_path, scan_local_skills};
+    use super::{
+        AgentKind, ScanOptions, SkillScope, classify_discovered_skill_path, scan_local_skills,
+    };
     use std::fs;
     use tempfile::TempDir;
 
@@ -490,9 +492,7 @@ mod tests {
     fn classifies_discovered_project_skill_paths() {
         let home = TempDir::new().expect("home dir");
         let project = TempDir::new().expect("project dir");
-        let skill_md = project
-            .path()
-            .join(".claude/skills/reviewer/SKILL.md");
+        let skill_md = project.path().join(".claude/skills/reviewer/SKILL.md");
         write_skill(
             skill_md.parent().expect("skill dir"),
             "reviewer",

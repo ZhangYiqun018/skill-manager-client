@@ -164,10 +164,11 @@ export type Copy = {
   adoptSkill: string;
   adoptingSkill: string;
   adoptSelected: string;
-  selectingRecommended: string;
-  selectingProject: string;
-  selectingCodex: string;
-  selectingClaude: string;
+  discoveryFilterAll: string;
+  discoverySummaryFound: string;
+  discoveryReady: string;
+  discoveryNeedReview: string;
+  discoveryHasDuplicates: string;
   clearSelection: string;
   groupUnique: string;
   groupExactDuplicate: string;
@@ -175,7 +176,15 @@ export type Copy = {
   duplicateCountLabel: string;
   variantCountLabel: string;
   issuesLabel: string;
-  representativeCountLabel: string;
+  discoveryGroupReady: string;
+  discoveryGroupDuplicates: string;
+  discoveryGroupNeedsReview: string;
+  discoveryReviewVariants: string;
+  discoveryAdoptGroup: string;
+  discoveryReviewAndAdopt: string;
+  discoveryFoundNTimes: string;
+  discoverySelectedCount: string;
+  discoveryClearAll: string;
   selectedCandidatesLabel: string;
   summaryOccurrencesLabel: string;
   summaryExactDuplicateGroupsLabel: string;
@@ -189,7 +198,6 @@ export type Copy = {
   uniqueSectionBody: string;
   suggestedVersionLabel: string;
   provenancePathsLabel: string;
-  reviewNeededLabel: string;
   adoptFamily: string;
   adoptSelectedInGroup: string;
   selectVariantsFirst: string;
@@ -360,6 +368,36 @@ export type Copy = {
   errorBoundaryTitle: string;
   errorBoundaryBody: string;
   errorBoundaryReload: string;
+  cancel: string;
+  registryBrowserTitle: string;
+  registryBrowserBody: string;
+  registryPopularTitle: string;
+  registryAddToLibrary: string;
+  registryLoadingReadme: string;
+  registryLoadingPopular: string;
+  registryAdoptedTitle: string;
+  registryAdoptedBody: string;
+  registryInstallNow: string;
+  registryLater: string;
+  scopeGlobal: string;
+  scopeProject: string;
+  discoverTabMarketplace: string;
+  discoverTabLocal: string;
+  registryAttribution: string;
+  registryVisitSite: string;
+  registrySearchHint: string;
+  registryReadmeFallback: string;
+  registryViewOnGitHub: string;
+  registryViewOnSkillsSh: string;
+  registryTotalSkills: string;
+  tooltipRefreshIndex: string;
+  tooltipHealthStatus: string;
+  tooltipStartScan: string;
+  tooltipImportFolder: string;
+  tooltipInstallSkill: string;
+  tooltipUpdateAvailable: string;
+  registryUrlSaved: string;
+  repoSubpathLabel: string;
 };
 
 export const copy: Record<Language, Copy> = {
@@ -467,14 +505,8 @@ export function friendlyErrorMessage(error: unknown, language: Language): string
 }
 
 export function installHealthLabel(
-  state:
-    | "not_installed"
-    | "healthy"
-    | "copied"
-    | "broken"
-    | "conflict"
-    | "missing_target",
-  language: Language,
+  state: "not_installed" | "healthy" | "copied" | "broken" | "conflict" | "missing_target",
+  language: Language
 ): string {
   if (state === "healthy") {
     return copy[language].installStatusHealthy;
@@ -501,7 +533,7 @@ export function installHealthLabel(
 
 export function installMethodLabel(
   method: "symlink" | "copy" | null | undefined,
-  language: Language,
+  language: Language
 ): string {
   if (method === "copy") {
     return copy[language].installMethodCopy;

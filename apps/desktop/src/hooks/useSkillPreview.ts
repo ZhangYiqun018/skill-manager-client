@@ -9,7 +9,6 @@ export function useSkillPreview(activePreviewSkill: SkillItem | DiscoveryRecord 
 
   useLayoutEffect(() => {
     // Reset error when skill changes; loading state is set immediately below
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPreviewError(null);
 
     if (!activePreviewSkill) {
@@ -43,7 +42,7 @@ export function useSkillPreview(activePreviewSkill: SkillItem | DiscoveryRecord 
         setPreviewError(
           previewFailure instanceof Error
             ? previewFailure.message
-            : "Could not read SKILL.md content.",
+            : "Could not read SKILL.md content."
         );
       })
       .finally(() => {
@@ -55,7 +54,8 @@ export function useSkillPreview(activePreviewSkill: SkillItem | DiscoveryRecord 
     return () => {
       cancelled = true;
     };
-  }, [activePreviewSkill, previewCache]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePreviewSkill?.skill_md]);
 
   return {
     previewCache,

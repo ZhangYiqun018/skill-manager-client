@@ -1,4 +1,5 @@
-import styles from "../App.module.css";
+import forms from "../styles/_forms.module.css";
+import layout from "../styles/_layout.module.css";
 
 type SearchFieldProps = {
   ariaLabel: string;
@@ -7,15 +8,10 @@ type SearchFieldProps = {
   value: string;
 };
 
-export function SearchField({
-  ariaLabel,
-  onChange,
-  placeholder,
-  value,
-}: SearchFieldProps) {
+export function SearchField({ ariaLabel, onChange, placeholder, value }: SearchFieldProps) {
   return (
-    <label className={styles.searchField}>
-      <span className={styles.visuallyHidden}>{ariaLabel}</span>
+    <label className={forms.searchField}>
+      <span className={layout.visuallyHidden}>{ariaLabel}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}

@@ -1,5 +1,8 @@
 import { useState } from "react";
-import styles from "../../App.module.css";
+import badges from "../../styles/_badges.module.css";
+import buttons from "../../styles/_buttons.module.css";
+import layout from "../../styles/_layout.module.css";
+import panels from "../../styles/_panels.module.css";
 import {
   installSkillToTarget,
   loadManagedSkillHistory,
@@ -95,69 +98,58 @@ export function LibraryDetailsPanel({
     promotingPath,
     gitSource,
     gitSourceLoading,
-    setInstallActionTarget,
-    setInstallsError,
-    setInstallStatuses,
-    setEditingVariantLabel,
-    setVariantLabelDraft,
-    setVariantLabelSaving,
-    setVariantLabelError,
-    setDirectoryDiff,
-    setSelectedDiffFile,
-    setHistory,
-    setHistoryError,
-    setPromotingPath,
+    dispatch,
     handleSelectFile,
     handleCompareVariant,
   } = useLibraryDetailsState({ activeTab, language, selectedSkill });
 
   async function handlePromoteVariant(path: string, isCurrent: boolean) {
-    setPromotingPath(path);
+    dispatch({ type: "SET_PROMOTING_PATH", payload: path });
     try {
       await onPromoteVariant(path);
       const historyPath = isCurrent && selectedSkill ? selectedSkill.path : path;
       const nextHistory = await loadManagedSkillHistory(historyPath);
-      setHistory(nextHistory);
+      dispatch({ type: "SET_HISTORY", payload: nextHistory });
     } catch (error: unknown) {
-      setHistoryError(friendlyErrorMessage(error, language));
+      dispatch({ type: "SET_HISTORY_ERROR", payload: friendlyErrorMessage(error, language) });
     } finally {
-      setPromotingPath(null);
+      dispatch({ type: "SET_PROMOTING_PATH", payload: null });
     }
   }
 
   async function handleSaveVariantLabel() {
     if (!selectedSkill) return;
-    setVariantLabelSaving(true);
-    setVariantLabelError(null);
+    dispatch({ type: "SET_VARIANT_LABEL_SAVING", payload: true });
+    dispatch({ type: "SET_VARIANT_LABEL_ERROR", payload: null });
     try {
       await onUpdateVariantLabel(selectedSkill.path, variantLabelDraft);
-      setEditingVariantLabel(false);
+      dispatch({ type: "SET_EDITING_VARIANT_LABEL", payload: false });
     } catch (error: unknown) {
-      setVariantLabelError(friendlyErrorMessage(error, language));
+      dispatch({ type: "SET_VARIANT_LABEL_ERROR", payload: friendlyErrorMessage(error, language) });
     } finally {
-      setVariantLabelSaving(false);
+      dispatch({ type: "SET_VARIANT_LABEL_SAVING", payload: false });
     }
   }
 
   function handleCancelVariantLabel() {
-    setVariantLabelDraft(selectedSkill?.variant_label ?? "");
-    setVariantLabelError(null);
-    setEditingVariantLabel(false);
+    dispatch({ type: "SET_VARIANT_LABEL_DRAFT", payload: selectedSkill?.variant_label ?? "" });
+    dispatch({ type: "SET_VARIANT_LABEL_ERROR", payload: null });
+    dispatch({ type: "SET_EDITING_VARIANT_LABEL", payload: false });
   }
 
   function handleStartEditingVariantLabel() {
-    setVariantLabelDraft(selectedSkill?.variant_label ?? "");
-    setVariantLabelError(null);
-    setEditingVariantLabel(true);
+    dispatch({ type: "SET_VARIANT_LABEL_DRAFT", payload: selectedSkill?.variant_label ?? "" });
+    dispatch({ type: "SET_VARIANT_LABEL_ERROR", payload: null });
+    dispatch({ type: "SET_EDITING_VARIANT_LABEL", payload: true });
   }
 
   async function handleInstallModalInstall(
     targetPath: string,
     targetAgents: AgentKind[],
-    targetMethod: "symlink" | "copy",
+    targetMethod: "symlink" | "copy"
   ) {
     if (!selectedSkill) return;
-    setInstallsError(null);
+    dispatch({ type: "SET_INSTALLS_ERROR", payload: null });
     const errors: string[] = [];
     for (const agent of targetAgents) {
       try {
@@ -167,14 +159,14 @@ export function LibraryDetailsPanel({
       }
     }
     if (errors.length > 0) {
-      setInstallsError(errors.join("\n"));
+      dispatch({ type: "SET_INSTALLS_ERROR", payload: errors.join("\n") });
       showToast(`${text.installFailed}\n${errors.join("\n")}`, "error");
     } else {
       showToast(text.installSuccess, "success");
       setShowInstallModal(false);
       try {
         const refreshed = await loadSkillInstallStatuses(selectedSkill.path);
-        setInstallStatuses(refreshed);
+        dispatch({ type: "SET_INSTALLS", payload: refreshed });
       } catch {
         // ignore refresh error
       }
@@ -184,11 +176,11 @@ export function LibraryDetailsPanel({
   async function handleRunInstallAction(
     targetId: string,
     targetRoot: string,
-    action: "install" | "remove" | "repair",
+    action: "install" | "remove" | "repair"
   ) {
     if (!selectedSkill) return;
-    setInstallActionTarget(targetId);
-    setInstallsError(null);
+    dispatch({ type: "SET_INSTALL_ACTION_TARGET", payload: targetId });
+    dispatch({ type: "SET_INSTALLS_ERROR", payload: null });
     try {
       const next =
         action === "install"
@@ -196,91 +188,89 @@ export function LibraryDetailsPanel({
           : action === "remove"
             ? await removeSkillFromTarget(selectedSkill.path, targetRoot)
             : await repairSkillTarget(selectedSkill.path, targetRoot);
-      setInstallStatuses(next);
+      dispatch({ type: "SET_INSTALLS", payload: next });
     } catch (error: unknown) {
-      setInstallsError(friendlyErrorMessage(error, language));
+      dispatch({ type: "SET_INSTALLS_ERROR", payload: friendlyErrorMessage(error, language) });
     } finally {
-      setInstallActionTarget(null);
+      dispatch({ type: "SET_INSTALL_ACTION_TARGET", payload: null });
     }
   }
 
-  const currentVariantLabel =
-    selectedSkill?.variant_label?.trim() || text.variantLabelFallback;
+  const currentVariantLabel = selectedSkill?.variant_label?.trim() || text.variantLabelFallback;
   const promotedManagedPath = history?.promoted_managed_skill_path ?? null;
-  const promotedVariantLabel =
-    history?.promoted_variant_label?.trim() || currentVariantLabel;
+  const promotedVariantLabel = history?.promoted_variant_label?.trim() || currentVariantLabel;
   const currentIsPromoted = promotedManagedPath
     ? promotedManagedPath === selectedSkill?.path
     : familySkills.length <= 1;
 
   if (!selectedSkill) {
     return (
-      <aside className={styles.detailsPanel}>
-        <div className={styles.panelHeader}>
+      <aside className={panels.detailsPanel}>
+        <div className={panels.panelHeader}>
           <div>
-            <p className={styles.sectionLabel}>{text.detailsTitle}</p>
-            <h2 className={styles.panelTitle}>{text.detailsEmptyTitle}</h2>
+            <p className={layout.sectionLabel}>{text.detailsTitle}</p>
+            <h2 className={panels.panelTitle}>{text.detailsEmptyTitle}</h2>
           </div>
         </div>
-        <div className={styles.emptyPanel}>{text.detailsEmptyBody}</div>
+        <div className={panels.emptyPanel}>{text.detailsEmptyBody}</div>
       </aside>
     );
   }
 
   return (
-    <aside className={styles.detailsPanel}>
+    <aside className={panels.detailsPanel}>
       {onBack ? (
-        <div style={{ marginBottom: 12 }}>
-          <button type="button" className={styles.libraryBackButton} onClick={onBack}>
+        <div className={layout.mb12}>
+          <button type="button" className={buttons.libraryBackButton} onClick={onBack}>
             ← {text.backToGallery}
           </button>
         </div>
       ) : null}
-      <div className={styles.panelHeader}>
+      <div className={panels.panelHeader}>
         <div>
-          <p className={styles.sectionLabel}>{text.detailsTitle}</p>
-          <h2 className={styles.panelTitle}>{selectedSkill.display_name}</h2>
+          <p className={layout.sectionLabel}>{text.detailsTitle}</p>
+          <h2 className={panels.panelTitle}>{selectedSkill.display_name}</h2>
         </div>
-        <div className={styles.badgeRow}>
-          <span className={styles.badge}>{scopeLabel(selectedSkill.scope, language)}</span>
-          <span className={styles.agentBadge} data-agent={selectedSkill.agent}>
+        <div className={badges.badgeRow}>
+          <span className={badges.badge}>{scopeLabel(selectedSkill.scope, language)}</span>
+          <span className={badges.agentBadge} data-agent={selectedSkill.agent}>
             {agentLabel(selectedSkill.agent)}
           </span>
-          <span className={styles.sourceBadge}>
+          <span className={badges.sourceBadge}>
             {sourceLabel(selectedSkill.source_type, language)}
           </span>
         </div>
       </div>
 
-      <p className={styles.detailsDescription}>
+      <p className={layout.detailsDescription}>
         {selectedSkill.description ?? text.descriptionFallback}
       </p>
 
-      <div className={styles.actionRow}>
+      <div className={buttons.actionRow}>
         <button
           type="button"
-          className={styles.secondaryButton}
+          className={buttons.secondaryButton}
           onClick={() => onOpenPath(selectedSkill.path)}
         >
           {text.openFolder}
         </button>
         <button
           type="button"
-          className={styles.secondaryButton}
+          className={buttons.secondaryButton}
           onClick={() => onOpenPath(selectedSkill.skill_md)}
         >
           {text.openSkillFile}
         </button>
         <button
           type="button"
-          className={styles.primaryButton}
+          className={buttons.primaryButton}
           onClick={() => setShowInstallModal(true)}
         >
           {text.installToCustomLocation}
         </button>
       </div>
 
-      <div className={styles.detailTabBarUnderline}>
+      <div className={buttons.detailTabBarUnderline}>
         <DetailTabButton
           active={activeTab === "variants"}
           label={text.detailVariantsTab}
@@ -336,13 +326,15 @@ export function LibraryDetailsPanel({
           onUpdateVariantLabel={handleSaveVariantLabel}
           onCompareVariant={handleCompareVariant}
           onCloseDiff={() => {
-            setDirectoryDiff(null);
-            setSelectedDiffFile(null);
+            dispatch({ type: "SET_DIRECTORY_DIFF", payload: null });
+            dispatch({ type: "SET_SELECTED_DIFF_FILE", payload: null });
           }}
           onEditVariantLabel={handleStartEditingVariantLabel}
           onCancelVariantLabel={handleCancelVariantLabel}
-          onChangeVariantLabelDraft={setVariantLabelDraft}
-          onSelectDiffFile={setSelectedDiffFile}
+          onChangeVariantLabelDraft={(value) =>
+            dispatch({ type: "SET_VARIANT_LABEL_DRAFT", payload: value })
+          }
+          onSelectDiffFile={(file) => dispatch({ type: "SET_SELECTED_DIFF_FILE", payload: file })}
         />
       ) : null}
 

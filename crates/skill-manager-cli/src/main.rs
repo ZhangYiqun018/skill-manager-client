@@ -3,9 +3,8 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use skill_manager_core::{
-    AgentKind, IndexOptions, ScanOptions, ScanSummary, SkillScope,
-    check_managed_skill_updates, import_git_skill, scan_local_skills,
-    update_managed_skill_from_git,
+    AgentKind, IndexOptions, ScanOptions, ScanSummary, SkillScope, check_managed_skill_updates,
+    import_git_skill, scan_local_skills, update_managed_skill_from_git,
 };
 
 #[derive(Debug, Parser)]
@@ -83,7 +82,10 @@ fn main() -> Result<()> {
             println!("Installed skill: {}", skill.display_name);
             println!("  Path: {}", skill.path.display());
             println!("  Family: {}", skill.family_key);
-            println!("  Variant: {}", skill.variant_label.as_deref().unwrap_or("default"));
+            println!(
+                "  Variant: {}",
+                skill.variant_label.as_deref().unwrap_or("default")
+            );
         }
         Commands::Update { skill_path } => {
             let index_options = IndexOptions::default();

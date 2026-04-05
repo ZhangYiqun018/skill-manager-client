@@ -1,0 +1,100 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.dialog {
+  width: min(520px, 92vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--sm-surface);
+  border: 1px solid var(--sm-border);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.dialogHeader {
+  margin-bottom: 16px;
+}
+
+.dialogTitle {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sm-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.dialogSubtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--sm-text);
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.formRow input {
+  flex: 1;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sm-text-secondary);
+}
+
+.toggleGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toggleButton {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-surface-hover);
+  color: var(--sm-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.toggleButtonActive {
+  composes: toggleButton;
+  border-color: var(--sm-primary);
+  background: var(--sm-primary);
+  color: #ffffff;
+}
+
+.dialogFooter {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}

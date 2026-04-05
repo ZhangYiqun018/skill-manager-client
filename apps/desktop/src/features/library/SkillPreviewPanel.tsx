@@ -1,11 +1,8 @@
-import styles from "../../App.module.css";
-import {
-  agentLabel,
-  copy,
-  scopeLabel,
-  sourceLabel,
-  type Language,
-} from "../../i18n";
+import badges from "../../styles/_badges.module.css";
+import buttons from "../../styles/_buttons.module.css";
+import layout from "../../styles/_layout.module.css";
+import panels from "../../styles/_panels.module.css";
+import { agentLabel, copy, scopeLabel, sourceLabel, type Language } from "../../i18n";
 import type { SkillItem } from "../../types";
 
 type SkillPreviewPanelProps = {
@@ -31,52 +28,52 @@ export function SkillPreviewPanel({
 
   if (!selectedSkill) {
     return (
-      <aside className={styles.detailsPanel}>
-        <div className={styles.panelHeader}>
+      <aside className={panels.detailsPanel}>
+        <div className={panels.panelHeader}>
           <div>
-            <p className={styles.sectionLabel}>{text.detailsTitle}</p>
-            <h2 className={styles.panelTitle}>{text.detailsEmptyTitle}</h2>
+            <p className={layout.sectionLabel}>{text.detailsTitle}</p>
+            <h2 className={panels.panelTitle}>{text.detailsEmptyTitle}</h2>
           </div>
         </div>
-        <div className={styles.emptyPanel}>{text.detailsEmptyBody}</div>
+        <div className={panels.emptyPanel}>{text.detailsEmptyBody}</div>
       </aside>
     );
   }
 
   return (
-    <aside className={styles.detailsPanel}>
-      <div className={styles.panelHeader}>
+    <aside className={panels.detailsPanel}>
+      <div className={panels.panelHeader}>
         <div>
-          <p className={styles.sectionLabel}>{text.detailsTitle}</p>
-          <h2 className={styles.panelTitle}>{selectedSkill.display_name}</h2>
+          <p className={layout.sectionLabel}>{text.detailsTitle}</p>
+          <h2 className={panels.panelTitle}>{selectedSkill.display_name}</h2>
         </div>
-        <div className={styles.badgeRow}>
-          <span className={styles.badge}>{scopeLabel(selectedSkill.scope, language)}</span>
-          <span className={styles.agentBadge} data-agent={selectedSkill.agent}>
+        <div className={badges.badgeRow}>
+          <span className={badges.badge}>{scopeLabel(selectedSkill.scope, language)}</span>
+          <span className={badges.agentBadge} data-agent={selectedSkill.agent}>
             {agentLabel(selectedSkill.agent)}
           </span>
-          <span className={styles.sourceBadge}>
+          <span className={badges.sourceBadge}>
             {sourceLabel(selectedSkill.source_type, language)}
           </span>
         </div>
       </div>
 
-      <p className={styles.detailsDescription}>
+      <p className={layout.detailsDescription}>
         {selectedSkill.description ?? text.descriptionFallback}
       </p>
 
-      <div className={styles.actionRow}>
-        <button type="button" className={styles.secondaryButton} onClick={onOpenFolder}>
+      <div className={buttons.actionRow}>
+        <button type="button" className={buttons.secondaryButton} onClick={onOpenFolder}>
           {text.openFolder}
         </button>
-        <button type="button" className={styles.secondaryButton} onClick={onOpenSkillFile}>
+        <button type="button" className={buttons.secondaryButton} onClick={onOpenSkillFile}>
           {text.openSkillFile}
         </button>
       </div>
 
-      <section className={styles.metaSection}>
-        <p className={styles.sectionLabel}>{text.metadataLabel}</p>
-        <div className={styles.metaGrid}>
+      <section className={panels.metaSection}>
+        <p className={layout.sectionLabel}>{text.metadataLabel}</p>
+        <div className={layout.metaGrid}>
           <div>
             <span>{text.userInvocable}</span>
             <strong>{selectedSkill.metadata.user_invocable ? text.yesLabel : text.noLabel}</strong>
@@ -96,19 +93,19 @@ export function SkillPreviewPanel({
         </div>
       </section>
 
-      <section className={styles.previewSection}>
-        <div className={styles.previewHeader}>
-          <p className={styles.sectionLabel}>{text.previewLabel}</p>
+      <section className={panels.previewSection}>
+        <div className={panels.previewHeader}>
+          <p className={layout.sectionLabel}>{text.previewLabel}</p>
         </div>
-        <div className={styles.previewFrame}>
+        <div className={panels.previewFrame}>
           {loading ? (
-            <p className={styles.previewState}>{text.loadingPreview}</p>
+            <p className={panels.previewState}>{text.loadingPreview}</p>
           ) : previewError ? (
-            <p className={styles.previewState}>{previewError}</p>
+            <p className={panels.previewState}>{previewError}</p>
           ) : previewContent ? (
-            <pre className={styles.previewContent}>{previewContent}</pre>
+            <pre className={panels.previewContent}>{previewContent}</pre>
           ) : (
-            <p className={styles.previewState}>{text.previewUnavailable}</p>
+            <p className={panels.previewState}>{text.previewUnavailable}</p>
           )}
         </div>
       </section>

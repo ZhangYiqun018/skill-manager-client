@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import styles from "../../App.module.css";
+import buttons from "../../styles/_buttons.module.css";
+import cards from "../../styles/_cards.module.css";
+import forms from "../../styles/_forms.module.css";
+import layout from "../../styles/_layout.module.css";
+import panels from "../../styles/_panels.module.css";
 import { installSkillToTarget } from "../../api/library";
 import { FilterPill } from "../../components/FilterPill";
 import { SearchField } from "../../components/SearchField";
+import { EmptyState } from "../../components/EmptyState";
 import { useToast } from "../../components/ToastProvider";
 import { copy, scopeLabel, agentLabel, friendlyErrorMessage, type Language } from "../../i18n";
-import type {
-  AgentFilter,
-  ScopeFilter,
-  SkillItem,
-} from "../../types";
+import type { AgentFilter, ScopeFilter, SkillItem } from "../../types";
 import { InstallModal } from "./InstallModal";
 import { LibraryDetailsPanel } from "./LibraryDetailsPanel";
 import { SkillGalleryCard } from "./SkillGalleryCard";
@@ -102,7 +103,7 @@ export function LibraryPage({
       .map((group) => ({
         ...group,
         skills: [...group.skills].sort((left, right) =>
-          variantRowTitle(left, language).localeCompare(variantRowTitle(right, language)),
+          variantRowTitle(left, language).localeCompare(variantRowTitle(right, language))
         ),
       }))
       .sort((left, right) => left.displayName.localeCompare(right.displayName));
@@ -111,11 +112,11 @@ export function LibraryPage({
   const selectedFamilySkills = useMemo(
     () =>
       selectedSkill
-        ? familyGroups.find((group) => group.familyKey === selectedSkill.family_key)?.skills ?? [
+        ? (familyGroups.find((group) => group.familyKey === selectedSkill.family_key)?.skills ?? [
             selectedSkill,
-          ]
+          ])
         : [],
-    [familyGroups, selectedSkill],
+    [familyGroups, selectedSkill]
   );
 
   const isDetailView = selectedSkill != null;
@@ -126,9 +127,9 @@ export function LibraryPage({
   useEffect(() => {
     function handleClick(event: MouseEvent) {
       const target = event.target as Node;
-      const clickedInsideMenu = (event.currentTarget as HTMLElement | null)?.querySelector(
-        `[data-context-menu="true"]`,
-      )?.contains(target);
+      const clickedInsideMenu = (event.currentTarget as HTMLElement | null)
+        ?.querySelector(`[data-context-menu="true"]`)
+        ?.contains(target);
       if (clickedInsideMenu) {
         return;
       }
@@ -139,25 +140,31 @@ export function LibraryPage({
       setContextMenu(null);
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setContextMenu(null);
+    }
+
     if (contextMenu) {
       window.addEventListener("click", handleClick, { capture: true });
       window.addEventListener("scroll", handleScroll, { capture: true });
+      window.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
       window.removeEventListener("click", handleClick, { capture: true });
       window.removeEventListener("scroll", handleScroll, { capture: true });
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [contextMenu]);
 
   return (
-    <section className={styles.pageSection}>
+    <section className={layout.pageSection}>
       {!isDetailView ? (
         <>
-          <header className={styles.pageHeader}>
+          <header className={layout.pageHeader}>
             <div>
-              <p className={styles.sectionLabel}>{text.libraryTitle}</p>
-              <h1 className={styles.pageTitle}>{text.libraryBody}</h1>
+              <p className={layout.sectionLabel}>{text.libraryTitle}</p>
+              <h1 className={layout.pageTitle}>{text.libraryBody}</h1>
             </div>
           </header>
 
@@ -168,8 +175,8 @@ export function LibraryPage({
             value={searchQuery}
           />
 
-          <div className={styles.filterStrip}>
-            <div className={styles.pillGroup}>
+          <div className={forms.filterStrip}>
+            <div className={forms.pillGroup}>
               <FilterPill
                 active={agentFilter === "all"}
                 label={`${text.allAgents} (${agentCounts.all})`}
@@ -192,7 +199,7 @@ export function LibraryPage({
               />
             </div>
 
-            <div className={styles.pillGroup}>
+            <div className={forms.pillGroup}>
               <FilterPill
                 active={scopeFilter === "all"}
                 label={`${text.allScopes} (${scopeCounts.all})`}
@@ -212,46 +219,43 @@ export function LibraryPage({
           </div>
 
           {filteredSkills.length === 0 ? (
-            <div className={styles.emptyState}>
-              <span className={styles.emptyStateIcon}>
-                {searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all" ? "🔍" : "🎉"}
-              </span>
-              <strong>
-                {searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all"
+            <EmptyState
+              icon={
+                searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all"
+                  ? "search"
+                  : "celebration"
+              }
+              title={
+                searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all"
                   ? text.emptyLibraryTitle
-                  : text.emptyLibraryWelcomeTitle}
-              </strong>
-              <p>
-                {searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all"
+                  : text.emptyLibraryWelcomeTitle
+              }
+              body={
+                searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all"
                   ? text.noMatchingSkillsBody
-                  : text.emptyLibraryWelcomeBody}
-              </p>
+                  : text.emptyLibraryWelcomeBody
+              }
+            >
               {!searchQuery.trim() && agentFilter === "all" && scopeFilter === "all" ? (
-                <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
-                  <button type="button" className={styles.primaryButton} onClick={onScanDisk}>
-                    {text.emptyLibraryScanAction}
-                  </button>
-                  <button type="button" className={styles.secondaryButton} onClick={onGoToDiscover}>
-                    {text.emptyLibraryDiscoverAction}
-                  </button>
-                </div>
+                <>
+                  <div className={layout.emptyStateActions}>
+                    <button type="button" className={buttons.primaryButton} onClick={onScanDisk}>
+                      {text.emptyLibraryScanAction}
+                    </button>
+                    <button
+                      type="button"
+                      className={buttons.secondaryButton}
+                      onClick={onGoToDiscover}
+                    >
+                      {text.emptyLibraryDiscoverAction}
+                    </button>
+                  </div>
+                  <p className={layout.firstRunHint}>{text.emptyLibraryFirstRunHint}</p>
+                </>
               ) : null}
-              {!searchQuery.trim() && agentFilter === "all" && scopeFilter === "all" ? (
-                <p
-                  style={{
-                    marginTop: 16,
-                    fontSize: "0.8rem",
-                    color: "var(--sm-text-secondary)",
-                    maxWidth: 400,
-                    textAlign: "center",
-                  }}
-                >
-                  {text.emptyLibraryFirstRunHint}
-                </p>
-              ) : null}
-            </div>
+            </EmptyState>
           ) : (
-            <div ref={galleryRef} className={styles.skillGalleryGrid}>
+            <div ref={galleryRef} className={cards.skillGalleryGrid}>
               {familyGroups.map((group, index) => {
                 const representative = group.skills[0];
                 const delay = Math.min(index * 40, 600);
@@ -286,19 +290,8 @@ export function LibraryPage({
             <div
               data-context-menu="true"
               role="menu"
-              className={styles.contextMenu}
-              style={{
-                position: "fixed",
-                top: contextMenu.y,
-                left: contextMenu.x,
-                zIndex: 1000,
-                minWidth: 180,
-                background: "var(--sm-surface)",
-                border: "1px solid var(--sm-border)",
-                borderRadius: 8,
-                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                padding: "6px 0",
-              }}
+              className={panels.contextMenu}
+              style={{ top: contextMenu.y, left: contextMenu.x }}
             >
               <ContextMenuItem
                 onClick={() => {
@@ -328,7 +321,7 @@ export function LibraryPage({
           ) : null}
         </>
       ) : (
-        <div className={styles.detailViewFull}>
+        <div className={panels.detailViewFull}>
           <LibraryDetailsPanel
             familySkills={selectedFamilySkills}
             hasUpdateFor={hasUpdateFor}
@@ -388,28 +381,9 @@ function ContextMenuItem({
     <button
       type="button"
       role="menuitem"
+      className={panels.contextMenuItem}
       disabled={disabled}
       onClick={onClick}
-      style={{
-        display: "block",
-        width: "100%",
-        textAlign: "left",
-        padding: "8px 14px",
-        fontSize: "0.9rem",
-        color: disabled ? "var(--sm-text-muted)" : "var(--sm-text)",
-        background: "transparent",
-        border: "none",
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.background = "var(--sm-surface-hover)";
-        }
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
-      }}
     >
       {children}
     </button>

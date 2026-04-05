@@ -10,7 +10,7 @@
   --sm-border-subtle: hsl(42 12% 93%);
 
   --sm-text: hsl(220 18% 16%);
-  --sm-text-secondary: hsl(220 10% 36%);
+  --sm-text-secondary: hsl(220 10% 28%);
   --sm-text-muted: hsl(220 8% 52%);
 
   --sm-primary: hsl(205 60% 45%);
@@ -25,6 +25,17 @@
   --sm-danger: hsl(0 65% 48%);
   --sm-danger-soft: hsl(0 55% 95%);
 
+  --sm-bg-raw: 42 24% 96%;
+  --sm-border-raw: 42 12% 88%;
+  --sm-primary-raw: 205 60% 45%;
+
+  /* Glass surface levels */
+  --sm-glass-bg: hsla(42 24% 96% / 0.65);
+  --sm-glass-bg-subtle: hsla(42 24% 96% / 0.45);
+  --sm-glass-blur: blur(20px) saturate(180%);
+  --sm-glass-blur-light: blur(12px) saturate(150%);
+  --sm-glass-border: hsla(42 12% 88% / 0.5);
+
   --sm-radius-sm: 10px;
   --sm-radius: 14px;
   --sm-radius-lg: 16px;
@@ -33,9 +44,52 @@
   --sm-shadow: 0 3px 8px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
   --sm-shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.06), 0 3px 6px rgba(0, 0, 0, 0.03);
 
+  /* Spacing tokens */
+  --sm-space-xs: 4px;
+  --sm-space-sm: 8px;
+  --sm-space-md: 12px;
+  --sm-space-lg: 16px;
+  --sm-space-xl: 20px;
+  --sm-space-2xl: 24px;
+  --sm-space-3xl: 32px;
+
+  /* Animation tokens */
+  --sm-duration-fast: 150ms;
+  --sm-duration-base: 200ms;
+  --sm-duration-slow: 300ms;
+
+  /* Typography tokens */
+  --sm-text-caption: 0.7rem;
+  --sm-text-sm: 0.82rem;
+  --sm-text-base: 0.9rem;
+  --sm-text-heading-sm: 1rem;
+  --sm-text-heading-md: 1.25rem;
+  --sm-text-heading-lg: 1.35rem;
+  --sm-text-display: 2.5rem;
+  --sm-line-height-tight: 1.35;
+  --sm-line-height-base: 1.55;
+  --sm-line-height-relaxed: 1.7;
+
+  /* Z-index tokens */
+  --sm-z-sticky: 10;
+  --sm-z-dropdown: 15;
+  --sm-z-modal: 20;
+  --sm-z-popover: 25;
+  --sm-z-toast: 30;
+
+  /* Scrollbar tokens */
+  --sm-scrollbar: hsl(42 10% 78%);
+  --sm-scrollbar-hover: hsl(42 10% 70%);
+
+  /* Separator token */
+  --sm-separator: 0.5px solid hsla(220 10% 50% / 0.2);
+
   color: var(--sm-text);
   background: var(--sm-bg);
-  font-family: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  letter-spacing: -0.01em;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -50,7 +104,7 @@
   --sm-surface-hover: hsl(220 16% 15%);
 
   --sm-border: hsl(220 14% 18%);
-  --sm-border-subtle: hsl(220 14% 15%);
+  --sm-border-subtle: hsl(220 14% 22%);
 
   --sm-text: hsl(220 15% 94%);
   --sm-text-secondary: hsl(220 12% 68%);
@@ -69,8 +123,24 @@
   --sm-danger-soft: hsl(0 45% 22%);
 
   --sm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.15);
-  --sm-shadow: 0 4px 12px rgba(0, 0, 0, 0.30), 0 2px 4px rgba(0, 0, 0, 0.18);
-  --sm-shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.40), 0 4px 8px rgba(0, 0, 0, 0.22);
+  --sm-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.18);
+  --sm-shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.22);
+
+  --sm-bg-raw: 220 20% 7%;
+  --sm-border-raw: 220 14% 18%;
+  --sm-primary-raw: 205 55% 52%;
+
+  /* Glass surface levels — dark */
+  --sm-glass-bg: hsla(220 20% 7% / 0.55);
+  --sm-glass-bg-subtle: hsla(220 20% 7% / 0.35);
+  --sm-glass-blur: blur(20px) saturate(180%);
+  --sm-glass-blur-light: blur(12px) saturate(150%);
+  --sm-glass-border: hsla(220 14% 18% / 0.5);
+
+  --sm-scrollbar: hsl(220 10% 30%);
+  --sm-scrollbar-hover: hsl(220 10% 40%);
+
+  --sm-separator: 0.5px solid hsla(220 10% 50% / 0.15);
 
   color-scheme: dark;
 }
@@ -96,11 +166,7 @@ body::before {
   position: fixed;
   inset: -20%;
   pointer-events: none;
-  background: radial-gradient(
-    circle at 30% 20%,
-    hsl(205 45% 55% / 0.10) 0%,
-    transparent 50%
-  );
+  background: radial-gradient(circle at 30% 20%, hsl(205 45% 55% / 0.1) 0%, transparent 50%);
   animation: ambientDrift 24s ease-in-out infinite alternate;
   z-index: 0;
   opacity: 0;
@@ -156,6 +222,16 @@ input {
   }
 }
 
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -167,18 +243,10 @@ input {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(42 10% 78%);
+  background: var(--sm-scrollbar);
   border-radius: 999px;
 }
 
-:root.dark ::-webkit-scrollbar-thumb {
-  background: hsl(220 10% 30%);
-}
-
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(42 10% 70%);
-}
-
-:root.dark ::-webkit-scrollbar-thumb:hover {
-  background: hsl(220 10% 40%);
+  background: var(--sm-scrollbar-hover);
 }

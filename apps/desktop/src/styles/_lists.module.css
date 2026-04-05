@@ -1,0 +1,411 @@
+/* --- Shared interactive base --- */
+
+.skillRow,
+.skillRowActive {
+  appearance: none;
+  border: 0;
+  border-radius: var(--sm-radius-sm);
+  font: inherit;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  display: grid;
+  grid-template-columns: 4px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.skillRow:hover,
+.skillRowActive:hover {
+  transform: translateY(-1px);
+}
+
+.skillRow:focus-visible,
+.skillRowActive:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+.variantRow:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+.fileTreeNode:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+.directoryFooter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skillRowContent strong {
+  margin: 0;
+  color: var(--sm-text);
+  font-size: 0.98rem;
+}
+
+.skillRowContent p {
+  color: var(--sm-text-secondary);
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skillList {
+  display: grid;
+  gap: 10px;
+}
+
+.familyGroupList {
+  display: grid;
+  gap: 10px;
+}
+
+.discoveryGroupList {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.targetList {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.selectableSkillRow,
+.selectableSkillRowActive {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.selectionCheckbox {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12px;
+}
+
+.selectionCheckbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sm-primary);
+}
+
+.skillRow {
+  border: 1px solid var(--sm-border-subtle);
+  background: var(--sm-bg-elevated);
+}
+
+.skillRow:hover {
+  background: var(--sm-surface-hover);
+  border-color: var(--sm-border);
+}
+
+.skillRowActive {
+  border: 1px solid hsla(var(--sm-primary-raw) / 0.35);
+  background: hsla(var(--sm-primary-raw) / 0.1);
+  color: var(--sm-text);
+}
+
+.selectableSkillRowActive .skillRow,
+.selectableSkillRowActive .skillRowActive {
+  box-shadow: 0 0 0 1px hsla(var(--sm-primary-raw) / 0.25);
+}
+
+.skillRowStripe {
+  width: 4px;
+  align-self: stretch;
+  border-radius: 999px;
+  background: var(--sm-success);
+}
+
+.skillRowStripe[data-state="warning"] {
+  background: var(--sm-warning);
+}
+
+.skillRowStripe[data-state="missing"] {
+  background: var(--sm-danger);
+}
+
+.skillRowMeta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.registryList {
+  display: grid;
+  gap: 10px;
+}
+
+.variantFamilyPanel {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-bg-elevated);
+  border: 1px solid var(--sm-border-subtle);
+}
+
+.variantFamilyList {
+  display: grid;
+  gap: 12px;
+}
+
+.variantFamilyButton,
+.variantFamilyButtonActive {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius-sm);
+  padding: 10px 12px;
+  background: var(--sm-bg-elevated);
+  color: var(--sm-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.variantFamilyButton:hover {
+  background: var(--sm-surface-hover);
+  border-color: var(--sm-border);
+}
+
+.variantFamilyButtonActive {
+  border-color: hsla(var(--sm-primary-raw) / 0.35);
+  background: hsla(var(--sm-primary-raw) / 0.1);
+}
+
+.variantFamilyButton span,
+.variantFamilyButtonActive span {
+  color: var(--sm-text-secondary);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.82rem;
+}
+
+.directoryFooter span {
+  color: var(--sm-text);
+  word-break: break-word;
+}
+
+.fileTreePane {
+  padding: 12px;
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-bg-elevated);
+  border: 1px solid var(--sm-border-subtle);
+  min-height: 360px;
+}
+
+.fileViewerPane {
+  padding: 12px;
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-bg-elevated);
+  border: 1px solid var(--sm-border-subtle);
+  min-width: 0;
+}
+
+.fileTreeList {
+  display: grid;
+  gap: 10px;
+}
+
+.fileTreeNode {
+  display: grid;
+  gap: 8px;
+}
+
+.fileTreeChildren {
+  display: grid;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--sm-border-subtle);
+}
+
+.fileTreeDirectory {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--sm-text);
+  padding: 0.2rem 0;
+}
+
+.fileTreeDirectory span {
+  color: var(--sm-text-muted);
+  font-size: 0.78rem;
+}
+
+.fileTreeButton,
+.fileTreeButtonActive {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--sm-radius-sm);
+  padding: 0.55rem 0.68rem;
+  background: transparent;
+  color: var(--sm-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.fileTreeButton {
+  background: hsl(220 10% 96%);
+}
+
+:root.dark .fileTreeButton {
+  background: var(--sm-bg-elevated);
+}
+
+.fileTreeButton:hover {
+  background: hsl(220 10% 93%);
+  color: var(--sm-text);
+}
+
+:root.dark .fileTreeButton:hover {
+  background: var(--sm-surface-hover);
+}
+
+.fileTreeButtonActive {
+  background: hsla(var(--sm-primary-raw) / 0.1);
+  border-color: hsla(var(--sm-primary-raw) / 0.25);
+  color: var(--sm-text);
+}
+
+.fileTreeButton span:last-child {
+  color: var(--sm-text-muted);
+  font-size: 0.76rem;
+}
+
+.targetRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-bg-elevated);
+  border: 1px solid var(--sm-border-subtle);
+}
+
+.targetRow strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--sm-text);
+}
+
+.targetRow p {
+  margin: 0;
+  color: var(--sm-text-secondary);
+}
+
+.targetGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+  margin-top: 10px;
+}
+
+.targetRecordedList {
+  display: grid;
+  gap: 10px;
+}
+
+.targetListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.targetItemCard {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-bg-elevated);
+  border: 1px solid var(--sm-border-subtle);
+}
+
+.targetItemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.targetInfoMin {
+  min-width: 0;
+}
+
+.targetLabelEllipsis {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.targetPathEllipsis {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.targetsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- Styled empty classes --- */
+
+.resolutionEntryList {
+  display: grid;
+  gap: 10px;
+}
+
+.diffFileName {
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.84rem;
+  color: var(--sm-text);
+  word-break: break-word;
+}
+
+.diffFileList {
+  display: grid;
+  gap: 8px;
+}

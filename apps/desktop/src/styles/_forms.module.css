@@ -1,0 +1,104 @@
+.pillGroup {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.searchField {
+  display: block;
+}
+
+.searchField,
+.searchField input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius-sm);
+  padding: 0.72rem 0.9rem;
+  background: var(--sm-bg-elevated);
+  color: var(--sm-text);
+}
+
+.searchField::placeholder,
+.searchField input::placeholder {
+  color: var(--sm-text-muted);
+}
+
+.searchField:focus-visible,
+.searchField input:focus-visible {
+  outline: 2px solid hsla(var(--sm-primary-raw) / 0.22);
+  border-color: hsla(var(--sm-primary-raw) / 0.45);
+}
+
+.filterStrip {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.intakeBar {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: var(--sm-radius);
+  border: 1px solid var(--sm-border);
+  background: var(--sm-bg-elevated);
+}
+
+.intakeHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intakeActions {
+  display: grid;
+  grid-template-columns: auto auto minmax(260px, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.remoteSearchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.formGroup {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.formLabel {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--sm-text-secondary);
+}
+
+.formInputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.formSelectRow {
+  display: flex;
+  gap: 8px;
+}
+
+.formActionRow {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.addTargetForm {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

@@ -1,4 +1,4 @@
-import styles from "../../App.module.css";
+import badges from "../../styles/_badges.module.css";
 import { agentLabel, sourceLabel, type Language } from "../../i18n";
 import type { SkillItem } from "../../types";
 
@@ -42,7 +42,7 @@ export function SkillGalleryCard({
       key={group.familyKey}
       role="button"
       tabIndex={0}
-      className={styles.skillGalleryCard}
+      className={badges.skillGalleryCard}
       style={{ "--delay": `${delay}ms` } as React.CSSProperties}
       onClick={onSelect}
       onContextMenu={onContextMenu}
@@ -54,41 +54,39 @@ export function SkillGalleryCard({
     >
       <button
         type="button"
-        className={styles.cardInstallButton}
+        className={badges.cardInstallButton}
         onClick={onInstall}
         title={installTitle}
       >
         {installLabel}
       </button>
-      <div className={styles.skillCardHeader}>
+      <div className={badges.skillCardHeader}>
         <div
-          className={styles.skillCardIcon}
+          className={badges.skillCardIcon}
           style={{ background: familyGradient(group.familyKey) }}
           aria-hidden
         >
           {group.displayName.slice(0, 1).toUpperCase()}
         </div>
       </div>
-      <h3 className={styles.skillCardTitle}>{group.displayName}</h3>
-      <div className={styles.skillCardMeta}>
-        {hasUpdate ? (
-          <span className={styles.updateBadge}>{updateLabel}</span>
-        ) : null}
-        <span className={styles.agentBadge} data-agent={representative.agent}>
+      <h3 className={badges.skillCardTitle}>{group.displayName}</h3>
+      <div className={badges.skillCardMeta}>
+        {hasUpdate ? <span className={badges.updateBadge}>{updateLabel}</span> : null}
+        <span className={badges.agentBadge} data-agent={representative.agent}>
           {agentLabel(representative.agent)}
         </span>
         {representative.source_type !== "disk" ? (
-          <span className={styles.sourceBadge}>
+          <span className={badges.sourceBadge}>
             {sourceLabel(representative.source_type, language)}
           </span>
         ) : null}
         {representative.warning_count > 0 ? (
-          <span className={styles.warningBadge}>
+          <span className={badges.warningBadge}>
             {representative.warning_count} {issuesLabel}
           </span>
         ) : null}
         {group.skills.length > 1 ? (
-          <span className={styles.badge}>
+          <span className={badges.badge}>
             {group.skills.length} {variantCountLabel}
           </span>
         ) : null}

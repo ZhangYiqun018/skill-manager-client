@@ -1,0 +1,310 @@
+.actionRow {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* --- Shared base for small interactive elements --- */
+
+.languageButton,
+.languageButtonActive,
+.filterPill,
+.filterPillActive,
+.healthBadge,
+.healthBadgeAlert {
+  appearance: none;
+  border: 0;
+  border-radius: var(--sm-radius-sm);
+  font: inherit;
+  padding: 0.52rem 0.8rem;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.primaryButton,
+.secondaryButton {
+  appearance: none;
+  border: 0;
+  border-radius: var(--sm-radius-sm);
+  font: inherit;
+  min-height: 40px;
+  padding: 0.72rem 0.95rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* --- Transparent defaults --- */
+
+.languageButton {
+  background: transparent;
+  color: var(--sm-text-secondary);
+}
+
+.filterPill {
+  background: transparent;
+  color: var(--sm-text-secondary);
+}
+
+.secondaryButton {
+  border: 1px solid var(--sm-glass-border);
+  background: var(--sm-glass-bg-subtle);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--sm-text-secondary);
+}
+
+.healthBadge {
+  background: transparent;
+  color: var(--sm-text-secondary);
+}
+
+/* --- Active pill states --- */
+
+.filterPillActive {
+  background: var(--sm-primary-soft);
+  color: var(--sm-primary);
+  border: 1px solid var(--sm-primary-soft-hover);
+}
+
+.languageButtonActive {
+  background: var(--sm-warning-soft);
+  color: var(--sm-warning);
+  border: 1px solid hsl(38 60% 80%);
+}
+
+/* --- Health badges --- */
+
+.healthBadge,
+.healthBadgeAlert {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--sm-border);
+}
+
+.healthBadgeAlert {
+  background: var(--sm-danger-soft);
+  color: var(--sm-danger);
+}
+
+.healthDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sm-success);
+}
+
+.healthBadgeAlert .healthDot {
+  background: var(--sm-danger);
+}
+
+/* --- Hover states --- */
+
+.languageButton:hover,
+.filterPill:hover,
+.primaryButton:hover,
+.secondaryButton:hover,
+.healthBadge:hover,
+.healthBadgeAlert:hover {
+  transform: translateY(-1px);
+}
+
+.secondaryButton:hover {
+  background: var(--sm-surface-hover);
+  color: var(--sm-text);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* --- Focus-visible --- */
+
+.languageButton:focus-visible,
+.languageButtonActive:focus-visible,
+.filterPill:focus-visible,
+.filterPillActive:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.healthBadge:focus-visible,
+.healthBadgeAlert:focus-visible,
+.libraryBackButton:focus-visible,
+.guideCardButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sm-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.guideCardButton:focus-visible,
+.targetActionButton:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+/* --- Primary button --- */
+
+.primaryButton {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--sm-primary-raw) / 1) 0%,
+    hsl(var(--sm-primary-raw) / 0.88) 100%
+  );
+  color: #fff;
+  box-shadow:
+    0 0.5px 0 0 hsla(0 0% 100% / 0.12) inset,
+    0 1px 2px hsla(0 0% 0% / 0.15);
+}
+
+.primaryButton:hover {
+  filter: brightness(1.06);
+  box-shadow: var(--sm-shadow);
+}
+
+.primaryButton:active {
+  filter: brightness(0.94);
+  box-shadow:
+    0 0.5px 0 0 hsla(0 0% 100% / 0.06) inset,
+    0 0px 1px hsla(0 0% 0% / 0.1);
+}
+
+/* --- Ghost button --- */
+
+.ghostButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--sm-text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.ghostButton:hover {
+  color: var(--sm-text);
+  background: var(--sm-surface-hover);
+}
+
+/* --- Library back button --- */
+
+.libraryBackButton {
+  appearance: none;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-surface);
+  color: var(--sm-text-secondary);
+  border-radius: var(--sm-radius-sm);
+  padding: 0.55rem 0.85rem;
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.libraryBackButton:hover {
+  background: var(--sm-surface-hover);
+  color: var(--sm-text);
+  border-color: var(--sm-border);
+}
+
+/* --- Detail tab bar (underline variant) --- */
+
+.detailTabBarUnderline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 18px 0 14px;
+  border-bottom: 1px solid var(--sm-border);
+  padding-bottom: 0;
+}
+
+.detailTabUnderline,
+.detailTabUnderlineActive {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: -1px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.detailTabUnderline {
+  color: var(--sm-text-muted);
+}
+
+.detailTabUnderline:hover {
+  color: var(--sm-text-secondary);
+}
+
+.detailTabUnderlineActive {
+  color: var(--sm-primary);
+  border-bottom-color: var(--sm-primary);
+}
+
+/* --- Diff file button --- */
+
+.diffFileButton {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--sm-border-subtle);
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-bg-elevated);
+  color: var(--sm-text-secondary);
+  font: inherit;
+  font-size: 0.84rem;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.diffFileButton:hover {
+  background: var(--sm-surface-hover);
+  color: var(--sm-text);
+  border-color: var(--sm-border);
+}
