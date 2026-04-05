@@ -144,3 +144,7 @@ export async function setSkillTags(skillMd: string, tags: string[]): Promise<Ind
 export async function exportSkillsByTags(destination: string, tags: string[]): Promise<number> {
   return invoke<number>("export_skills_by_tags", { destination, tags });
 }
+
+export async function exportSkillsByTagsToOpenclaw(tags: string[]): Promise<number> {
+  return invoke<number>("export_skills_by_tags_to_openclaw", { tags });
+}

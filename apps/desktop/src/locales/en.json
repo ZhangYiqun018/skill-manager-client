@@ -85,6 +85,7 @@
   "addTagPlaceholder": "Add tag and press Enter",
   "exportByTag": "Export by tag",
   "exportSuccess": "Exported {count} skills",
+  "exportToOpenClawLabel": "Export to OpenClaw skills directory",
   "noTags": "No tags",
   "filterByTag": "Filter by tag",
   "addTagAction": "Add tag",

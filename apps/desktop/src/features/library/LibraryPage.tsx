@@ -8,6 +8,7 @@ import layout from "../../styles/_layout.module.css";
 import panels from "../../styles/_panels.module.css";
 import {
   exportSkillsByTags,
+  exportSkillsByTagsToOpenclaw,
   installSkillToTarget,
   loadSkillInstallStatuses,
 } from "../../api/library";
@@ -95,6 +96,7 @@ export function LibraryPage({
   const text = copy[language];
   const { showToast } = useToast();
   const [showTagFilters, setShowTagFilters] = useState(false);
+  const [exportToOpenClaw, setExportToOpenClaw] = useState(false);
   const familyGroups = useMemo<LibraryFamilyGroup[]>(() => {
     const groups = new Map<string, LibraryFamilyGroup>();
 
@@ -333,36 +335,60 @@ export function LibraryPage({
                       </div>
 
                       {tagFilter.length > 0 ? (
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            type="button"
-                            className={buttons.secondaryButton}
-                            style={{ padding: "6px 10px", fontSize: 12, flex: 1 }}
-                            onClick={async () => {
-                              const destination = await openDialog({ directory: true });
-                              if (!destination) return;
-                              try {
-                                const count = await exportSkillsByTags(destination, tagFilter);
-                                showToast(
-                                  text.exportSuccess.replace("{count}", String(count)),
-                                  "success"
-                                );
-                              } catch (error: unknown) {
-                                showToast(friendlyErrorMessage(error, language), "error");
-                              }
+                        <>
+                          <label
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                              fontSize: 12,
+                              marginBottom: 6,
+                              cursor: "pointer",
                             }}
                           >
-                            {text.exportByTag}
-                          </button>
-                          <button
-                            type="button"
-                            className={buttons.secondaryButton}
-                            style={{ padding: "6px 10px", fontSize: 12, flex: 1 }}
-                            onClick={() => onTagFilterChange([])}
-                          >
-                            {text.clearSearch}
-                          </button>
-                        </div>
+                            <input
+                              type="checkbox"
+                              checked={exportToOpenClaw}
+                              onChange={(e) => setExportToOpenClaw(e.target.checked)}
+                            />
+                            {text.exportToOpenClawLabel}
+                          </label>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              type="button"
+                              className={buttons.secondaryButton}
+                              style={{ padding: "6px 10px", fontSize: 12, flex: 1 }}
+                              onClick={async () => {
+                                try {
+                                  const count = exportToOpenClaw
+                                    ? await exportSkillsByTagsToOpenclaw(tagFilter)
+                                    : await (async () => {
+                                        const destination = await openDialog({ directory: true });
+                                        if (!destination) return 0;
+                                        return exportSkillsByTags(destination, tagFilter);
+                                      })();
+                                  if (count === 0 && !exportToOpenClaw) return;
+                                  showToast(
+                                    text.exportSuccess.replace("{count}", String(count)),
+                                    "success"
+                                  );
+                                } catch (error: unknown) {
+                                  showToast(friendlyErrorMessage(error, language), "error");
+                                }
+                              }}
+                            >
+                              {text.exportByTag}
+                            </button>
+                            <button
+                              type="button"
+                              className={buttons.secondaryButton}
+                              style={{ padding: "6px 10px", fontSize: 12, flex: 1 }}
+                              onClick={() => onTagFilterChange([])}
+                            >
+                              {text.clearSearch}
+                            </button>
+                          </div>
+                        </>
                       ) : null}
                     </div>
                   ) : null}

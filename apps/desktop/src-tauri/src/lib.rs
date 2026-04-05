@@ -75,6 +75,7 @@ pub fn run() {
             commands::skill::promote_managed_skill_variant,
             commands::skill::set_skill_tags,
             commands::skill::export_skills_by_tags,
+            commands::skill::export_skills_by_tags_to_openclaw,
             commands::custom_target::open_in_finder,
             commands::scan::load_runtime_settings,
             commands::custom_target::list_custom_targets,

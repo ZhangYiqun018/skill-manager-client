@@ -78,6 +78,11 @@ pub(crate) fn build_scan_roots(options: &ScanOptions) -> Vec<RootSpec> {
             scope: SkillScope::Global,
             base_dir: home.join(".openclaw/workspace/skills"),
         });
+        roots.push(RootSpec {
+            agent: AgentKind::OpenClaw,
+            scope: SkillScope::Global,
+            base_dir: home.join(".openclaw/skills"),
+        });
     }
 
     if let Some(project_root) = &options.project_root {
@@ -338,7 +343,10 @@ pub(crate) fn classify_discovered_skill_path(
         ".openclaw" => {
             let is_global = resolved_home
                 .as_ref()
-                .map(|home| source_root == home.join(".openclaw/workspace/skills"))
+                .map(|home| {
+                    source_root == home.join(".openclaw/workspace/skills")
+                        || source_root == home.join(".openclaw/skills")
+                })
                 .unwrap_or(false);
 
             Some(SkillDescriptor {
@@ -608,6 +616,30 @@ mod tests {
             skill_md.parent().expect("skill dir"),
             "helper",
             "OpenClaw helper",
+        );
+
+        let descriptor = classify_discovered_skill_path(
+            &skill_md,
+            &ScanOptions {
+                project_root: None,
+                home_dir: Some(home.path().to_path_buf()),
+            },
+        )
+        .expect("descriptor");
+
+        assert_eq!(descriptor.agent, AgentKind::OpenClaw);
+        assert_eq!(descriptor.scope, SkillScope::Global);
+        assert!(descriptor.project_root.is_none());
+    }
+
+    #[test]
+    fn classifies_global_openclaw_managed_skill_path() {
+        let home = TempDir::new().expect("home dir");
+        let skill_md = home.path().join(".openclaw/skills/managed-helper/SKILL.md");
+        write_skill(
+            skill_md.parent().expect("skill dir"),
+            "managed-helper",
+            "OpenClaw managed skill",
         );
 
         let descriptor = classify_discovered_skill_path(

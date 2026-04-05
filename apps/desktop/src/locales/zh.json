@@ -85,6 +85,7 @@
   "addTagPlaceholder": "输入标签后按回车",
   "exportByTag": "按标签导出",
   "exportSuccess": "已导出 {count} 个 skill",
+  "exportToOpenClawLabel": "导出到 OpenClaw 技能目录",
   "noTags": "无标签",
   "filterByTag": "按标签筛选",
   "addTagAction": "添加标签",

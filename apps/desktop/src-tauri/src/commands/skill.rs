@@ -399,3 +399,21 @@ pub async fn export_skills_by_tags(
     .await
     .map_err(log_err("export_skills_by_tags"))
 }
+
+#[tauri::command]
+#[tracing::instrument]
+pub async fn export_skills_by_tags_to_openclaw(tags: Vec<String>) -> Result<u32, AppError> {
+    run_blocking(move || {
+        let index_options = IndexOptions::default();
+        let destination = dirs::home_dir()
+            .ok_or_else(|| AppError::io("Unable to determine home directory".to_string()))?
+            .join(".openclaw/skills");
+        Ok(export_skills_by_tags_core(
+            &destination,
+            &tags,
+            &index_options,
+        )?)
+    })
+    .await
+    .map_err(log_err("export_skills_by_tags_to_openclaw"))
+}
