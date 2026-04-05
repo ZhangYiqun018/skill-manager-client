@@ -18,3 +18,4 @@ skills-lock.json
 
 # Early design docs (kept locally, not in repo)
 docs/*.md
+.claude/
