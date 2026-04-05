@@ -69,6 +69,7 @@ pub fn run() {
             commands::target::sync_install_target,
             commands::target::repair_install_target,
             commands::skill::install_managed_skill,
+            commands::skill::install_managed_skill_to_default,
             commands::skill::remove_managed_skill_install,
             commands::skill::repair_managed_skill_install,
             commands::skill::update_managed_skill_variant_label,

@@ -98,3 +98,60 @@
   justify-content: flex-end;
   margin-top: 20px;
 }
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.quickButton {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-surface-hover);
+  color: var(--sm-text);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.quickButton:hover {
+  background: var(--sm-primary);
+  border-color: var(--sm-primary);
+  color: #ffffff;
+}
+
+.quickButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.customSection {
+  margin-top: 10px;
+}
+
+.toggleCustomLink {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--sm-text-secondary);
+  cursor: pointer;
+}
+
+.toggleCustomLink:hover {
+  color: var(--sm-primary);
+}
+
+.customPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--sm-border);
+}

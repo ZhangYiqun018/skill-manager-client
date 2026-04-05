@@ -363,6 +363,8 @@ export type Copy = {
   customInstallAgent: string;
   customInstallMethod: string;
   customInstallConfirm: string;
+  installQuickTitle: string;
+  installQuickGlobal: string;
   registryUrlTitle: string;
   registryUrlBody: string;
   manageCustomTargetsTitle: string;

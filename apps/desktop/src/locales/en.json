@@ -355,6 +355,8 @@
   "customInstallAgent": "Agent",
   "customInstallMethod": "Install method",
   "customInstallConfirm": "Install",
+  "installQuickTitle": "Quick install",
+  "installQuickGlobal": "Install to {agent} global",
   "registryUrlTitle": "Registry URL",
   "registryUrlBody": "Change the remote skill registry used by Discover search. Leave empty to restore the default.",
   "manageCustomTargetsTitle": "Managed custom targets",

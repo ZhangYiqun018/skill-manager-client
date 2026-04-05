@@ -42,6 +42,18 @@ export async function installSkillToTarget(
   });
 }
 
+export async function installSkillToDefault(
+  path: string,
+  agent: AgentKind,
+  method?: "symlink" | "copy"
+): Promise<SkillInstallStatus[]> {
+  return invoke<SkillInstallStatus[]>("install_managed_skill_to_default", {
+    path,
+    agent,
+    method: method ?? null,
+  });
+}
+
 export async function removeSkillFromTarget(
   path: string,
   targetRoot: string

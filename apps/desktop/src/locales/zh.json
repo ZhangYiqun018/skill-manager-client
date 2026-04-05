@@ -355,6 +355,8 @@
   "customInstallAgent": "代理",
   "customInstallMethod": "安装方式",
   "customInstallConfirm": "安装",
+  "installQuickTitle": "快速安装",
+  "installQuickGlobal": "安装到 {agent} 全局",
   "registryUrlTitle": "技能仓库地址",
   "registryUrlBody": "修改“发现”页面搜索时使用的远程技能仓库地址。留空即可恢复默认地址。",
   "manageCustomTargetsTitle": "已管理的自定义目标",

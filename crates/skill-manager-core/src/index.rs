@@ -1920,13 +1920,14 @@ fn resolve_catalog_target(
     ))
 }
 
-fn agent_install_prefix(agent: &AgentKind, scope: &SkillScope) -> PathBuf {
+pub fn agent_install_prefix(agent: &AgentKind, scope: &SkillScope) -> PathBuf {
     match (agent, scope) {
         (AgentKind::Codex, SkillScope::Project) => PathBuf::from(".agents/skills"),
         (AgentKind::Codex, SkillScope::Global) => PathBuf::from(".codex/skills"),
         (AgentKind::ClaudeCode, _) => PathBuf::from(".claude/skills"),
         (AgentKind::Agent, _) => PathBuf::from(".agent/skills"),
-        (AgentKind::OpenClaw, _) => PathBuf::from(".openclaw/workspace/skills"),
+        (AgentKind::OpenClaw, SkillScope::Project) => PathBuf::from(".openclaw/workspace/skills"),
+        (AgentKind::OpenClaw, SkillScope::Global) => PathBuf::from(".openclaw/skills"),
     }
 }
 

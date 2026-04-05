@@ -9,7 +9,6 @@ import panels from "../../styles/_panels.module.css";
 import {
   exportSkillsByTags,
   exportSkillsByTagsToOpenclaw,
-  installSkillToTarget,
   loadSkillInstallStatuses,
 } from "../../api/library";
 import { FilterPill } from "../../components/FilterPill";
@@ -559,21 +558,9 @@ export function LibraryPage({
           skill={modalSkill}
           language={language}
           onClose={() => setModalSkill(null)}
-          onInstall={async (targetPath, targetAgents, targetMethod) => {
-            const errors: string[] = [];
-            for (const agent of targetAgents) {
-              try {
-                await installSkillToTarget(modalSkill.path, targetPath, agent, targetMethod);
-              } catch (e) {
-                errors.push(`${agentLabel(agent)}: ${friendlyErrorMessage(e, language)}`);
-              }
-            }
-            if (errors.length === 0) {
-              showToast(text.installSuccess, "success");
-              setModalSkill(null);
-            } else {
-              showToast(`${text.installFailed}\n${errors.join("\n")}`, "error");
-            }
+          onResult={(success, message) => {
+            showToast(message, success ? "success" : "error");
+            if (success) setModalSkill(null);
           }}
         />
       ) : null}

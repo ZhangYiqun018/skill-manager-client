@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use skill_manager_core::{
     AppError, IndexOptions, IndexedScanSummary, InstallMethod, ManagedGitSource,
     ManagedSkillHistory, ManagedSkillOrigin, RemoteUpdateCheck, SkillComparison,
-    SkillDirectoryDiff, SkillFileNode, SkillInstallStatus,
+    SkillDirectoryDiff, SkillFileNode, SkillInstallStatus, SkillScope,
     check_managed_skill_updates as check_managed_skill_updates_core,
     compare_skills as compare_skills_core, diff_skill_directories as diff_skill_directories_core,
     export_skills_by_tags as export_skills_by_tags_core,
@@ -271,6 +271,53 @@ pub async fn install_managed_skill(
     })
     .await
     .map_err(log_err("install_managed_skill"))
+}
+
+#[tauri::command]
+#[tracing::instrument]
+pub async fn install_managed_skill_to_default(
+    path: String,
+    agent: String,
+    method: Option<String>,
+) -> Result<Vec<SkillInstallStatus>, AppError> {
+    tracing::info!(
+        "installing managed skill from {} to default target for {}",
+        path,
+        agent
+    );
+    let agent_override = parse_agent(&agent)?;
+    let method_override = method
+        .as_deref()
+        .map(|value| match value {
+            "symlink" => Ok(InstallMethod::Symlink),
+            "copy" => Ok(InstallMethod::Copy),
+            _ => Err(AppError::validation(format!(
+                "Unsupported install method: {value}"
+            ))),
+        })
+        .transpose()?;
+    let default_target = dirs::home_dir()
+        .ok_or_else(|| AppError::io("Unable to determine home directory".to_string()))?
+        .join(skill_manager_core::agent_install_prefix(
+            &agent_override,
+            &SkillScope::Global,
+        ));
+    let scan_options = build_scan_options(None);
+    run_blocking(move || {
+        let index_options = IndexOptions::default();
+        let allowed_roots = collect_allowed_roots(&scan_options, &index_options);
+        let allowed_path = validate_allowed_path_with_roots(&path, &allowed_roots)?;
+        Ok(install_managed_skill_core(
+            allowed_path,
+            default_target,
+            Some(agent_override),
+            method_override,
+            &scan_options,
+            &index_options,
+        )?)
+    })
+    .await
+    .map_err(log_err("install_managed_skill_to_default"))
 }
 
 #[tauri::command]
