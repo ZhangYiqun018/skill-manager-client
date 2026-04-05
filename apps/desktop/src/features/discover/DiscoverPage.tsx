@@ -3,9 +3,11 @@ import { useMemo, useState } from "react";
 import styles from "../../App.module.css";
 import { FilterPill } from "../../components/FilterPill";
 import { SearchField } from "../../components/SearchField";
+import { useToast } from "../../components/ToastProvider";
 import {
   agentLabel,
   copy,
+  friendlyErrorMessage,
   scopeLabel,
   sourceLabel,
   type Language,
@@ -44,18 +46,18 @@ type DiscoverPageProps = {
   indexStatus: IndexStatus | null;
   language: Language;
   loading: boolean;
-  onAdoptSelected: (paths: string[]) => void;
-  onApplyAdoptionResolutions: (resolutions: AdoptionResolution[]) => void;
+  onAdoptSelected: (paths: string[]) => Promise<void>;
+  onApplyAdoptionResolutions: (resolutions: AdoptionResolution[]) => Promise<void>;
   onAdoptRegistrySkill: (
     skill: RegistrySkillResult,
-    agent: "codex" | "claude_code",
+    agent: "agent" | "codex" | "claude_code",
     scope: "global" | "project",
   ) => Promise<void>;
   onClearSelection: () => void;
   onCompareSkills: (leftPath: string, rightPath: string) => Promise<SkillComparison>;
   onImportFolder: (
     path: string,
-    agent: "codex" | "claude_code",
+    agent: "agent" | "codex" | "claude_code",
     scope: "global" | "project",
   ) => Promise<void>;
   onFilterQueryChange: (value: string) => void;
@@ -76,6 +78,7 @@ type DiscoverPageProps = {
 const presets: DiscoveryPreset[] = [
   "recommended",
   "project",
+  "agent",
   "codex",
   "claude_code",
 ];
@@ -111,13 +114,15 @@ export function DiscoverPage({
   const selectedCount = selectedPaths.length;
   const adopting = adoptingSkillPaths.length > 0;
   const hasResults = discoveryReport.all_groups.length > 0;
-  const [sourceAgent, setSourceAgent] = useState<"codex" | "claude_code">("codex");
+  const [sourceAgent, setSourceAgent] = useState<"agent" | "codex" | "claude_code">("codex");
   const [sourceScope, setSourceScope] = useState<"global" | "project">("global");
   const [registryQuery, setRegistryQuery] = useState("");
   const [registryResults, setRegistryResults] = useState<RegistrySkillResult[]>([]);
   const [registryLoading, setRegistryLoading] = useState(false);
+  const [registryError, setRegistryError] = useState<unknown | null>(null);
   const [registryActionId, setRegistryActionId] = useState<string | null>(null);
   const [importingFolder, setImportingFolder] = useState(false);
+  const { showToast } = useToast();
   const [resolutionState, setResolutionState] = useState<ResolutionState | null>(null);
   const [comparison, setComparison] = useState<SkillComparison | null>(null);
   const [comparisonLoading, setComparisonLoading] = useState(false);
@@ -148,6 +153,8 @@ export function DiscoverPage({
     setImportingFolder(true);
     try {
       await onImportFolder(selected, sourceAgent, sourceScope);
+    } catch (error) {
+      showToast(friendlyErrorMessage(error, language), "error");
     } finally {
       setImportingFolder(false);
     }
@@ -157,13 +164,17 @@ export function DiscoverPage({
     const query = registryQuery.trim();
     if (!query) {
       setRegistryResults([]);
+      setRegistryError(null);
       return;
     }
 
     setRegistryLoading(true);
+    setRegistryError(null);
     try {
       const result = await onSearchRegistry(query);
       setRegistryResults(result.skills);
+    } catch (error) {
+      setRegistryError(error);
     } finally {
       setRegistryLoading(false);
     }
@@ -173,6 +184,8 @@ export function DiscoverPage({
     setRegistryActionId(skill.id);
     try {
       await onAdoptRegistrySkill(skill, sourceAgent, sourceScope);
+    } catch (error) {
+      showToast(friendlyErrorMessage(error, language), "error");
     } finally {
       setRegistryActionId(null);
     }
@@ -225,7 +238,11 @@ export function DiscoverPage({
       return;
     }
 
-    onAdoptSelected(selectedPaths);
+    try {
+      await onAdoptSelected(selectedPaths);
+    } catch (error) {
+      showToast(friendlyErrorMessage(error, language), "error");
+    }
   }
 
   async function handleCompareCandidate(sourcePath: string, compareTargetPath: string | null) {
@@ -242,7 +259,7 @@ export function DiscoverPage({
       const nextComparison = await onCompareSkills(sourcePath, compareTargetPath);
       setComparison(nextComparison);
     } catch (error: unknown) {
-      setComparisonError(error instanceof Error ? error.message : text.defaultScanError);
+      setComparisonError(friendlyErrorMessage(error, language));
     } finally {
       setComparisonLoading(false);
     }
@@ -268,6 +285,8 @@ export function DiscoverPage({
       setResolutionState(null);
       setComparison(null);
       setComparisonError(null);
+    } catch (error) {
+      showToast(friendlyErrorMessage(error, language), "error");
     } finally {
       setApplyingResolution(false);
     }
@@ -345,7 +364,16 @@ export function DiscoverPage({
           </div>
         </div>
 
-        {registryResults.length > 0 ? (
+        {registryError ? (
+          <div className={styles.emptyState}>
+            <span className={styles.emptyStateIcon}>📡</span>
+            <strong>{text.offlineModeTitle}</strong>
+            <p>{text.offlineModeBody}</p>
+            <p style={{ marginTop: 8, fontSize: "0.8rem", color: "var(--sm-text-secondary)" }}>
+              {friendlyErrorMessage(registryError, language)}
+            </p>
+          </div>
+        ) : registryResults.length > 0 ? (
           <div className={styles.registryList}>
             {registryResults.map((skill) => (
               <article key={skill.id} className={styles.registryResultCard}>
@@ -565,9 +593,9 @@ export function DiscoverPage({
 }
 
 type SourceConfigProps = {
-  agent: "codex" | "claude_code";
+  agent: "agent" | "codex" | "claude_code";
   language: Language;
-  onAgentChange: (value: "codex" | "claude_code") => void;
+  onAgentChange: (value: "agent" | "codex" | "claude_code") => void;
   onScopeChange: (value: "global" | "project") => void;
   scope: "global" | "project";
 };
@@ -595,6 +623,11 @@ function SourceConfig({
             active={agent === "claude_code"}
             label={agentLabel("claude_code")}
             onClick={() => onAgentChange("claude_code")}
+          />
+          <FilterPill
+            active={agent === "agent"}
+            label={agentLabel("agent")}
+            onClick={() => onAgentChange("agent")}
           />
         </div>
       </div>

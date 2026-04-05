@@ -25,4 +25,5 @@ serde_json.workspace = true
 skill-manager-core = { path = "../../../crates/skill-manager-core" }
 tauri.workspace = true
 tauri-plugin-dialog.workspace = true
+tracing.workspace = true
 walkdir.workspace = true

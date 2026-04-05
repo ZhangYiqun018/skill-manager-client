@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { readSkillContent } from "../api";
 import type { DiscoveryRecord, SkillItem } from "../types";
 
@@ -7,7 +7,9 @@ export function useSkillPreview(activePreviewSkill: SkillItem | DiscoveryRecord 
   const [previewLoadingPath, setPreviewLoadingPath] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // Reset error when skill changes; loading state is set immediately below
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPreviewError(null);
 
     if (!activePreviewSkill) {

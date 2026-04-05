@@ -12,6 +12,7 @@ type TopBarProps = {
   onRefreshIndex?: () => void;
   onGoToDiscover?: () => void;
   skillCount?: number;
+  updateCount?: number;
   themeMode: ThemeMode;
   onThemeChange?: (mode: ThemeMode) => void;
 };
@@ -27,6 +28,7 @@ export function TopBar({
   onRefreshIndex,
   onGoToDiscover,
   skillCount = 0,
+  updateCount = 0,
   themeMode,
   onThemeChange,
 }: TopBarProps) {
@@ -40,30 +42,37 @@ export function TopBar({
           <div className={styles.brandCopy}>
             <strong>{text.appName}</strong>
             <span className={styles.helperText}>
-              {language === "zh"
-                ? "发现、收编、安装、修复"
-                : "Discover, adopt, install, repair"}
+              {text.brandTagline}
             </span>
           </div>
         </div>
       </div>
 
-      <nav className={styles.tabNav} aria-label="Primary">
+      <nav className={styles.tabNav} role="tablist" aria-label={text.tabs.guide ?? "Primary"}>
         {tabs.map((tab) => (
           <button
             key={tab}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab}
+            aria-current={activeTab === tab ? "page" : undefined}
+            tabIndex={activeTab === tab ? 0 : -1}
             className={activeTab === tab ? styles.tabButtonActive : styles.tabButton}
             onClick={() => onTabChange(tab)}
           >
             <span className={styles.tabButtonLabel}>{text.tabs[tab]}</span>
+            {tab === "library" && updateCount > 0 ? (
+              <span className={styles.navBadge} aria-label={`${updateCount} ${text.warningsInline ?? "updates"}`}>
+                {updateCount}
+              </span>
+            ) : null}
           </button>
         ))}
       </nav>
 
       <div className={styles.quickActions}>
         <p className={styles.quickActionsLabel}>
-          {language === "zh" ? "快捷操作" : "Quick actions"}
+          {text.quickActionsTitle}
         </p>
         <button
           type="button"
@@ -88,7 +97,7 @@ export function TopBar({
           <div>
             <strong>{skillCount}</strong>
             <span style={{ display: "block" }}>
-              {language === "zh" ? "已管理技能" : "Managed skills"}
+              {text.managedSkillsLabel}
             </span>
           </div>
         </div>
@@ -103,7 +112,7 @@ export function TopBar({
               {healthCount > 0 ? healthCount : "OK"}
             </strong>
             <span style={{ display: "block" }}>
-              {language === "zh" ? "运行状态" : "Workspace health"}
+              {text.workspaceHealthLabel}
             </span>
           </div>
           <span
@@ -123,14 +132,14 @@ export function TopBar({
               className={themeMode === "light" ? styles.miniThemeButtonActive : styles.miniThemeButton}
               onClick={() => onThemeChange("light")}
             >
-              {language === "zh" ? "浅色" : "Light"}
+              {text.themeLight}
             </button>
             <button
               type="button"
               className={themeMode === "dark" ? styles.miniThemeButtonActive : styles.miniThemeButton}
               onClick={() => onThemeChange("dark")}
             >
-              {language === "zh" ? "深色" : "Dark"}
+              {text.themeDark}
             </button>
           </div>
         ) : null}

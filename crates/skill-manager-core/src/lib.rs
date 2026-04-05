@@ -4,7 +4,7 @@ mod scan;
 
 pub use index::{
     IndexError, adopt_skill, adopt_skills, apply_adoption_resolutions, check_managed_skill_updates,
-    compare_skills, default_index_path, default_repo_cache_path, default_store_path,
+    compare_skills, default_data_root, default_index_path, default_repo_cache_path, default_store_path,
     diff_skill_directories, import_git_skill, import_skill_directory, install_managed_skill,
     load_custom_targets, load_install_target_inventory, load_discovery_report, load_managed_git_source,
     load_managed_skill_history, load_managed_skill_origins, load_skill_file_tree, load_skill_index,
@@ -14,7 +14,7 @@ pub use index::{
     update_managed_skill_variant_label, add_custom_target, remove_custom_target,
 };
 pub use models::{
-    AdoptionResolution, AdoptionResolutionAction, AgentKind, DiscoveryCandidate, DiscoveryGroup,
+    AdoptionResolution, AdoptionResolutionAction, AgentKind, AppError, AppErrorKind, DiscoveryCandidate, DiscoveryGroup,
     DiscoveryGroupKind, DiscoveryReport, DiscoveryReviewState, DiscoverySummary, IndexOptions,
     IndexStatus, IndexedScanSummary, InstallHealthState, InstallMethod,
     InstallTargetHealthState, InstallTargetInventory, InstallTargetInventoryItem, InstalledSkill,

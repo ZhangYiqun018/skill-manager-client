@@ -79,7 +79,7 @@ export function SkillPreviewPanel({
         <div className={styles.metaGrid}>
           <div>
             <span>{text.userInvocable}</span>
-            <strong>{selectedSkill.metadata.user_invocable ? "Yes" : "No"}</strong>
+            <strong>{selectedSkill.metadata.user_invocable ? text.yesLabel : text.noLabel}</strong>
           </div>
           <div>
             <span>{text.installPath}</span>

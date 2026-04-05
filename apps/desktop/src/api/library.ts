@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  AgentKind,
   IndexedScanSummary,
   ManagedGitSource,
   ManagedSkillHistory,
@@ -32,7 +33,7 @@ export async function loadSkillInstallStatuses(
 export async function installSkillToTarget(
   path: string,
   targetRoot: string,
-  agent?: "codex" | "claude_code",
+  agent?: AgentKind,
   method?: "symlink" | "copy",
 ): Promise<SkillInstallStatus[]> {
   return invoke<SkillInstallStatus[]>("install_managed_skill", {

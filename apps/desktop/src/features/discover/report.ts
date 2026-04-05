@@ -118,6 +118,10 @@ function matchesPreset(skill: DiscoveryRecord, preset: DiscoveryPreset): boolean
     return skill.scope === "project";
   }
 
+  if (preset === "agent") {
+    return skill.agent === "agent";
+  }
+
   if (preset === "codex") {
     return skill.agent === "codex";
   }

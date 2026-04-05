@@ -2,7 +2,7 @@ import { useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import styles from "../../App.module.css";
 import { agentLabel, copy, type Language } from "../../i18n";
-import type { SkillItem } from "../../types";
+import type { AgentKind, SkillItem } from "../../types";
 
 type InstallModalProps = {
   skill: SkillItem;
@@ -10,15 +10,17 @@ type InstallModalProps = {
   onClose: () => void;
   onInstall: (
     path: string,
-    agent: "codex" | "claude_code",
+    agents: AgentKind[],
     method: "symlink" | "copy",
   ) => Promise<void>;
 };
 
+const ALL_AGENTS: AgentKind[] = ["codex", "claude_code", "agent"];
+
 export function InstallModal({ skill, language, onClose, onInstall }: InstallModalProps) {
   const text = copy[language];
   const [path, setPath] = useState("");
-  const [agent, setAgent] = useState<"codex" | "claude_code">(skill.agent);
+  const [agents, setAgents] = useState<AgentKind[]>([skill.agent]);
   const [method, setMethod] = useState<"symlink" | "copy">("symlink");
   const [busy, setBusy] = useState(false);
 
@@ -33,11 +35,17 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
     }
   }
 
+  function toggleAgent(agent: AgentKind) {
+    setAgents((prev) =>
+      prev.includes(agent) ? prev.filter((a) => a !== agent) : [...prev, agent],
+    );
+  }
+
   async function handleConfirm() {
-    if (!path.trim()) return;
+    if (!path.trim() || agents.length === 0) return;
     setBusy(true);
     try {
-      await onInstall(path.trim(), agent, method);
+      await onInstall(path.trim(), agents, method);
     } finally {
       setBusy(false);
     }
@@ -101,9 +109,15 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
             <p style={{ fontSize: "0.8rem", color: "var(--sm-text-secondary)", marginBottom: 6 }}>
               {text.customInstallAgent}
             </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <AgentToggleButton active={agent === "codex"} label={agentLabel("codex")} onClick={() => setAgent("codex")} />
-              <AgentToggleButton active={agent === "claude_code"} label={agentLabel("claude_code")} onClick={() => setAgent("claude_code")} />
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {ALL_AGENTS.map((a) => (
+                <AgentToggleButton
+                  key={a}
+                  active={agents.includes(a)}
+                  label={agentLabel(a)}
+                  onClick={() => toggleAgent(a)}
+                />
+              ))}
             </div>
           </div>
 
@@ -125,7 +139,7 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
           <button
             type="button"
             className={styles.primaryButton}
-            disabled={!path.trim() || busy}
+            disabled={!path.trim() || agents.length === 0 || busy}
             onClick={() => void handleConfirm()}
           >
             {busy ? text.installingLabel : text.customInstallConfirm}

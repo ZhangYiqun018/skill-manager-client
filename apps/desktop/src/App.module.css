@@ -190,6 +190,21 @@
   font-weight: 600;
 }
 
+.navBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--sm-primary);
+  color: #fff;
+  margin-left: 6px;
+}
+
 .tabButtonMeta {
   color: var(--sm-text-muted);
   font-size: 0.79rem;
@@ -242,6 +257,60 @@
 .skillRow:hover,
 .skillRowActive:hover {
   transform: translateY(-1px);
+}
+
+/* Accessibility: visible focus indicators */
+.tabButton:focus-visible,
+.tabButtonActive:focus-visible,
+.languageButton:focus-visible,
+.languageButtonActive:focus-visible,
+.filterPill:focus-visible,
+.filterPillActive:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.healthBadge:focus-visible,
+.healthBadgeAlert:focus-visible,
+.skillRow:focus-visible,
+.skillRowActive:focus-visible,
+.libraryBackButton:focus-visible,
+.quickActionButton:focus-visible,
+.searchField:focus-visible,
+.searchField input:focus-visible,
+.guideCardButton:focus-visible,
+.targetActionButton:focus-visible,
+.discoverCard:focus-visible,
+.settingsCard:focus-visible,
+.targetCard:focus-visible,
+.panelNote:focus-visible,
+.modalClose:focus-visible,
+.contextMenuItem:focus-visible,
+.variantRow:focus-visible,
+.fileTreeNode:focus-visible,
+.filePreviewUnavailable:focus-visible {
+  outline: 2px solid var(--sm-primary);
+  outline-offset: 2px;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .tabButton,
+  .languageButton,
+  .filterPill,
+  .primaryButton,
+  .secondaryButton,
+  .healthBadge,
+  .healthBadgeAlert,
+  .skillRow,
+  .skillRowActive,
+  .discoverCard,
+  .settingsCard,
+  .targetCard,
+  .panelNote,
+  .guideCardButton,
+  .targetActionButton {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 
 .pageSection,
@@ -336,8 +405,8 @@
   color: var(--sm-text-muted);
 }
 
-.searchField:focus,
-.searchField input:focus {
+.searchField:focus-visible,
+.searchField input:focus-visible {
   outline: 2px solid hsl(205 45% 55% / 0.22);
   border-color: hsl(205 45% 55% / 0.45);
 }
@@ -756,6 +825,82 @@
   background: hsl(205 40% 24%);
   border-color: hsl(205 40% 34%);
   color: hsl(205 70% 82%);
+}
+
+.warningBadge {
+  background: hsl(30 90% 96%);
+  border: 1px solid hsl(30 60% 85%);
+  color: hsl(25 70% 35%);
+}
+
+:root.dark .warningBadge {
+  background: hsl(30 40% 22%);
+  border-color: hsl(30 35% 38%);
+  color: hsl(30 80% 72%);
+}
+
+.updateBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  border: 1px solid transparent;
+  background: hsl(205 70% 94%);
+  border-color: hsl(205 60% 80%);
+  color: hsl(205 70% 30%);
+  font-weight: 600;
+}
+
+:root.dark .updateBadge {
+  background: hsl(205 40% 22%);
+  border-color: hsl(205 35% 38%);
+  color: hsl(205 70% 78%);
+}
+
+.scopeBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  border: 1px solid transparent;
+}
+
+.scopeBadge[data-scope="global"] {
+  background: hsl(210 80% 96%);
+  border-color: hsl(210 60% 85%);
+  color: hsl(210 70% 32%);
+}
+
+:root.dark .scopeBadge[data-scope="global"] {
+  background: hsl(210 40% 22%);
+  border-color: hsl(210 35% 38%);
+  color: hsl(210 70% 76%);
+}
+
+.scopeBadge[data-scope="project"] {
+  background: hsl(145 60% 94%);
+  border-color: hsl(145 45% 78%);
+  color: hsl(145 65% 26%);
+}
+
+:root.dark .scopeBadge[data-scope="project"] {
+  background: hsl(145 32% 20%);
+  border-color: hsl(145 28% 34%);
+  color: hsl(145 55% 68%);
+}
+
+.agentBadge[data-agent="agent"] {
+  background: hsl(260 50% 94%);
+  border-color: hsl(260 40% 82%);
+  color: hsl(260 60% 30%);
+}
+
+:root.dark .agentBadge[data-agent="agent"] {
+  background: hsl(260 35% 24%);
+  border-color: hsl(260 30% 38%);
+  color: hsl(260 70% 82%);
 }
 
 .detailsDescription {
@@ -1349,6 +1494,8 @@
   border-radius: var(--sm-radius-lg);
   background: var(--sm-surface);
   border: none;
+  overflow: hidden;
+  isolation: isolate;
   /* Notion-like lift on light paper */
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.04),
@@ -1362,10 +1509,36 @@
   animation: cardEnter 0.4s ease-out backwards;
 }
 
+.skillGalleryCard::before,
+.skillGalleryCardActive::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
 :root.dark .skillGalleryCard,
 :root.dark .skillGalleryCardActive {
-  border: 1px solid var(--sm-border);
-  box-shadow: var(--sm-shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: hsl(220 10% 44%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.03),
+    0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+:root.dark .skillGalleryCard::before,
+:root.dark .skillGalleryCardActive::before {
+  opacity: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.065) 0%,
+    rgba(255, 255, 255, 0.01) 22%,
+    rgba(255, 255, 255, 0) 38%
+  );
 }
 
 .skillGalleryCard:hover {
@@ -1376,8 +1549,12 @@
 }
 
 :root.dark .skillGalleryCard:hover {
-  border-color: var(--sm-border);
-  box-shadow: var(--sm-shadow-lg);
+  border-color: rgba(255, 255, 255, 0.34);
+  background: hsl(220 10% 47%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 20px rgba(0, 0, 0, 0.14);
 }
 
 .skillGalleryCardActive {
@@ -1387,10 +1564,13 @@
 }
 
 :root.dark .skillGalleryCardActive {
-  border-color: hsl(205 45% 55% / 0.45);
+  border-color: hsl(205 52% 52%);
+  background: hsl(214 22% 50%);
   box-shadow:
-    0 0 0 2px hsl(205 45% 55% / 0.25),
-    var(--sm-shadow);
+    0 0 0 2px hsl(205 55% 52% / 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.045),
+    0 10px 20px rgba(0, 0, 0, 0.14);
 }
 
 .skillCardIcon {
@@ -1449,6 +1629,45 @@
   color: var(--sm-primary);
 }
 
+:root.dark .cardInstallButton {
+  background: hsl(220 12% 24% / 0.96);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+:root.dark .cardInstallButton:hover {
+  background: hsl(220 12% 27% / 0.98);
+  border-color: hsl(205 42% 50%);
+  color: hsl(205 72% 70%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .badge {
+  background: rgba(0, 0, 0, 0.16);
+  color: hsl(220 12% 94%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .agentBadge[data-agent="codex"] {
+  background: hsl(24 45% 30%);
+  border-color: hsl(24 48% 48%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .agentBadge[data-agent="claude_code"] {
+  background: hsl(205 34% 28%);
+  border-color: hsl(205 38% 46%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .agentBadge[data-agent="agent"] {
+  background: hsl(260 32% 26%);
+  border-color: hsl(260 36% 44%);
+}
+
+:root.dark .skillGalleryCard .skillCardMeta .sourceBadge {
+  background: hsl(205 34% 28%);
+  border-color: hsl(205 38% 46%);
+}
+
 .skillCardTitle {
   margin: 0;
   font-size: 1rem;
@@ -1483,7 +1702,9 @@
 
 .skillCardMeta .badge,
 .skillCardMeta .agentBadge,
-.skillCardMeta .sourceBadge {
+.skillCardMeta .sourceBadge,
+.skillCardMeta .warningBadge,
+.skillCardMeta .scopeBadge {
   font-size: 0.72rem;
   padding: 0.22rem 0.55rem;
 }

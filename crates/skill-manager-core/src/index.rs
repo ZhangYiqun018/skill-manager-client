@@ -596,7 +596,8 @@ pub fn install_managed_skill(
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
     let target = resolve_target_root(&managed_skill, &target_root, agent_override, scan_options, index_options)?;
-    let destination = target.target_root.join(&managed_skill.slug);
+    let prefix = agent_install_prefix(&target.agent, &target.scope);
+    let destination = target.target_root.join(&prefix).join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
         &managed_skill,
@@ -652,7 +653,8 @@ pub fn remove_managed_skill_install(
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
     let target = resolve_target_root(&managed_skill, &target_root, None, scan_options, index_options)?;
-    let destination = target.target_root.join(&managed_skill.slug);
+    let prefix = agent_install_prefix(&target.agent, &target.scope);
+    let destination = target.target_root.join(&prefix).join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
         &managed_skill,
@@ -690,7 +692,8 @@ pub fn repair_managed_skill_install(
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
     let target = resolve_target_root(&managed_skill, &target_root, None, scan_options, index_options)?;
-    let destination = target.target_root.join(&managed_skill.slug);
+    let prefix = agent_install_prefix(&target.agent, &target.scope);
+    let destination = target.target_root.join(&prefix).join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
         &managed_skill,
@@ -721,7 +724,7 @@ pub fn repair_managed_skill_install(
     load_skill_install_statuses(managed_skill.path, scan_options, index_options)
 }
 
-fn default_data_root() -> PathBuf {
+pub fn default_data_root() -> PathBuf {
     let base_dir = data_local_dir()
         .or_else(data_dir)
         .or_else(home_dir)
@@ -1768,6 +1771,15 @@ fn resolve_catalog_target(
     Err(IndexError::Message("Target root is outside the known install targets.".to_string()))
 }
 
+fn agent_install_prefix(agent: &AgentKind, scope: &SkillScope) -> PathBuf {
+    match (agent, scope) {
+        (AgentKind::Codex, SkillScope::Project) => PathBuf::from(".agents/skills"),
+        (AgentKind::Codex, SkillScope::Global) => PathBuf::from(".codex/skills"),
+        (AgentKind::ClaudeCode, _) => PathBuf::from(".claude/skills"),
+        (AgentKind::Agent, _) => PathBuf::from(".agent/skills"),
+    }
+}
+
 fn resolve_target_root(
     managed_skill: &InstalledSkill,
     target_root: &Path,
@@ -2212,7 +2224,8 @@ fn build_install_status(
     install_records: &[InstallRecordRow],
     family_promotions: &BTreeMap<String, PathBuf>,
 ) -> SkillInstallStatus {
-    let install_path = target.target_root.join(&managed_skill.slug);
+    let prefix = agent_install_prefix(&target.agent, &target.scope);
+    let install_path = target.target_root.join(&prefix).join(&managed_skill.slug);
     let root_exists = target.target_root.exists();
     let record = install_records
         .iter()

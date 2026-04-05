@@ -1,6 +1,23 @@
-export type AgentKind = "claude_code" | "codex";
+export type AgentKind = "agent" | "claude_code" | "codex";
 export type SkillScope = "global" | "project";
 export type SkillSourceType = "disk" | "import" | "remote";
+
+export type AppErrorKind =
+  | "io"
+  | "network"
+  | "not_found"
+  | "validation"
+  | "permission_denied"
+  | "already_exists"
+  | "cancelled"
+  | "unsupported"
+  | "unknown";
+
+export interface AppError {
+  kind: AppErrorKind;
+  code: string;
+  message: string;
+}
 export type HealthState = "healthy" | "warning" | "missing";
 export type SkillFileKind = "directory" | "file" | "symlink";
 export type InstallMethod = "symlink" | "copy";

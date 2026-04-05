@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import styles from "../../App.module.css";
-import { loadRuntimeSettings, listCustomTargets, addCustomTarget, removeCustomTarget } from "../../api";
-import { agentLabel, copy, scopeLabel, type Language } from "../../i18n";
+import { loadRuntimeSettings, listCustomTargets, addCustomTarget, removeCustomTarget, saveRegistryUrl } from "../../api";
+import { agentLabel, copy, scopeLabel, friendlyErrorMessage, type Language } from "../../i18n";
 import type { CustomInstallTarget, IndexStatus, RuntimeSettingsSnapshot } from "../../types";
 import type { ThemeMode } from "../../hooks/useTheme";
 
@@ -62,9 +62,7 @@ export function SettingsPage({
       })
       .catch((error: unknown) => {
         if (!cancelled) {
-          setCustomTargetsError(
-            error instanceof Error ? error.message : text.defaultScanError,
-          );
+          setCustomTargetsError(friendlyErrorMessage(error, language));
         }
       })
       .finally(() => {
@@ -76,7 +74,7 @@ export function SettingsPage({
     return () => {
       cancelled = true;
     };
-  }, [text.defaultScanError]);
+  }, [language, text.defaultScanError]);
 
   async function handleSelectFolder() {
     const selected = await openDialog({
@@ -106,9 +104,7 @@ export function SettingsPage({
       setNewTargetLabel("");
       setAddingTarget(false);
     } catch (error: unknown) {
-      setCustomTargetsError(
-        error instanceof Error ? error.message : text.defaultScanError,
-      );
+      setCustomTargetsError(friendlyErrorMessage(error, language));
     } finally {
       setAddTargetBusy(false);
     }
@@ -123,9 +119,7 @@ export function SettingsPage({
       await removeCustomTarget(id);
       setCustomTargets((current) => current.filter((t) => t.id !== id));
     } catch (error: unknown) {
-      setCustomTargetsError(
-        error instanceof Error ? error.message : text.defaultScanError,
-      );
+      setCustomTargetsError(friendlyErrorMessage(error, language));
     }
   }
 
@@ -212,6 +206,31 @@ export function SettingsPage({
                   : "—"}
               </strong>
             </div>
+          </div>
+        </article>
+
+        <article className={styles.settingsCard}>
+          <p className={styles.sectionLabel}>{text.registryUrlTitle}</p>
+          <p className={styles.helperText}>{text.registryUrlBody}</p>
+          <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="text"
+              className={styles.searchField}
+              value={runtimeSettings?.registry_url ?? ""}
+              onChange={(e) =>
+                setRuntimeSettings((prev) =>
+                  prev ? { ...prev, registry_url: e.target.value } : null
+                )
+              }
+              onBlur={() => {
+                const url = runtimeSettings?.registry_url ?? "";
+                void saveRegistryUrl(url).catch((error: unknown) => {
+                  setCustomTargetsError(friendlyErrorMessage(error, language));
+                });
+              }}
+              placeholder="https://skills.sh/api/search"
+              style={{ flex: 1 }}
+            />
           </div>
         </article>
 

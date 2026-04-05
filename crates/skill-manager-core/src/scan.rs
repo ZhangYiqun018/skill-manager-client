@@ -68,6 +68,11 @@ pub(crate) fn build_scan_roots(options: &ScanOptions) -> Vec<RootSpec> {
             scope: SkillScope::Global,
             base_dir: home.join(".claude/skills"),
         });
+        roots.push(RootSpec {
+            agent: AgentKind::Agent,
+            scope: SkillScope::Global,
+            base_dir: home.join(".agent/skills"),
+        });
     }
 
     if let Some(project_root) = &options.project_root {
@@ -80,6 +85,11 @@ pub(crate) fn build_scan_roots(options: &ScanOptions) -> Vec<RootSpec> {
             agent: AgentKind::ClaudeCode,
             scope: SkillScope::Project,
             base_dir: project_root.join(".claude/skills"),
+        });
+        roots.push(RootSpec {
+            agent: AgentKind::Agent,
+            scope: SkillScope::Project,
+            base_dir: project_root.join(".agent/skills"),
         });
     }
 

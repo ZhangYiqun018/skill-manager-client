@@ -3,7 +3,8 @@ import styles from "../../App.module.css";
 import { installSkillToTarget } from "../../api/library";
 import { FilterPill } from "../../components/FilterPill";
 import { SearchField } from "../../components/SearchField";
-import { copy, scopeLabel, agentLabel, sourceLabel, type Language } from "../../i18n";
+import { useToast } from "../../components/ToastProvider";
+import { copy, scopeLabel, agentLabel, friendlyErrorMessage, type Language } from "../../i18n";
 import type {
   AgentFilter,
   ScopeFilter,
@@ -11,6 +12,7 @@ import type {
 } from "../../types";
 import { InstallModal } from "./InstallModal";
 import { LibraryDetailsPanel } from "./LibraryDetailsPanel";
+import { SkillGalleryCard } from "./SkillGalleryCard";
 
 type LibraryPageProps = {
   agentCounts: Record<AgentFilter, number>;
@@ -18,8 +20,10 @@ type LibraryPageProps = {
   filteredSkills: SkillItem[];
   language: Language;
   onAgentFilterChange: (filter: AgentFilter) => void;
+  onGoToDiscover: () => void;
   onOpenPath: (path: string) => void;
   onPromoteVariant: (path: string) => void;
+  onScanDisk: () => void;
   onScopeFilterChange: (filter: ScopeFilter) => void;
   onSearchQueryChange: (value: string) => void;
   onSelectSkill: (skillPath: string) => void;
@@ -54,8 +58,10 @@ export function LibraryPage({
   filteredSkills,
   language,
   onAgentFilterChange,
+  onGoToDiscover,
   onOpenPath,
   onPromoteVariant,
+  onScanDisk,
   onScopeFilterChange,
   onSearchQueryChange,
   onSelectSkill,
@@ -72,6 +78,7 @@ export function LibraryPage({
   updatingPath,
 }: LibraryPageProps) {
   const text = copy[language];
+  const { showToast } = useToast();
   const familyGroups = useMemo<LibraryFamilyGroup[]>(() => {
     const groups = new Map<string, LibraryFamilyGroup>();
 
@@ -178,6 +185,11 @@ export function LibraryPage({
                 label={`${agentLabel("claude_code")} (${agentCounts.claude_code})`}
                 onClick={() => onAgentFilterChange("claude_code")}
               />
+              <FilterPill
+                active={agentFilter === "agent"}
+                label={`${agentLabel("agent")} (${agentCounts.agent})`}
+                onClick={() => onAgentFilterChange("agent")}
+              />
             </div>
 
             <div className={styles.pillGroup}>
@@ -201,13 +213,42 @@ export function LibraryPage({
 
           {filteredSkills.length === 0 ? (
             <div className={styles.emptyState}>
-              <span className={styles.emptyStateIcon}>📁</span>
-              <strong>{text.emptyLibraryTitle}</strong>
+              <span className={styles.emptyStateIcon}>
+                {searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all" ? "🔍" : "🎉"}
+              </span>
+              <strong>
+                {searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all"
+                  ? text.emptyLibraryTitle
+                  : text.emptyLibraryWelcomeTitle}
+              </strong>
               <p>
-                {searchQuery.trim()
+                {searchQuery.trim() || agentFilter !== "all" || scopeFilter !== "all"
                   ? text.noMatchingSkillsBody
-                  : text.noSkillsInLibraryBody}
+                  : text.emptyLibraryWelcomeBody}
               </p>
+              {!searchQuery.trim() && agentFilter === "all" && scopeFilter === "all" ? (
+                <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
+                  <button type="button" className={styles.primaryButton} onClick={onScanDisk}>
+                    {text.emptyLibraryScanAction}
+                  </button>
+                  <button type="button" className={styles.secondaryButton} onClick={onGoToDiscover}>
+                    {text.emptyLibraryDiscoverAction}
+                  </button>
+                </div>
+              ) : null}
+              {!searchQuery.trim() && agentFilter === "all" && scopeFilter === "all" ? (
+                <p
+                  style={{
+                    marginTop: 16,
+                    fontSize: "0.8rem",
+                    color: "var(--sm-text-secondary)",
+                    maxWidth: 400,
+                    textAlign: "center",
+                  }}
+                >
+                  {text.emptyLibraryFirstRunHint}
+                </p>
+              ) : null}
             </div>
           ) : (
             <div ref={galleryRef} className={styles.skillGalleryGrid}>
@@ -215,64 +256,27 @@ export function LibraryPage({
                 const representative = group.skills[0];
                 const delay = Math.min(index * 40, 600);
                 return (
-                  <div
+                  <SkillGalleryCard
                     key={group.familyKey}
-                    role="button"
-                    tabIndex={0}
-                    className={styles.skillGalleryCard}
-                    style={{ "--delay": `${delay}ms` } as React.CSSProperties}
-                    onClick={() => onSelectSkill(representative.path)}
+                    group={group}
+                    language={language}
+                    delay={delay}
+                    onSelect={() => onSelectSkill(representative.path)}
                     onContextMenu={(event) => {
                       event.preventDefault();
                       setContextMenu({ x: event.clientX, y: event.clientY, skill: representative });
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        onSelectSkill(representative.path);
-                      }
+                    onInstall={(e) => {
+                      e.stopPropagation();
+                      setModalSkill(representative);
                     }}
-                  >
-                    <button
-                      type="button"
-                      className={styles.cardInstallButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setModalSkill(representative);
-                      }}
-                      title={text.installToCustomLocation}
-                    >
-                      {text.cardInstallAction}
-                    </button>
-                    <div className={styles.skillCardHeader}>
-                      <div
-                        className={styles.skillCardIcon}
-                        style={{ background: familyGradient(group.familyKey) }}
-                        aria-hidden
-                      >
-                        {group.displayName.slice(0, 1).toUpperCase()}
-                      </div>
-                    </div>
-                    <h3 className={styles.skillCardTitle}>{group.displayName}</h3>
-                    <p className={styles.skillCardDescription}>
-                      {representative.description ?? text.descriptionFallback}
-                    </p>
-                    <div className={styles.skillCardMeta}>
-                      <span className={styles.badge}>
-                        {scopeLabel(representative.scope, language)}
-                      </span>
-                      <span className={styles.agentBadge} data-agent={representative.agent}>
-                        {agentLabel(representative.agent)}
-                      </span>
-                      {representative.source_type === "remote" ? (
-                        <span className={styles.sourceBadge}>
-                          {sourceLabel(representative.source_type, language)}
-                        </span>
-                      ) : null}
-                      <span className={styles.badge}>
-                        {group.skills.length} {text.variantCountLabel}
-                      </span>
-                    </div>
-                  </div>
+                    installTitle={text.installToCustomLocation}
+                    installLabel={text.cardInstallAction}
+                    variantCountLabel={text.variantCountLabel}
+                    issuesLabel={text.issuesLabel}
+                    hasUpdate={hasUpdateFor(representative.path)}
+                    updateLabel={text.updateAvailable}
+                  />
                 );
               })}
             </div>
@@ -281,6 +285,7 @@ export function LibraryPage({
           {contextMenu ? (
             <div
               data-context-menu="true"
+              role="menu"
               className={styles.contextMenu}
               style={{
                 position: "fixed",
@@ -348,8 +353,21 @@ export function LibraryPage({
           skill={modalSkill}
           language={language}
           onClose={() => setModalSkill(null)}
-          onInstall={async (targetPath, targetAgent, targetMethod) => {
-            await installSkillToTarget(modalSkill.path, targetPath, targetAgent, targetMethod);
+          onInstall={async (targetPath, targetAgents, targetMethod) => {
+            const errors: string[] = [];
+            for (const agent of targetAgents) {
+              try {
+                await installSkillToTarget(modalSkill.path, targetPath, agent, targetMethod);
+              } catch (e) {
+                errors.push(`${agentLabel(agent)}: ${friendlyErrorMessage(e, language)}`);
+              }
+            }
+            if (errors.length === 0) {
+              showToast(text.installSuccess, "success");
+              setModalSkill(null);
+            } else {
+              showToast(`${text.installFailed}\n${errors.join("\n")}`, "error");
+            }
           }}
         />
       ) : null}
@@ -369,6 +387,7 @@ function ContextMenuItem({
   return (
     <button
       type="button"
+      role="menuitem"
       disabled={disabled}
       onClick={onClick}
       style={{
@@ -406,13 +425,4 @@ function variantRowTitle(skill: SkillItem, language: Language): string {
 
 function shortHash(contentHash: string): string {
   return contentHash.slice(0, 8);
-}
-
-function familyGradient(key: string): string {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = key.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const h = Math.abs(hash) % 360;
-  return `linear-gradient(135deg, hsl(${h} 55% 55%), hsl(${h} 60% 40%))`;
 }

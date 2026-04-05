@@ -8,6 +8,7 @@ import {
 import {
   agentLabel,
   copy,
+  friendlyErrorMessage,
   healthLabel,
   installHealthLabel,
   installMethodLabel,
@@ -44,9 +45,7 @@ export function TargetsPage({
       })
       .catch((error: unknown) => {
         if (!cancelled) {
-          setInventoryError(
-            error instanceof Error ? error.message : text.defaultScanError,
-          );
+          setInventoryError(friendlyErrorMessage(error, language));
         }
       })
       .finally(() => {
@@ -58,7 +57,7 @@ export function TargetsPage({
     return () => {
       cancelled = true;
     };
-  }, [text.defaultScanError]);
+  }, [language, text.defaultScanError]);
 
   const globalTargets = inventories.filter((target) => target.scope === "global");
   const projectTargets = inventories.filter((target) => target.scope === "project");
@@ -77,7 +76,7 @@ export function TargetsPage({
           : await repairInstallTarget(targetPath);
       setInventories(nextInventories);
     } catch (error: unknown) {
-      setInventoryError(error instanceof Error ? error.message : text.defaultScanError);
+      setInventoryError(friendlyErrorMessage(error, language));
     } finally {
       setTargetActionPath(null);
     }
@@ -200,7 +199,7 @@ function TargetCard({
     <article className={styles.targetCard}>
       <div className={styles.targetCardHeader}>
         <div className={styles.badgeRow}>
-          <span className={styles.badge}>{scopeLabel(target.scope, language)}</span>
+          <span className={styles.scopeBadge} data-scope={target.scope}>{scopeLabel(target.scope, language)}</span>
           <span className={styles.agentBadge} data-agent={target.agent}>
             {agentLabel(target.agent)}
           </span>

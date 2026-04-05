@@ -8,6 +8,7 @@ export type SourceFilter = "all" | SkillSourceType;
 export type DiscoveryPreset =
   | "recommended"
   | "project"
+  | "agent"
   | "codex"
   | "claude_code";
 export type DiscoveryGroupKind = "unique" | "exact_duplicate" | "variant";

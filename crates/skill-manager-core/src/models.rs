@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum AgentKind {
+    Agent,
     ClaudeCode,
     Codex,
 }
@@ -12,6 +13,7 @@ pub enum AgentKind {
 impl AgentKind {
     pub fn label(&self) -> &'static str {
         match self {
+            Self::Agent => "Agent",
             Self::ClaudeCode => "Claude Code",
             Self::Codex => "Codex",
         }
@@ -19,6 +21,7 @@ impl AgentKind {
 
     pub(crate) fn as_key(&self) -> &'static str {
         match self {
+            Self::Agent => "agent",
             Self::ClaudeCode => "claude_code",
             Self::Codex => "codex",
         }
@@ -26,6 +29,7 @@ impl AgentKind {
 
     pub(crate) fn from_key(value: &str) -> Option<Self> {
         match value {
+            "agent" => Some(Self::Agent),
             "claude_code" => Some(Self::ClaudeCode),
             "codex" => Some(Self::Codex),
             _ => None,
@@ -113,6 +117,101 @@ pub struct SkillFileNode {
 pub enum InstallMethod {
     Symlink,
     Copy,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum AppErrorKind {
+    Io,
+    Network,
+    NotFound,
+    Validation,
+    PermissionDenied,
+    AlreadyExists,
+    Cancelled,
+    Unsupported,
+    Unknown,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AppError {
+    pub kind: AppErrorKind,
+    pub code: String,
+    pub message: String,
+}
+
+impl AppError {
+    pub fn io(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::Io,
+            code: "io_error".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn network(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::Network,
+            code: "network_error".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn not_found(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::NotFound,
+            code: "not_found".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn validation(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::Validation,
+            code: "validation_error".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn permission_denied(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::PermissionDenied,
+            code: "permission_denied".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn already_exists(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::AlreadyExists,
+            code: "already_exists".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn cancelled(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::Cancelled,
+            code: "cancelled".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn unsupported(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::Unsupported,
+            code: "unsupported".to_string(),
+            message: message.into(),
+        }
+    }
+
+    pub fn unknown(message: impl Into<String>) -> Self {
+        Self {
+            kind: AppErrorKind::Unknown,
+            code: "unknown_error".to_string(),
+            message: message.into(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

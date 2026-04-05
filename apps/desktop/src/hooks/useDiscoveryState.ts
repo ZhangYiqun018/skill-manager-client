@@ -17,13 +17,11 @@ import type {
 } from "../types";
 
 export function useDiscoveryState({
-  text,
   applySnapshotWithDerived,
   selectLibrarySkillFromSnapshot,
   discoveryReport,
   discoveryRepresentativeSkills,
 }: {
-  text: { defaultScanError: string };
   applySnapshotWithDerived: (result: IndexedScanSummary) => void | Promise<void>;
   selectLibrarySkillFromSnapshot: (
     result: IndexedScanSummary,
@@ -82,10 +80,6 @@ export function useDiscoveryState({
       if (adoptedSkill) {
         selectLibrarySkillFromSnapshot(result, () => true);
       }
-    } catch (adoptFailure) {
-      throw adoptFailure instanceof Error
-        ? adoptFailure
-        : new Error(text.defaultScanError);
     } finally {
       setAdoptingSkillPaths([]);
     }
@@ -120,10 +114,6 @@ export function useDiscoveryState({
       if (adoptedSkill) {
         selectLibrarySkillFromSnapshot(result, () => true);
       }
-    } catch (resolutionFailure) {
-      throw resolutionFailure instanceof Error
-        ? resolutionFailure
-        : new Error(text.defaultScanError);
     } finally {
       setAdoptingSkillPaths([]);
     }
@@ -131,18 +121,12 @@ export function useDiscoveryState({
 
   async function handleImportFolder(
     path: string,
-    agent: "codex" | "claude_code",
+    agent: "agent" | "codex" | "claude_code",
     scope: "global" | "project",
   ) {
-    try {
-      const result = await importLocalSkillFolder(path, agent, scope);
-      await applySnapshotWithDerived(result);
-      selectLibrarySkillFromSnapshot(result, (skill) => skill.source_type === "import");
-    } catch (importFailure) {
-      throw importFailure instanceof Error
-        ? importFailure
-        : new Error(text.defaultScanError);
-    }
+    const result = await importLocalSkillFolder(path, agent, scope);
+    await applySnapshotWithDerived(result);
+    selectLibrarySkillFromSnapshot(result, (skill) => skill.source_type === "import");
   }
 
   async function handleSearchRegistry(query: string) {
@@ -155,29 +139,23 @@ export function useDiscoveryState({
       skillId: string;
       name: string;
     },
-    agent: "codex" | "claude_code",
+    agent: "agent" | "codex" | "claude_code",
     scope: "global" | "project",
   ) {
-    try {
-      const result = await adoptRegistrySkill(
-        skill.name,
-        skill.skillId,
-        skill.id,
-        agent,
-        scope,
-      );
-      await applySnapshotWithDerived(result);
-      selectLibrarySkillFromSnapshot(
-        result,
-        (candidate) =>
+    const result = await adoptRegistrySkill(
+      skill.name,
+      skill.skillId,
+      skill.id,
+      agent,
+      scope,
+    );
+    await applySnapshotWithDerived(result);
+    selectLibrarySkillFromSnapshot(
+      result,
+      (candidate) =>
           candidate.source_type === "remote" &&
           candidate.display_name.toLowerCase() === skill.name.toLowerCase(),
       );
-    } catch (adoptFailure) {
-      throw adoptFailure instanceof Error
-        ? adoptFailure
-        : new Error(text.defaultScanError);
-    }
   }
 
   return {

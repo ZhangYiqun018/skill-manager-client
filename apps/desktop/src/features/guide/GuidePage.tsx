@@ -68,6 +68,24 @@ export function GuidePage({ language }: GuidePageProps) {
         >
           <p>{text.guideSettingsBody}</p>
         </GuideCard>
+
+        <GuideCard
+          id="shortcuts"
+          isOpen={openSection === "shortcuts"}
+          onToggle={() => toggle("shortcuts")}
+          title={text.guideShortcutsTitle}
+        >
+          <p>{text.guideShortcutsBody}</p>
+        </GuideCard>
+
+        <GuideCard
+          id="faq"
+          isOpen={openSection === "faq"}
+          onToggle={() => toggle("faq")}
+          title={text.guideFaqTitle}
+        >
+          <p>{text.guideFaqBody}</p>
+        </GuideCard>
       </div>
     </section>
   );
@@ -81,11 +99,14 @@ type GuideCardProps = {
   title: string;
 };
 
-function GuideCard({ children, isOpen, onToggle, title }: GuideCardProps) {
+function GuideCard({ children, id, isOpen, onToggle, title }: GuideCardProps) {
   return (
     <article className={styles.settingsCard}>
       <button
         type="button"
+        className={styles.guideCardButton}
+        aria-expanded={isOpen}
+        aria-controls={`guide-section-${id}`}
         onClick={onToggle}
         style={{
           width: "100%",
@@ -123,6 +144,7 @@ function GuideCard({ children, isOpen, onToggle, title }: GuideCardProps) {
       </button>
       {isOpen ? (
         <div
+          id={`guide-section-${id}`}
           style={{
             marginTop: 12,
             lineHeight: 1.7,
