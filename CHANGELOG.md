@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Discovery: scan local projects for skill candidates and resolve conflicts.
 - Marketplace: search and adopt skills from the skills.sh remote registry.
 - Install targets: sync and repair skill installations across agent configurations.
-- Multi-agent installs: install a skill to Codex, Claude Code, and Agent simultaneously.
+- Multi-agent installs: install a skill to Codex, Claude Code, Agent, and OpenClaw simultaneously.
 - Variant management: track, promote, and compare skill variants with diff view.
 - Custom install targets: add, remove, and manage targets via Settings.
 - Settings: configure theme (system / light / dark), language (EN / 中文), and registry URL.

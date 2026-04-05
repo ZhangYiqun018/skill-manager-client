@@ -41,11 +41,7 @@ type DiscoverPageProps = {
   onApplyAdoptionResolutions: (resolutions: AdoptionResolution[]) => Promise<void>;
   onClearSelection: () => void;
   onCompareSkills: (leftPath: string, rightPath: string) => Promise<SkillComparison>;
-  onImportFolder: (
-    path: string,
-    agent: "agent" | "codex" | "claude_code",
-    scope: "global" | "project"
-  ) => Promise<void>;
+  onImportFolder: (path: string, agent: AgentKind, scope: "global" | "project") => Promise<void>;
   onFilterQueryChange: (value: string) => void;
   onOpenFolder: () => void;
   onOpenSkillFile: () => void;
@@ -358,7 +354,7 @@ export function DiscoverPage({
                   value={filterQuery}
                 />
                 <div className={layout.filterGroup}>
-                  {(["all", "claude_code", "codex", "agent"] as const).map((agent) => (
+                  {(["all", "claude_code", "codex", "agent", "open_claw"] as const).map((agent) => (
                     <button
                       key={agent}
                       type="button"

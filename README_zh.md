@@ -6,7 +6,7 @@
 
 ### 一个应用，管理所有 AI 智能体技能。
 
-发现、安装、同步技能到 **Codex · Claude Code · Agent** — 一个漂亮的桌面应用搞定一切。
+发现、安装、同步技能到 **Codex · Claude Code · Agent · OpenClaw** — 一个漂亮的桌面应用搞定一切。
 
 <br/>
 
@@ -95,7 +95,7 @@ AI 智能体很强大 — 但管理它们的技能是一团糟。
 
 ### 🎯 多智能体安装
 
-一键将技能安装到 **Codex + Claude Code + Agent**。选择符号链接（省空间）或复制（便携）。
+一键将技能安装到 **Codex + Claude Code + Agent + OpenClaw**。选择符号链接（省空间）或复制（便携）。
 
 </td>
 </tr>

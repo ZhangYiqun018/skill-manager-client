@@ -10,7 +10,8 @@ export type DiscoveryPreset =
   | "project"
   | "agent"
   | "codex"
-  | "claude_code";
+  | "claude_code"
+  | "open_claw";
 export type DiscoveryGroupKind = "unique" | "exact_duplicate" | "variant";
 export type DiscoveryReviewState = "ready" | "needs_review";
 

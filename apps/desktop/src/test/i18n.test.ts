@@ -28,6 +28,7 @@ describe("agentLabel", () => {
     expect(agentLabel("codex")).toBe("Codex");
     expect(agentLabel("claude_code")).toBe("Claude Code");
     expect(agentLabel("agent")).toBe("Agent");
+    expect(agentLabel("open_claw")).toBe("OpenClaw");
   });
 });
 

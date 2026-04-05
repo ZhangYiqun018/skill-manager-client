@@ -96,11 +96,7 @@ export function useDiscoveryState({
     }
   }
 
-  async function handleImportFolder(
-    path: string,
-    agent: "agent" | "codex" | "claude_code",
-    scope: "global" | "project"
-  ) {
+  async function handleImportFolder(path: string, agent: AgentKind, scope: "global" | "project") {
     const result = await importLocalSkillFolder(path, agent, scope);
     await applySnapshotWithDerived(result);
     selectLibrarySkillFromSnapshot(result, (skill) => skill.source_type === "import");
@@ -117,7 +113,7 @@ export function useDiscoveryState({
       name: string;
       source: string;
     },
-    agent: "agent" | "codex" | "claude_code",
+    agent: AgentKind,
     scope: "global" | "project"
   ) {
     const result = await adoptRegistrySkill(skill.source, skill.skillId, skill.id, agent, scope);

@@ -419,6 +419,11 @@
   border-color: hsl(260 36% 44%);
 }
 
+:root.dark .skillGalleryCard .skillCardMeta .agentBadge[data-agent="open_claw"] {
+  background: hsl(170 30% 22%);
+  border-color: hsl(170 32% 38%);
+}
+
 :root.dark .skillGalleryCard .skillCardMeta .sourceBadge {
   background: hsl(205 34% 28%);
   border-color: hsl(205 38% 46%);

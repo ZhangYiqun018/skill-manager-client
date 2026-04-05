@@ -17,7 +17,7 @@ type AdoptConfirmDialogProps = {
 
 type Phase = "confirm" | "adopted";
 
-const AGENTS: AgentKind[] = ["codex", "claude_code", "agent"];
+const AGENTS: AgentKind[] = ["codex", "claude_code", "agent", "open_claw"];
 const SCOPES: SkillScope[] = ["global", "project"];
 
 export function AdoptConfirmDialog({

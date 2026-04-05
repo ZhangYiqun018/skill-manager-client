@@ -16,7 +16,7 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    /// Scan installed skills from local Codex and Claude Code directories.
+    /// Scan installed skills from local Codex, Claude Code, and OpenClaw directories.
     Scan {
         /// Optional project directory to inspect for project-scoped skills.
         #[arg(long)]
@@ -29,7 +29,7 @@ enum Commands {
     Install {
         /// Git URL to clone (e.g., https://github.com/user/repo.git).
         url: String,
-        /// Agent to assign (codex or claude_code).
+        /// Agent to assign (agent, codex, claude_code, or open_claw).
         #[arg(long, default_value = "codex")]
         agent: String,
         /// Scope to assign (global or project).
@@ -126,8 +126,10 @@ fn main() -> Result<()> {
 
 fn parse_agent(value: &str) -> Result<AgentKind> {
     match value {
+        "agent" => Ok(AgentKind::Agent),
         "codex" => Ok(AgentKind::Codex),
         "claude_code" => Ok(AgentKind::ClaudeCode),
+        "open_claw" => Ok(AgentKind::OpenClaw),
         _ => anyhow::bail!("Unsupported agent: {value}"),
     }
 }

@@ -263,6 +263,11 @@ export function LibraryPage({
                   label={`${agentLabel("agent")} (${agentCounts.agent})`}
                   onClick={() => onAgentFilterChange("agent")}
                 />
+                <FilterPill
+                  active={agentFilter === "open_claw"}
+                  label={`${agentLabel("open_claw")} (${agentCounts.open_claw})`}
+                  onClick={() => onAgentFilterChange("open_claw")}
+                />
               </div>
 
               <div className={forms.pillGroup}>

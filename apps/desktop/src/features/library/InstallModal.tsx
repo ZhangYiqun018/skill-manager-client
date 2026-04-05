@@ -13,7 +13,7 @@ type InstallModalProps = {
   onInstall: (path: string, agents: AgentKind[], method: "symlink" | "copy") => Promise<void>;
 };
 
-const ALL_AGENTS: AgentKind[] = ["codex", "claude_code", "agent"];
+const ALL_AGENTS: AgentKind[] = ["codex", "claude_code", "agent", "open_claw"];
 
 export function InstallModal({ skill, language, onClose, onInstall }: InstallModalProps) {
   const text = copy[language];

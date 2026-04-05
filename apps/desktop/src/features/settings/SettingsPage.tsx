@@ -16,7 +16,12 @@ import {
   saveRegistryUrl,
 } from "../../api";
 import { agentLabel, copy, scopeLabel, friendlyErrorMessage, type Language } from "../../i18n";
-import type { CustomInstallTarget, IndexStatus, RuntimeSettingsSnapshot } from "../../types";
+import type {
+  AgentKind,
+  CustomInstallTarget,
+  IndexStatus,
+  RuntimeSettingsSnapshot,
+} from "../../types";
 import type { ThemeMode } from "../../hooks/useTheme";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { useToast } from "../../components/ToastProvider";
@@ -45,7 +50,7 @@ export function SettingsPage({
   const [customTargetsError, setCustomTargetsError] = useState<string | null>(null);
   const [addingTarget, setAddingTarget] = useState(false);
   const [newTargetPath, setNewTargetPath] = useState("");
-  const [newTargetAgent, setNewTargetAgent] = useState<"codex" | "claude_code">("codex");
+  const [newTargetAgent, setNewTargetAgent] = useState<AgentKind>("codex");
   const [newTargetScope, setNewTargetScope] = useState<"global" | "project">("global");
   const [newTargetLabel, setNewTargetLabel] = useState("");
   const [addTargetBusy, setAddTargetBusy] = useState(false);
@@ -293,11 +298,13 @@ export function SettingsPage({
               <div className={forms.formSelectRow}>
                 <select
                   value={newTargetAgent}
-                  onChange={(e) => setNewTargetAgent(e.target.value as "codex" | "claude_code")}
+                  onChange={(e) => setNewTargetAgent(e.target.value as AgentKind)}
                   className={`${forms.searchField} ${layout.flexGrow}`}
                 >
                   <option value="codex">{agentLabel("codex")}</option>
                   <option value="claude_code">{agentLabel("claude_code")}</option>
+                  <option value="open_claw">{agentLabel("open_claw")}</option>
+                  <option value="agent">{agentLabel("agent")}</option>
                 </select>
                 <select
                   value={newTargetScope}

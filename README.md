@@ -6,7 +6,7 @@
 
 ### One app to rule all your AI agent skills.
 
-Discover, install, and sync skills across **Codex · Claude Code · Agent** — from a single beautiful desktop app.
+Discover, install, and sync skills across **Codex · Claude Code · Agent · OpenClaw** — from a single beautiful desktop app.
 
 <br/>
 
@@ -95,7 +95,7 @@ Scan your entire disk for existing skills. Import local folders. Resolve duplica
 
 ### 🎯 Multi-Agent Install
 
-Install one skill to **Codex + Claude Code + Agent** simultaneously. Choose symlink (saves space) or copy (portable).
+Install one skill to **Codex + Claude Code + Agent + OpenClaw** simultaneously. Choose symlink (saves space) or copy (portable).
 
 </td>
 </tr>

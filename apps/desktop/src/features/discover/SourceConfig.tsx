@@ -4,9 +4,9 @@ import { FilterPill } from "../../components/FilterPill";
 import { agentLabel, copy, scopeLabel, type Language } from "../../i18n";
 
 type SourceConfigProps = {
-  agent: "agent" | "codex" | "claude_code";
+  agent: AgentKind;
   language: Language;
-  onAgentChange: (value: "agent" | "codex" | "claude_code") => void;
+  onAgentChange: (value: AgentKind) => void;
   onScopeChange: (value: "global" | "project") => void;
   scope: "global" | "project";
 };
