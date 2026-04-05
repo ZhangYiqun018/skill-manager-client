@@ -136,3 +136,11 @@ export async function updateManagedSkill(path: string): Promise<IndexedScanSumma
 export async function loadManagedGitSource(path: string): Promise<ManagedGitSource | null> {
   return invoke<ManagedGitSource | null>("load_managed_git_source", { path });
 }
+
+export async function setSkillTags(skillMd: string, tags: string[]): Promise<IndexedScanSummary> {
+  return invoke<IndexedScanSummary>("set_skill_tags", { skillMd, tags });
+}
+
+export async function exportSkillsByTags(destination: string, tags: string[]): Promise<number> {
+  return invoke<number>("export_skills_by_tags", { destination, tags });
+}

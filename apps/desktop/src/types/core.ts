@@ -51,6 +51,7 @@ export interface InstalledSkill {
   source_root: string;
   project_root?: string | null;
   metadata: SkillMetadata;
+  tags: string[];
 }
 
 export interface SkillItem extends InstalledSkill {

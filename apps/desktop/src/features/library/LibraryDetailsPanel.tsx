@@ -18,6 +18,7 @@ import {
   friendlyErrorMessage,
   scopeLabel,
   sourceLabel,
+  type Copy,
   type Language,
 } from "../../i18n";
 import type { AgentKind, SkillItem } from "../../types";
@@ -39,6 +40,8 @@ type LibraryDetailsPanelProps = {
   onOpenPath: (path: string) => void;
   onPromoteVariant: (path: string) => void | Promise<void>;
   onSelectSkill: (path: string) => void;
+  onSetSkillTags: (skillMd: string, tags: string[]) => void | Promise<void>;
+  onTagFilterChange?: (tags: string[]) => void;
   onUpdateSkill: (path: string) => void;
   onUpdateVariantLabel: (path: string, variantLabel: string) => void | Promise<void>;
   previewContent?: string;
@@ -56,6 +59,8 @@ export function LibraryDetailsPanel({
   onOpenPath,
   onPromoteVariant,
   onSelectSkill,
+  onSetSkillTags,
+  onTagFilterChange,
   onUpdateSkill,
   onUpdateVariantLabel,
   previewContent,
@@ -246,6 +251,13 @@ export function LibraryDetailsPanel({
         {selectedSkill.description ?? text.descriptionFallback}
       </p>
 
+      <TagEditor
+        skill={selectedSkill}
+        text={text}
+        onSetTags={onSetSkillTags}
+        onTagClick={onTagFilterChange}
+      />
+
       <div className={buttons.actionRow}>
         <button
           type="button"
@@ -395,5 +407,104 @@ export function LibraryDetailsPanel({
         />
       ) : null}
     </aside>
+  );
+}
+
+type TagEditorProps = {
+  skill: SkillItem;
+  text: Copy;
+  onSetTags: (skillMd: string, tags: string[]) => void | Promise<void>;
+  onTagClick?: (tags: string[]) => void;
+};
+
+function TagEditor({ skill, text, onSetTags, onTagClick }: TagEditorProps) {
+  const [draft, setDraft] = useState("");
+
+  function addTag() {
+    const trimmed = draft.trim().toLowerCase();
+    if (!trimmed) return;
+    if (skill.tags.includes(trimmed)) {
+      setDraft("");
+      return;
+    }
+    const next = [...skill.tags, trimmed];
+    void onSetTags(skill.skill_md, next);
+    setDraft("");
+  }
+
+  function removeTag(tag: string) {
+    const next = skill.tags.filter((t) => t !== tag);
+    void onSetTags(skill.skill_md, next);
+  }
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <p style={{ fontSize: 12, fontWeight: 600, margin: "0 0 6px" }}>{text.tagsLabel}</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+        {skill.tags.length === 0 ? (
+          <span style={{ fontSize: 13, opacity: 0.7 }}>{text.noTags}</span>
+        ) : (
+          skill.tags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => onTagClick?.([tag])}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "2px 8px",
+                borderRadius: 999,
+                border: "1px solid var(--sm-border)",
+                background: "var(--sm-surface)",
+                fontSize: 12,
+                cursor: onTagClick ? "pointer" : "default",
+              }}
+              title={text.filterByTag}
+            >
+              <span>#{tag}</span>
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeTag(tag);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.stopPropagation();
+                    removeTag(tag);
+                  }
+                }}
+                style={{ opacity: 0.7, cursor: "pointer" }}
+              >
+                ×
+              </span>
+            </button>
+          ))
+        )}
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addTag();
+            }
+          }}
+          placeholder={text.addTagPlaceholder}
+          style={{
+            padding: "2px 8px",
+            borderRadius: 999,
+            border: "1px solid var(--sm-border)",
+            background: "var(--sm-bg)",
+            fontSize: 12,
+            minWidth: 140,
+            color: "var(--sm-text)",
+          }}
+        />
+      </div>
+    </div>
   );
 }

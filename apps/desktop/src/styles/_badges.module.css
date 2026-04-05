@@ -453,6 +453,73 @@
   padding: 0.22rem 0.55rem;
 }
 
+.tagBadge,
+.tagAddButton {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-bg-elevated);
+  color: var(--sm-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tagBadge:hover {
+  background: var(--sm-surface-hover);
+  border-color: var(--sm-primary);
+  color: var(--sm-primary);
+}
+
+.tagAddButton {
+  padding: 0.15rem 0.45rem;
+  font-weight: 600;
+  min-width: 22px;
+  justify-content: center;
+}
+
+.tagAddButton:hover {
+  background: var(--sm-surface-hover);
+  border-color: var(--sm-primary);
+  color: var(--sm-primary);
+}
+
+.installedBadge,
+.installIssueBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.installedBadge {
+  background: hsl(145 60% 94%);
+  color: hsl(145 65% 26%);
+  border: 1px solid hsl(145 45% 78%);
+}
+
+:root.dark .installedBadge {
+  background: hsl(145 32% 20%);
+  border-color: hsl(145 28% 34%);
+  color: hsl(145 55% 68%);
+}
+
+.installIssueBadge {
+  background: hsl(30 90% 96%);
+  color: hsl(25 70% 35%);
+  border: 1px solid hsl(30 60% 85%);
+}
+
+:root.dark .installIssueBadge {
+  background: hsl(30 40% 22%);
+  border-color: hsl(30 35% 38%);
+  color: hsl(30 80% 72%);
+}
+
 .actionBadgeReady {
   display: inline-flex;
   align-items: center;

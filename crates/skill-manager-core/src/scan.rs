@@ -82,6 +82,11 @@ pub(crate) fn build_scan_roots(options: &ScanOptions) -> Vec<RootSpec> {
             base_dir: project_root.join(".agents/skills"),
         });
         roots.push(RootSpec {
+            agent: AgentKind::Codex,
+            scope: SkillScope::Project,
+            base_dir: project_root.join(".codex/skills"),
+        });
+        roots.push(RootSpec {
             agent: AgentKind::ClaudeCode,
             scope: SkillScope::Project,
             base_dir: project_root.join(".claude/skills"),
@@ -146,6 +151,7 @@ pub(crate) fn build_installed_skill(
         source_root: descriptor.source_root,
         project_root: descriptor.project_root,
         metadata,
+        tags: Vec::new(),
     }
 }
 
@@ -292,14 +298,22 @@ pub(crate) fn classify_discovered_skill_path(
                 .map(|home| source_root == home.join(".codex/skills"))
                 .unwrap_or(false);
 
-            is_global.then(|| SkillDescriptor {
+            Some(SkillDescriptor {
                 source_type: SkillSourceType::Disk,
                 agent: AgentKind::Codex,
-                scope: SkillScope::Global,
+                scope: if is_global {
+                    SkillScope::Global
+                } else {
+                    SkillScope::Project
+                },
                 skill_dir,
                 skill_md: path.to_path_buf(),
                 source_root,
-                project_root: None,
+                project_root: if is_global {
+                    None
+                } else {
+                    container_dir.parent().map(Path::to_path_buf)
+                },
             })
         }
         _ => None,

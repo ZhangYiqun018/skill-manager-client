@@ -90,6 +90,15 @@ export type Copy = {
   variantLabelBody: string;
   variantLabelPlaceholder: string;
   variantLabelFallback: string;
+  tagsLabel: string;
+  addTagPlaceholder: string;
+  exportByTag: string;
+  exportSuccess: string;
+  noTags: string;
+  filterByTag: string;
+  addTagAction: string;
+  installedLabel: string;
+  installIssuesLabel: string;
   editVariantLabel: string;
   saveVariantLabel: string;
   savingVariantLabel: string;

@@ -6,6 +6,7 @@ use skill_manager_core::{
     SkillDirectoryDiff, SkillFileNode, SkillInstallStatus,
     check_managed_skill_updates as check_managed_skill_updates_core,
     compare_skills as compare_skills_core, diff_skill_directories as diff_skill_directories_core,
+    export_skills_by_tags as export_skills_by_tags_core,
     install_managed_skill as install_managed_skill_core,
     load_managed_git_source as load_managed_git_source_core,
     load_managed_skill_history as load_managed_skill_history_core,
@@ -16,6 +17,7 @@ use skill_manager_core::{
     read_skill_text_file as read_skill_text_file_core,
     remove_managed_skill_install as remove_managed_skill_install_core,
     repair_managed_skill_install as repair_managed_skill_install_core,
+    set_skill_tags as set_skill_tags_core,
     update_managed_skill_from_git as update_managed_skill_from_git_core,
     update_managed_skill_variant_label as update_managed_skill_variant_label_core,
 };
@@ -359,4 +361,41 @@ pub async fn promote_managed_skill_variant(
     })
     .await
     .map_err(log_err("promote_managed_skill_variant"))
+}
+
+#[tauri::command]
+#[tracing::instrument(skip(project_root))]
+pub async fn set_skill_tags(
+    skill_md: String,
+    tags: Vec<String>,
+    project_root: Option<String>,
+) -> Result<IndexedScanSummary, AppError> {
+    let scan_options = build_scan_options(project_root);
+    run_blocking(move || {
+        let index_options = IndexOptions::default();
+        set_skill_tags_core(&skill_md, &tags, &index_options)?;
+        Ok(load_skill_index_core(&scan_options, &index_options)?)
+    })
+    .await
+    .map_err(log_err("set_skill_tags"))
+}
+
+#[tauri::command]
+#[tracing::instrument(skip(_project_root))]
+pub async fn export_skills_by_tags(
+    destination: String,
+    tags: Vec<String>,
+    _project_root: Option<String>,
+) -> Result<u32, AppError> {
+    run_blocking(move || {
+        let index_options = IndexOptions::default();
+        let destination_path = PathBuf::from(destination);
+        Ok(export_skills_by_tags_core(
+            &destination_path,
+            &tags,
+            &index_options,
+        )?)
+    })
+    .await
+    .map_err(log_err("export_skills_by_tags"))
 }

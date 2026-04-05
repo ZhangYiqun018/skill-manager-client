@@ -489,6 +489,7 @@ pub struct InstalledSkill {
     pub source_root: PathBuf,
     pub project_root: Option<PathBuf>,
     pub metadata: SkillMetadata,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -912,6 +912,60 @@ pub fn update_managed_skill_variant_label(
     Ok(())
 }
 
+pub fn set_skill_tags(
+    skill_md: &str,
+    tags: &[String],
+    index_options: &IndexOptions,
+) -> Result<(), IndexError> {
+    let index_path = resolve_index_path(index_options);
+    if let Some(parent) = index_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let connection = Connection::open(index_path)?;
+    init_schema(&connection)?;
+    let tags_json = serde_json::to_string(tags)
+        .map_err(|error| IndexError::Message(format!("Failed to serialize tags: {error}")))?;
+    connection.execute(
+        "
+        INSERT INTO skill_tags (skill_md, tags) VALUES (?1, ?2)
+        ON CONFLICT(skill_md) DO UPDATE SET tags = excluded.tags
+        ",
+        params![skill_md, tags_json],
+    )?;
+    Ok(())
+}
+
+pub fn export_skills_by_tags(
+    destination: &Path,
+    tags: &[String],
+    index_options: &IndexOptions,
+) -> Result<u32, IndexError> {
+    if tags.is_empty() {
+        return Ok(0);
+    }
+    let index_path = resolve_index_path(index_options);
+    if !index_path.exists() {
+        return Ok(0);
+    }
+    let connection = Connection::open(index_path)?;
+    init_schema(&connection)?;
+    let mut skills = read_skills_from_db(&connection)?;
+    let tag_set: std::collections::HashSet<&str> = tags.iter().map(|t| t.as_str()).collect();
+    skills.retain(|skill| skill.tags.iter().any(|t| tag_set.contains(t.as_str())));
+
+    fs::create_dir_all(destination)?;
+    let mut exported = 0_u32;
+    for skill in skills {
+        let target_dir = destination.join(&skill.family_key).join(&skill.slug);
+        if target_dir.exists() {
+            fs::remove_dir_all(&target_dir)?;
+        }
+        copy_dir_recursive(&skill.path, &target_dir)?;
+        exported += 1;
+    }
+    Ok(exported)
+}
+
 fn resolve_index_path(index_options: &IndexOptions) -> PathBuf {
     index_options
         .index_path
@@ -1287,6 +1341,11 @@ fn init_schema(connection: &Connection) -> Result<(), rusqlite::Error> {
           label TEXT,
           created_unix_ms INTEGER NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS skill_tags (
+          skill_md TEXT PRIMARY KEY,
+          tags TEXT NOT NULL DEFAULT '[]'
+        );
         ",
     )?;
 
@@ -1352,7 +1411,27 @@ fn read_summary_from_db(
     })
 }
 
+fn load_skill_tags_map(
+    connection: &Connection,
+) -> Result<BTreeMap<String, Vec<String>>, rusqlite::Error> {
+    let mut statement = connection.prepare("SELECT skill_md, tags FROM skill_tags")?;
+    let rows = statement.query_map([], |row| {
+        let skill_md: String = row.get(0)?;
+        let tags_json: String = row.get(1)?;
+        let tags: Vec<String> = serde_json::from_str(&tags_json).unwrap_or_default();
+        Ok((skill_md, tags))
+    })?;
+
+    let mut map = BTreeMap::new();
+    for row in rows {
+        let (skill_md, tags) = row?;
+        map.insert(skill_md, tags);
+    }
+    Ok(map)
+}
+
 fn read_skills_from_db(connection: &Connection) -> Result<Vec<InstalledSkill>, rusqlite::Error> {
+    let tags_map = load_skill_tags_map(connection)?;
     let mut statement = connection.prepare(
         "
         SELECT
@@ -1420,10 +1499,19 @@ fn read_skills_from_db(connection: &Connection) -> Result<Vec<InstalledSkill>, r
                 description: row.get(13)?,
                 user_invocable: row.get::<_, Option<i64>>(14)?.map(|value| value != 0),
             },
+            tags: Vec::new(),
         })
     })?;
 
-    rows.collect()
+    let mut skills = Vec::new();
+    for row in rows {
+        let mut skill = row?;
+        if let Some(tags) = tags_map.get(&skill.skill_md.to_string_lossy().to_string()) {
+            skill.tags = tags.clone();
+        }
+        skills.push(skill);
+    }
+    Ok(skills)
 }
 
 fn read_warnings_from_db(connection: &Connection) -> Result<Vec<ScanWarning>, rusqlite::Error> {

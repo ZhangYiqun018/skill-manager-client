@@ -5,6 +5,7 @@ import {
   compareSkills,
   openInFinder,
   promoteManagedSkillVariant,
+  setSkillTags,
   updateManagedSkillVariantLabel,
 } from "./api";
 import { ConfirmModal } from "./components/ConfirmModal";
@@ -59,6 +60,7 @@ function App() {
   const [discoverSearchQuery, setDiscoverSearchQuery] = useState("");
   const [agentFilter, setAgentFilter] = useState<AgentFilter>("all");
   const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("all");
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [selectedLibrarySkillPath, setSelectedLibrarySkillPath] = useState<string | null>(null);
   const [selectedDiscoverySkillPath, setSelectedDiscoverySkillPath] = useState<string | null>(null);
 
@@ -87,12 +89,13 @@ function App() {
     [indexedSkills]
   );
 
-  const filteredSkills = useSkillFilters({
+  const { filteredSkills, allTags } = useSkillFilters({
     skills: librarySkills,
     searchQuery: librarySearchQuery,
     agentFilter,
     scopeFilter,
     sourceFilter: "all",
+    tagFilter,
   });
 
   const discoveryReport = useMemo(
@@ -348,6 +351,16 @@ function App() {
     }
   }
 
+  async function handleSetSkillTags(skillMd: string, tags: string[]) {
+    setError(null);
+    try {
+      const result = await setSkillTags(skillMd, tags);
+      await applySnapshotWithDerived(result);
+    } catch (err) {
+      setError(err);
+    }
+  }
+
   async function handlePromoteVariant(path: string) {
     setError(null);
 
@@ -397,6 +410,7 @@ function App() {
           <LibraryPage
             agentCounts={agentCounts}
             agentFilter={agentFilter}
+            allTags={allTags}
             filteredSkills={filteredSkills}
             language={language}
             onAgentFilterChange={setAgentFilter}
@@ -407,6 +421,8 @@ function App() {
             onScopeFilterChange={setScopeFilter}
             onSearchQueryChange={setLibrarySearchQuery}
             onSelectSkill={setSelectedLibrarySkillPath}
+            onSetSkillTags={(skillMd, tags) => void handleSetSkillTags(skillMd, tags)}
+            onTagFilterChange={setTagFilter}
             onUpdateVariantLabel={(path, variantLabel) =>
               void handleUpdateVariantLabel(path, variantLabel)
             }
@@ -419,6 +435,7 @@ function App() {
             searchQuery={librarySearchQuery}
             selectedSkill={selectedLibrarySkill}
             scopeFilter={scopeFilter}
+            tagFilter={tagFilter}
             hasUpdateFor={hasUpdateFor}
             onUpdateSkill={(path) => void updateSkill(path)}
             updatingPath={updatingPath}
