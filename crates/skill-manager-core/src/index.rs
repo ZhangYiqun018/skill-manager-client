@@ -1730,8 +1730,6 @@ fn derive_target_roots(
     scan_options: &ScanOptions,
     index_options: &IndexOptions,
 ) -> Result<Vec<TargetRootDescriptor>, IndexError> {
-    let snapshot = load_skill_index(scan_options, index_options)?;
-    let store_root = resolve_store_path(index_options);
     let mut targets = BTreeMap::new();
 
     for root in build_scan_roots(scan_options) {
@@ -1757,25 +1755,6 @@ fn derive_target_roots(
                 project_root,
             },
         );
-    }
-
-    for skill in snapshot.summary.skills {
-        if skill.agent != managed_skill.agent || skill.source_type == SkillSourceType::Import {
-            continue;
-        }
-
-        if skill.source_root.starts_with(&store_root) {
-            continue;
-        }
-
-        targets
-            .entry(skill.source_root.to_string_lossy().into_owned())
-            .or_insert(TargetRootDescriptor {
-                agent: skill.agent,
-                scope: skill.scope,
-                target_root: skill.source_root.clone(),
-                project_root: skill.project_root.clone(),
-            });
     }
 
     for record in load_install_records_for_skill(&managed_skill.path, index_options)? {

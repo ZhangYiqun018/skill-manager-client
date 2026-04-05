@@ -21,7 +21,7 @@ import {
   type Copy,
   type Language,
 } from "../../i18n";
-import type { AgentKind, SkillItem } from "../../types";
+import type { SkillItem } from "../../types";
 import { ContentTab } from "./details/ContentTab";
 import { DetailTabButton } from "./details/DetailTabButton";
 import { FilesTab } from "./details/FilesTab";
@@ -146,36 +146,6 @@ export function LibraryDetailsPanel({
     dispatch({ type: "SET_VARIANT_LABEL_DRAFT", payload: selectedSkill?.variant_label ?? "" });
     dispatch({ type: "SET_VARIANT_LABEL_ERROR", payload: null });
     dispatch({ type: "SET_EDITING_VARIANT_LABEL", payload: true });
-  }
-
-  async function handleInstallModalInstall(
-    targetPath: string,
-    targetAgents: AgentKind[],
-    targetMethod: "symlink" | "copy"
-  ) {
-    if (!selectedSkill) return;
-    dispatch({ type: "SET_INSTALLS_ERROR", payload: null });
-    const errors: string[] = [];
-    for (const agent of targetAgents) {
-      try {
-        await installSkillToTarget(selectedSkill.path, targetPath, agent, targetMethod);
-      } catch (error: unknown) {
-        errors.push(`${agentLabel(agent)}: ${friendlyErrorMessage(error, language)}`);
-      }
-    }
-    if (errors.length > 0) {
-      dispatch({ type: "SET_INSTALLS_ERROR", payload: errors.join("\n") });
-      showToast(`${text.installFailed}\n${errors.join("\n")}`, "error");
-    } else {
-      showToast(text.installSuccess, "success");
-      setShowInstallModal(false);
-      try {
-        const refreshed = await loadSkillInstallStatuses(selectedSkill.path);
-        dispatch({ type: "SET_INSTALLS", payload: refreshed });
-      } catch {
-        // ignore refresh error
-      }
-    }
   }
 
   async function handleRunInstallAction(
@@ -403,7 +373,21 @@ export function LibraryDetailsPanel({
           skill={selectedSkill}
           language={language}
           onClose={() => setShowInstallModal(false)}
-          onInstall={handleInstallModalInstall}
+          onResult={async (success, message) => {
+            if (success) {
+              showToast(message, "success");
+              setShowInstallModal(false);
+              try {
+                const refreshed = await loadSkillInstallStatuses(selectedSkill.path);
+                dispatch({ type: "SET_INSTALLS", payload: refreshed });
+              } catch {
+                // ignore refresh error
+              }
+            } else {
+              dispatch({ type: "SET_INSTALLS_ERROR", payload: message });
+              showToast(message, "error");
+            }
+          }}
         />
       ) : null}
     </aside>
