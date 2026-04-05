@@ -75,27 +75,7 @@ jobs:
           tagName: v__VERSION__
           releaseName: "Skill Manager v__VERSION__"
           releaseBody: |
-            ## What's New / 更新内容
-
-            ### EN
-            - Initial release of Skill Manager desktop app
-            - Marketplace: search and adopt skills from skills.sh registry
-            - Library: manage, install, and update skills for Codex, Claude Code, Agent, and OpenClaw
-            - Multi-agent installs with symlink or copy method
-            - Variant management: track, promote, and compare skill variants
-            - Dark / Light themes with glass-morphism UI
-            - Full keyboard navigation (Cmd/Ctrl+1~5, Cmd/Ctrl+K, Cmd/Ctrl+R)
-            - Bilingual interface (English / 中文)
-
-            ### 中文
-            - Skill Manager 桌面应用首次发布
-            - 技能市场：从 skills.sh 搜索并采纳技能
-            - 技能库：管理、安装和更新 Codex、Claude Code、Agent 和 OpenClaw 的技能
-            - 多智能体安装，支持符号链接或复制
-            - 变体管理：跟踪、推广和比较技能变体
-            - 深色/浅色主题，玻璃拟态 UI
-            - 完整键盘导航（Cmd/Ctrl+1~5、Cmd/Ctrl+K、Cmd/Ctrl+R）
-            - 双语界面（English / 中文）
+            See [CHANGELOG.md](https://github.com/ZhangYiqun018/skill-manager-client/blob/main/CHANGELOG.md) for full release notes.
 
             ---
             > Pick the asset for your platform below.
@@ -118,27 +98,7 @@ jobs:
           tagName: v__VERSION__
           releaseName: "Skill Manager v__VERSION__"
           releaseBody: |
-            ## What's New / 更新内容
-
-            ### EN
-            - Initial release of Skill Manager desktop app
-            - Marketplace: search and adopt skills from skills.sh registry
-            - Library: manage, install, and update skills for Codex, Claude Code, Agent, and OpenClaw
-            - Multi-agent installs with symlink or copy method
-            - Variant management: track, promote, and compare skill variants
-            - Dark / Light themes with glass-morphism UI
-            - Full keyboard navigation (Cmd/Ctrl+1~5, Cmd/Ctrl+K, Cmd/Ctrl+R)
-            - Bilingual interface (English / 中文)
-
-            ### 中文
-            - Skill Manager 桌面应用首次发布
-            - 技能市场：从 skills.sh 搜索并采纳技能
-            - 技能库：管理、安装和更新 Codex、Claude Code、Agent 和 OpenClaw 的技能
-            - 多智能体安装，支持符号链接或复制
-            - 变体管理：跟踪、推广和比较技能变体
-            - 深色/浅色主题，玻璃拟态 UI
-            - 完整键盘导航（Cmd/Ctrl+1~5、Cmd/Ctrl+K、Cmd/Ctrl+R）
-            - 双语界面（English / 中文）
+            See [CHANGELOG.md](https://github.com/ZhangYiqun018/skill-manager-client/blob/main/CHANGELOG.md) for full release notes.
 
             ---
             > Pick the asset for your platform below.

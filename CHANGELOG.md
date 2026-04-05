@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-04-05
+
+### Added
+
+- OpenClaw agent support: scan, install, filter, and export skills for OpenClaw across all surfaces.
+- Manual tags on skills with tag-based filtering in Library gallery.
+- Install status badges on Library gallery cards.
+- Redesigned InstallModal with quick-install buttons and viewport-centered portal.
+- Quick export to OpenClaw skills directory via tag selection.
+
+### Fixed
+
+- GitHub Actions release workflow: macOS code signing, macOS Intel OpenSSL, and Windows libz-sys build failures.
+- Modal rendering: modals now use React portal to escape backdrop-filter stacking context.
+- External links (e.g. "Visit skills.sh") now open in system browser via Tauri shell plugin.
+- Shell plugin capability (`shell:allow-open`) and URL validation regex corrected.
+- IPC storm when switching tag filters; dropdown now closes on tag click.
+- Scan no longer infers unrelated disk skill roots as install targets.
+- OpenClaw project_root miscalculation: 3-level path (`.openclaw/workspace/skills`) was only traversing 2 parents.
+- 4 TypeScript compilation errors: missing AgentKind imports, readonly array assignment, missing i18n key in Copy type.
+
 ## [0.1.0] — 2026-04-05
 
 ### Added
