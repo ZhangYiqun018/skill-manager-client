@@ -146,10 +146,11 @@ export function LibraryPage({
   useEffect(() => {
     let cancelled = false;
     const representatives = familyGroups.map((g) => g.skills[0]);
-    if (representatives.length === 0) return;
+    const missing = representatives.filter((skill) => !installStatusMap[skill.path]);
+    if (missing.length === 0) return;
 
     Promise.all(
-      representatives.map(async (skill) => {
+      missing.map(async (skill) => {
         try {
           const statuses = await loadSkillInstallStatuses(skill.path);
           return { path: skill.path, statuses } as const;
@@ -159,17 +160,19 @@ export function LibraryPage({
       })
     ).then((results) => {
       if (cancelled) return;
-      const next: Record<string, SkillInstallStatus[]> = {};
-      for (const { path, statuses } of results) {
-        next[path] = statuses;
-      }
-      setInstallStatusMap(next);
+      setInstallStatusMap((prev) => {
+        const next = { ...prev };
+        for (const { path, statuses } of results) {
+          next[path] = statuses;
+        }
+        return next;
+      });
     });
 
     return () => {
       cancelled = true;
     };
-  }, [familyGroups]);
+  }, [familyGroups, installStatusMap]);
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
@@ -440,7 +443,10 @@ export function LibraryPage({
                         }
                       }
                     }}
-                    onTagClick={(tag) => onTagFilterChange([tag])}
+                    onTagClick={(tag) => {
+                      setShowTagFilters(false);
+                      onTagFilterChange([tag]);
+                    }}
                     installTitle={text.installToCustomLocation}
                     installLabel={text.cardInstallAction}
                     variantCountLabel={text.variantCountLabel}
