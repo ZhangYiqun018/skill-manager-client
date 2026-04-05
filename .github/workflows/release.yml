@@ -32,12 +32,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: Install system dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          vcpkg install zlib:x64-windows
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
-
       - uses: pnpm/action-setup@v4
         with:
           version: 9
@@ -62,6 +56,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HAVE_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
+          # Skip vcpkg on Windows — let libz-sys build zlib from vendored C source
+          VCPKGRS_DISABLE: 1
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
