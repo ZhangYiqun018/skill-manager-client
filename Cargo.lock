@@ -3671,6 +3671,7 @@ version = "0.1.0"
 dependencies = [
  "dirs",
  "git2",
+ "libz-sys",
  "rusqlite",
  "serde",
  "serde_yaml",

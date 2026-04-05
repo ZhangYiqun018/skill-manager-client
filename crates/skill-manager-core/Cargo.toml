@@ -8,6 +8,7 @@ authors.workspace = true
 [dependencies]
 dirs.workspace = true
 git2.workspace = true
+libz-sys.workspace = true
 rusqlite.workspace = true
 serde.workspace = true
 serde_yaml.workspace = true
