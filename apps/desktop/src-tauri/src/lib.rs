@@ -7,7 +7,7 @@ use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use skill_manager_core::{
     AdoptionResolution, AgentKind, CustomInstallTarget, DiscoveryReport, IndexOptions, IndexedScanSummary,
-    InstallTargetInventory, ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin,
+    InstallMethod, InstallTargetInventory, ManagedGitSource, ManagedSkillHistory, ManagedSkillOrigin,
     RemoteUpdateCheck, ScanOptions, ScanSummary, SkillComparison, SkillDirectoryDiff,
     SkillFileNode, SkillInstallStatus, SkillScope, SkillSourceType,
     adopt_skill as adopt_skill_core, adopt_skills as adopt_skills_core,
@@ -485,11 +485,19 @@ async fn install_managed_skill(
     path: String,
     target_root: String,
     agent: Option<String>,
-    scope: Option<String>,
+    method: Option<String>,
     project_root: Option<String>,
 ) -> Result<Vec<SkillInstallStatus>, String> {
     let agent_override = agent.as_deref().map(parse_agent).transpose().map_err(error_chain)?;
-    let scope_override = scope.as_deref().map(parse_scope).transpose().map_err(error_chain)?;
+    let method_override = method
+        .as_deref()
+        .map(|value| match value {
+            "symlink" => Ok(InstallMethod::Symlink),
+            "copy" => Ok(InstallMethod::Copy),
+            _ => anyhow::bail!("Unsupported install method: {value}"),
+        })
+        .transpose()
+        .map_err(error_chain)?;
     let scan_options = build_scan_options(project_root);
     run_blocking(move || {
         let index_options = IndexOptions::default();
@@ -500,7 +508,7 @@ async fn install_managed_skill(
             allowed_path,
             PathBuf::from(target_root),
             agent_override,
-            scope_override,
+            method_override,
             &scan_options,
             &index_options,
         )

@@ -317,14 +317,14 @@ export type Copy = {
   installToCustomLocation: string;
   customInstallTitle: string;
   customInstallAgent: string;
-  customInstallScope: string;
-  customInstallLabel: string;
+  customInstallMethod: string;
   customInstallConfirm: string;
   manageCustomTargetsTitle: string;
   manageCustomTargetsBody: string;
   viewDetails: string;
   contextMenuInstallSuccess: string;
   contextMenuInstallFailed: string;
+  cardInstallAction: string;
 };
 
 export const copy: Record<Language, Copy> = {
@@ -678,8 +678,7 @@ export const copy: Record<Language, Copy> = {
     installToCustomLocation: "Install to custom location",
     customInstallTitle: "Install skill to a custom directory",
     customInstallAgent: "Agent",
-    customInstallScope: "Scope",
-    customInstallLabel: "Label (optional)",
+    customInstallMethod: "Install method",
     customInstallConfirm: "Install",
     manageCustomTargetsTitle: "Managed custom targets",
     manageCustomTargetsBody:
@@ -687,6 +686,7 @@ export const copy: Record<Language, Copy> = {
     viewDetails: "View details",
     contextMenuInstallSuccess: "Installed successfully.",
     contextMenuInstallFailed: "Install failed.",
+    cardInstallAction: "Install",
   },
   zh: {
     appName: "Skill Manager",
@@ -1010,8 +1010,7 @@ export const copy: Record<Language, Copy> = {
     installToCustomLocation: "安装到自定义目录",
     customInstallTitle: "将技能安装到自定义目录",
     customInstallAgent: "代理",
-    customInstallScope: "范围",
-    customInstallLabel: "名称（可选）",
+    customInstallMethod: "安装方式",
     customInstallConfirm: "安装",
     manageCustomTargetsTitle: "已管理的自定义目标",
     manageCustomTargetsBody:
@@ -1019,6 +1018,7 @@ export const copy: Record<Language, Copy> = {
     viewDetails: "查看详情",
     contextMenuInstallSuccess: "安装成功。",
     contextMenuInstallFailed: "安装失败。",
+    cardInstallAction: "安装",
   },
 };
 

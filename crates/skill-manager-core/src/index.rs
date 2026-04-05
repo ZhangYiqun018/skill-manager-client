@@ -590,12 +590,12 @@ pub fn install_managed_skill(
     skill_path: PathBuf,
     target_root: PathBuf,
     agent_override: Option<AgentKind>,
-    scope_override: Option<SkillScope>,
+    method_override: Option<InstallMethod>,
     scan_options: &ScanOptions,
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, agent_override, scope_override, scan_options, index_options)?;
+    let target = resolve_target_root(&managed_skill, &target_root, agent_override, scan_options, index_options)?;
     let destination = target.target_root.join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
@@ -612,11 +612,13 @@ pub fn install_managed_skill(
         )));
     }
 
+    let method = method_override.unwrap_or(InstallMethod::Symlink);
+
     if destination_symlink_points_to(&destination, &managed_skill.path) {
         record_install(
             &managed_skill.path,
             &target,
-            InstallMethod::Symlink,
+            method,
             index_options,
         )?;
         return load_skill_install_statuses(managed_skill.path, scan_options, index_options);
@@ -626,11 +628,16 @@ pub fn install_managed_skill(
         fs::create_dir_all(parent)?;
     }
     remove_existing_path(&destination)?;
-    create_directory_symlink(&managed_skill.path, &destination)?;
+
+    match method {
+        InstallMethod::Symlink => create_directory_symlink(&managed_skill.path, &destination)?,
+        InstallMethod::Copy => copy_dir_recursive(&managed_skill.path, &destination)?,
+    }
+
     record_install(
         &managed_skill.path,
         &target,
-        InstallMethod::Symlink,
+        method,
         index_options,
     )?;
 
@@ -644,7 +651,7 @@ pub fn remove_managed_skill_install(
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, None, None, scan_options, index_options)?;
+    let target = resolve_target_root(&managed_skill, &target_root, None, scan_options, index_options)?;
     let destination = target.target_root.join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
@@ -682,7 +689,7 @@ pub fn repair_managed_skill_install(
     index_options: &IndexOptions,
 ) -> Result<Vec<SkillInstallStatus>, IndexError> {
     let managed_skill = load_managed_skill_by_path(skill_path, scan_options, index_options)?;
-    let target = resolve_target_root(&managed_skill, &target_root, None, None, scan_options, index_options)?;
+    let target = resolve_target_root(&managed_skill, &target_root, None, scan_options, index_options)?;
     let destination = target.target_root.join(&managed_skill.slug);
     let family_promotions = load_family_promotions(index_options)?;
     let current_status = build_install_status(
@@ -1765,7 +1772,6 @@ fn resolve_target_root(
     managed_skill: &InstalledSkill,
     target_root: &Path,
     agent_override: Option<AgentKind>,
-    scope_override: Option<SkillScope>,
     scan_options: &ScanOptions,
     index_options: &IndexOptions,
 ) -> Result<TargetRootDescriptor, IndexError> {
@@ -1777,16 +1783,15 @@ fn resolve_target_root(
 
     let canonical_path = fs::canonicalize(target_root).unwrap_or_else(|_| target_root.to_path_buf());
     let agent = agent_override.unwrap_or_else(|| managed_skill.agent.clone());
-    let scope = scope_override.unwrap_or_else(|| managed_skill.scope.clone());
     add_custom_target(
         canonical_path.clone(),
         agent.clone(),
-        scope.clone(),
+        managed_skill.scope.clone(),
         None,
         index_options,
     )?;
 
-    let project_root = if scope == SkillScope::Project {
+    let project_root = if managed_skill.scope == SkillScope::Project {
         canonical_path.parent().and_then(Path::parent).map(Path::to_path_buf)
     } else {
         None
@@ -1794,7 +1799,7 @@ fn resolve_target_root(
 
     Ok(TargetRootDescriptor {
         agent,
-        scope,
+        scope: managed_skill.scope.clone(),
         target_root: canonical_path,
         project_root,
     })

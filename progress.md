@@ -2,118 +2,35 @@
 
 ## 2026-04-03
 
-- Confirmed the repository is empty and not yet a git repo.
-- Verified local runtime availability for Rust and Node.
-- Confirmed local Codex and Claude Code skill directories exist.
-- Chose Tauri + Rust workspace layout for shared CLI and desktop logic.
-- Added a Rust workspace with `skill-manager-core`, `skill-manager-cli`, and a Tauri desktop client.
-- Implemented local skill scanning for global and project-level Codex and Claude Code roots.
-- Added a bilingual desktop UI with English default and Chinese toggle.
-- Reworked the desktop client from a dashboard layout into a tabbed tool UI with:
-  - `Skills` tab for search, filter, list selection, and SKILL.md preview
-  - `Directories` tab for scan-root inspection and file-manager actions
-  - `Settings` tab for language and project-root control
-- Added safe desktop commands to reveal paths in the file manager and preview `SKILL.md`.
-- Added a SQLite-backed local index layer in the shared Rust core.
-- Added Spotlight-based full-disk discovery on macOS for supported Codex and Claude skill layouts.
-- Switched the desktop app startup flow to load cached index data first and refresh in the background when the cache is stale.
-- Wrote a first-pass product requirements document covering multi-source discovery, managed library, symlink-based install targets, and MVP / post-MVP scope.
-- Reworked the desktop frontend into a new four-area information architecture:
-  - `Library`
-  - `Discover`
-  - `Targets`
-  - `Settings`
-- Split desktop frontend types and API access into directory-based modules in preparation for library / discovery / target records.
-- Added a global search bar and health badge to the top bar, plus new page skeletons for discovery and target health.
-- Added source-aware skill records in the Rust core with `disk / import / remote` modeling.
-- Added a managed store path model and a first real `adopt` flow:
-  - copy a discovered disk skill directory into the canonical managed store
-  - rescan the index after adoption
-  - surface managed skills in `Library` and disk candidates in `Discover`
-- Added a first backend-to-frontend workflow for `Discover -> Adopt -> Library`.
-- Reworked full-disk discovery to stop depending solely on Spotlight so hidden project-scoped skill roots can be found.
-- Suppressed low-value permission-denied warnings from full-disk discovery so the warning panel only carries meaningful scan issues.
-- Captured the next product-planning slice for discovery/adoption:
-  - explicit confirmation before full-disk scan
-  - duplicate grouping during candidate review
-  - exact-duplicate vs variant handling
-  - batch adoption presets by scope and agent
-- Implemented explicit confirmation before manual full-disk scans; the app no longer auto-runs a full-disk refresh on startup.
-- Added candidate fingerprinting in the Rust core:
-  - `family_key` for grouping skill families
-  - `content_hash` for exact-duplicate detection
-- Updated the managed-store path strategy to use content-aware identifiers so exact duplicates collapse into one canonical managed copy per agent/scope.
-- Reworked the Discover UI into grouped candidate review with:
-  - family-level grouping
-  - unique / exact-duplicate / variant states
-  - multi-select checkboxes
-  - batch selection presets for recommended, project, Codex, and Claude Code candidates
-  - batch adopt into the managed library
-- Reviewed the current dedupe design and recorded why it is still too shallow for a mature merge workflow:
-  - grouping is still name-driven
-  - provenance is not yet first-class
-  - variants do not have proper version labeling or comparison
-  - canonical merge decisions are not yet separated from candidate review
-- Improved long-list browsing by making the right-side details panel sticky on desktop-width layouts and disabling sticky behavior once the layout collapses to one column.
-- Reworked Discover from shallow family buckets into a richer review surface with:
-  - scan summary cards
-  - separate sections for variants, exact duplicates, and direct-adopt uniques
-  - representative candidates per content hash instead of listing every raw disk occurrence
-  - generated default labels for candidate variants during review
-- Completed a code-level PromptHub research pass focused on its skill subsystem:
-  - cloned the public repo
-  - reviewed main/renderer/shared architecture
-  - traced scanning, import, installation, detail-page, and settings flows
-  - documented what to borrow and what to avoid in `docs/prompt-hub-research.md`
-- Converted the accumulated PRD, UI spec, and PromptHub research into two execution documents:
-  - `docs/product-blueprint.md`
-  - `docs/development-priorities.md`
-- Implemented the first real `Skill Detail` backend slice in Rust core:
-  - managed-skill origin recording in SQLite
-  - recursive file tree loading
-  - file text reading
-  - per-target install status derivation
-  - install / remove / repair actions for managed skills
-- Exposed the new detail/install capabilities through Tauri commands.
-- Reworked the `Library` detail panel into a tabbed managed-object workspace with:
-  - `Overview`
-  - `Content`
-  - `Files`
-  - `Installs`
-  - `Origins`
-- Kept `Discover` on a lighter preview panel so candidate review and managed detail remain separate workflows.
-- Expanded the desktop UI and translations to cover the new detail and install states.
-- Updated target aggregation in the desktop app so discovered project-scoped roots now surface alongside default roots.
-- Added direct local-folder import into the managed library with agent/scope selection.
-- Added `skills.sh` registry search and remote adoption through backend-owned HTTP fetch + temporary clone/import flow.
-- Upgraded the `Targets` page into a target-centric control surface backed by real target inventory instead of frontend-only root summaries:
-  - recorded installs per target
-  - batch sync / repair actions per target
-  - per-target install-item health lists
-- Moved discovery grouping out of the frontend and into the Rust core:
-  - backend `DiscoveryReport`
-  - exact-duplicate vs variant grouping
-  - backend-generated suggested version labels
-  - frontend now only filters and selects against backend report data
-- Added persistent managed variant labels:
-  - managed-skill variant labels now live in SQLite
-  - library rows and detail pages now display them
-  - the detail panel supports renaming and saving labels back into the index
-- Expanded `Settings` with real runtime configuration readouts:
-  - canonical managed store path
-  - current install strategy (`symlink first`)
-- Added Rust-core tests for:
-  - backend discovery report grouping
-  - target inventory + recorded-install sync behavior
-  - variant-label persistence and round-tripping through the library index
-- Ran a subtraction-focused UI refactor based on direct review plus two agent reviews:
-  - removed shell-level global search and sidebar language duplication
-  - moved `Library` detail to default directly into `Variants`
-  - removed the redundant `Overview` tab so default-version actions are no longer buried behind a second layer
-  - simplified `Discover` from three entry cards + summary cards into one intake bar plus one review queue
-  - simplified `Targets` into a repair-oriented console and removed top-level summaries/warnings duplication
-  - simplified `Settings` down to language + runtime path/status
-- Verified:
-  - `cargo test -p skill-manager-core`
-  - `cargo check --workspace`
-  - `pnpm --dir apps/desktop build`
+- Bootstrapped the Rust workspace, CLI, and Tauri desktop app.
+- Implemented Codex / Claude Code skill scanning.
+- Added bilingual desktop UI.
+- Added SQLite-backed index and cached startup.
+
+## 2026-04-04
+
+- Built `Library / Discover / Targets / Settings` structure.
+- Added managed adoption flow from discovery into library.
+- Added full-disk confirmation, duplicate grouping, and batch review.
+- Added family / variant semantics, compare flows, and default-variant promotion.
+- Added install / remove / repair actions and target inventory.
+- Added local folder import and `skills.sh` search/adoption.
+- Researched PromptHub and used it to guide IA and workflow decisions.
+
+## 2026-04-05
+
+- Main branch now includes additional product surface:
+  - theme system
+  - guide page
+  - custom install target CRUD
+  - unified install modal
+  - more direct install entry points
+
+## Current Status
+
+- Repository is clean on `main`.
+- HEAD is `d0bd135`.
+- The product is feature-rich enough to use, but needs another pass on:
+  - install correctness
+  - surface-area control
+  - reducing overlap between manager, settings, and shell UI

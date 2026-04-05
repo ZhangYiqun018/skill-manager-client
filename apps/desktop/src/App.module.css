@@ -1342,6 +1342,7 @@
 
 .skillGalleryCard,
 .skillGalleryCardActive {
+  position: relative;
   display: grid;
   gap: 12px;
   padding: 20px;
@@ -1415,6 +1416,37 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.cardInstallButton {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-surface);
+  color: var(--sm-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  box-shadow: var(--sm-shadow-sm);
+}
+
+.skillGalleryCard:hover .cardInstallButton,
+.skillGalleryCardActive .cardInstallButton {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardInstallButton:hover {
+  background: var(--sm-surface-hover);
+  border-color: var(--sm-primary);
+  color: var(--sm-primary);
 }
 
 .skillCardTitle {

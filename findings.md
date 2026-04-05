@@ -1,159 +1,69 @@
 # Findings
 
-- Repository started empty.
-- Local skill directories exist on this machine:
-  - `~/.codex/skills`
-  - `~/.claude/skills`
-- Current tooling available locally:
-  - `cargo 1.92.0`
-  - `rustc 1.92.0`
-  - `node v24.13.0`
-  - `npm 11.6.2`
-  - `pnpm 8.15.6`
-- Current package versions discovered:
-  - `@tauri-apps/cli`: `2.10.1`
-  - `tauri` crate: `2.10.3`
-- Official `skills` CLI supports project/global installs and `skills.sh`, but its install mode can fall back to copy semantics. A custom manager should own symlink behavior.
-- The desktop client now defaults to English and supports switching to Chinese with a persisted local preference.
-- The project now includes a project-scoped UI skill install:
-  - `.agents/skills/frontend-design`
-  - `.claude/skills/frontend-design` as a symlink to the canonical project copy
-- The desktop app now exposes two real management actions:
-  - `read_skill_content`
-  - `open_in_finder`
-- `mdfind "kMDItemFSName == 'SKILL.md'"` returns a very large raw result set on this machine, so full-disk discovery must filter to supported install layouts instead of blindly indexing every match.
-- The new index layer uses SQLite and stores discovered skills plus scan warnings under the app support directory, which allows the desktop app to read cached results immediately on launch.
-- The current full-disk discovery rules recognize these layouts:
-  - `~/.codex/skills/*/SKILL.md`
-  - `~/.claude/skills/*/SKILL.md`
-  - `**/.claude/skills/*/SKILL.md`
-  - `**/.agents/skills/*/SKILL.md`
-- The current macOS Spotlight-only discovery path under-detects hidden project directories such as `.agents/skills`, so the scanner now needs a hybrid strategy:
-  - fast discovery via Spotlight where useful
-  - targeted filesystem walking for hidden project-scoped skill roots
-- The next product requirement set adds four new constraints:
-  - full-disk scanning must be explicitly user-triggered and guarded by a second confirmation because it can take noticeable time
-  - discovery results must be grouped for duplicate review before adoption
-  - duplicate handling must distinguish exact duplicates from same-name content variants
-  - adoption must support batch actions such as all project-scoped candidates, all Codex candidates, and all Claude Code candidates
-- Name alone is not a safe dedupe key. It is useful for grouping and review, but final duplicate decisions should use content identity:
-  - same normalized name + same content hash => exact duplicate candidates
-  - same normalized name + different content hash => version candidates within one skill family
-- The current implementation now fingerprints discovered skills with:
-  - `family_key` for grouping same-name families
-  - `content_hash` for exact-duplicate detection and content-aware managed-store paths
-- Full-disk scans are now user-confirmed actions in the UI rather than startup side effects.
-- The current dedupe implementation is intentionally shallow and has these concrete limits:
-  - family grouping is derived only from normalized `display_name` / `slug`
-  - exact duplicate detection is based only on full-directory content hash
-  - there is no separate concept of:
-    - source occurrence
-    - canonical skill identity
-    - family
-    - variant
-  - batch adopt chooses one representative per content hash but does not preserve merged provenance in a first-class model
-  - same-content candidates across different provenance contexts are not yet shown as one mergeable record with multiple origins
-  - same-family variants are detectable but still lack:
-    - default version labels
-    - user naming flow
-    - side-by-side comparison / diff support
-    - managed-library reconciliation when a family already exists in the store
-- A stronger dedupe system should become a multi-stage pipeline:
-  - discovery occurrences
-  - exact-duplicate collapsing
-  - family clustering
-  - variant labeling
-  - canonical merge / adopt decisions
-- The desktop UX also needed a browsing fix: with a long skill list, the right-side detail panel scrolled out of view. On desktop-width layouts it should be sticky and self-scrolling; once the layout collapses to one column, sticky should be disabled.
-- The current Discover frontend now partially bridges the shallow dedupe model by building a richer client-side report:
-  - scan summary
-  - exact-duplicate sections
-  - variant review sections
-  - representative candidates per content hash with generated default labels
-- This richer report improves review and batch selection, but it is still a frontend projection over flat indexed records; provenance and canonical merge state are not persisted yet.
-- PromptHub's skill subsystem is implemented as a real desktop product slice, not a thin page:
-  - shared skill types in `src/shared/types/skill.ts`
-  - SQLite-backed skill records in `src/main/database/skill.ts`
-  - grouped skill IPC handlers in `src/main/ipc/skill.ipc.ts`
-  - a main-process installer in `src/main/services/skill-installer.ts`
-  - renderer-side stores and components under `src/renderer/stores/skill.store.ts` and `src/renderer/components/skill/*`
-- PromptHub's strongest reusable product patterns are:
-  - split workspaces for `my-skills`, `distribution`, and `store`
-  - a full skill detail page with tabs such as preview/code/files
-  - install and uninstall actions located close to the selected skill
-  - explicit settings for install mode, per-platform target path overrides, and extra scan roots
-  - a local-library-first model that installs outward to platform directories
-- PromptHub's current skill model is weak for our dedupe/variant requirements:
-  - database CRUD logic treats skill names as effectively unique
-  - scan preview deduplicates by local folder path, not by content-family provenance
-  - platform install status is tracked primarily by skill name
-  - install flows focus on `SKILL.md` even when a local repo path exists
-- PromptHub therefore validates our direction on workflow and IA, but not on identity modeling:
-  - we should borrow its object-centric library/install UX
-  - we should not borrow its name-centric uniqueness assumptions
-- The next planning layer should explicitly separate:
-  - long-term product blueprint
-  - short-to-medium term development priorities
-- The strongest near-term product direction is:
-  - complete the managed skill detail experience
-  - make install actions first-class on the selected skill
-  - move dedupe, provenance, and variant logic into the Rust core before adding more source breadth
-- The core now records provenance for new managed-library adoptions in SQLite:
-  - `managed_origins` preserves the original discovered path
-  - repeated adoptions of exact duplicates can attach additional origins to one canonical managed item
-- The core now exposes the first real managed-skill detail data beyond `SKILL.md` preview:
-  - recursive file tree
-  - text-file reading for files inside the managed directory
-  - per-target install status
-  - origin records
-- Install handling is now a real backend workflow for managed skills:
-  - install to a known target root by symlink
-  - remove managed installs
-  - repair broken installs and relink copied installs
-  - conflict detection when a target already contains different content for the same slug
-- Install targets are still derived heuristically from:
-  - known scan roots
-  - indexed disk-skill source roots
-  - recorded install targets
-  This is enough for Phase 1, but a fuller target registry is still a later improvement.
-- `skills.sh` search works cleanly through the public search endpoint:
-  - `https://skills.sh/api/search?q=<query>&limit=<n>`
-  - responses include registry id, `skillId`, display name, installs, and source repo
-- `skills.sh` search is safer to perform in the backend than the frontend because direct browser/webview fetches may run into CORS ambiguity; the current implementation uses Tauri/Rust HTTP.
-- The product now supports three real source flows into the managed library:
-  - disk discovery + review + adopt
-  - direct local-folder import
-  - remote `skills.sh` search + adopt
-- Backend discovery grouping now lives in Rust core instead of only in the React app:
-  - families are grouped by `family_key`
-  - exact duplicates collapse by `content_hash`
-  - suggested version labels are generated in the backend
-- The current discovery report is still derived from flat indexed skill rows, not from persisted first-class tables such as:
-  - discovery occurrences
-  - skill families
-  - skill variants
-  - canonical merge decisions
-  So the model is stronger than before, but still not the final persistence design.
-- The `Targets` page now operates on backend-owned inventories:
-  - one target inventory per known target root
-  - recorded managed installs per target
-  - batch sync / repair actions that recreate missing or broken symlinks for recorded installs
-- Sync/repair at the target level currently operates on recorded installs only. It does not auto-install every library skill into every compatible target, which is the safer default.
-- Managed skills now have a persisted `variant_label` concept in the local SQLite index:
-  - defaults are generated during adoption
-  - labels can be renamed later without changing family/content identity
-  - the library UI can now distinguish same-family managed variants more cleanly
-- The current settings surface is still lightweight, but it now exposes real runtime configuration rather than only explanatory text:
-  - canonical store path
-  - install strategy (`symlink first`)
-- The most recent product-review pass found that the main blocker has shifted from missing capability to poor information hierarchy:
-  - the default-version promote action existed, but was hidden inside the `Variants` tab revision rows
-  - `Overview`, `Variants`, `Targets`, and `Discover` preview repeated the same family/variant/install metadata without one clear authoritative view
-  - shell-level global search, repeated refresh buttons, and duplicate language controls made scope ambiguous
-  - `Discover` had become an overstuffed intake + review + modal workflow instead of a clear intake queue
-- The current subtraction direction is:
-  - remove shell-level search and duplicate language controls
-  - remove `Library`'s `Overview` tab and make `Variants` the default detail surface
-  - move default-version visibility and promotion closer to the top of the selected skill detail
-  - shrink `Discover` to one intake bar plus one review queue
-  - shrink `Targets` into a repair-oriented console instead of a second full reading surface for install state
+## What Exists Now
+
+- Desktop app architecture:
+  - Rust core for indexing, adoption, install, repair
+  - Tauri command layer
+  - React desktop client
+
+- Main top-level pages:
+  - `Library`
+  - `Discover`
+  - `Targets`
+  - `Settings`
+  - `Guide`
+
+- Core flows currently implemented:
+  - full-disk discovery with explicit confirmation
+  - local folder import
+  - `skills.sh` registry search and adoption
+  - managed library with family / variant grouping
+  - variant rename
+  - promote variant as default
+  - file/content/origin/install detail tabs
+  - install / remove / repair per skill
+  - target inventory sync / repair
+  - custom install targets
+  - custom install modal from library surfaces
+
+## Current Product Shape
+
+- The app is no longer a simple scanner.
+- It is now a combined:
+  - discovery tool
+  - managed library
+  - installer
+  - repair console
+  - lightweight settings/app shell
+
+## Current Drift / Redundancy
+
+- `Guide` and theme support were added on top of the core manager workflow.
+- `Settings` now carries:
+  - language
+  - theme
+  - runtime paths
+  - custom target CRUD
+- install actions can now be triggered from multiple places, which improves access but increases surface complexity.
+- the app has drifted away from the earlier subtractive direction and is again carrying non-essential top-level UI.
+
+## Known Functional Risks
+
+- Registry adoption may still use the wrong repository identifier if the display name is passed where the GitHub source is expected.
+- Target sync/repair may fail to restore installs when the whole target root is missing.
+- Discovery mutations can lose async failure handling if promises are not returned to the caller.
+- Symlink-only install/repair logic is fragile on systems where symlink creation is blocked; copy fallback is required.
+
+## Current High-Value Areas
+
+- Family / variant management
+- Install correctness
+- Custom target usability
+- Repair reliability
+
+## Current Low-Value / Optional Areas
+
+- Guide as a top-level page
+- theme polish compared to core install/discovery correctness
+- extra shell quick actions if they duplicate page-local actions

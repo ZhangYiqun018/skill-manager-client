@@ -1,27 +1,35 @@
 import { useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import styles from "../../App.module.css";
-import { agentLabel, copy, scopeLabel, type Language } from "../../i18n";
+import { agentLabel, copy, type Language } from "../../i18n";
 import type { SkillItem } from "../../types";
 
 type InstallModalProps = {
   skill: SkillItem;
   language: Language;
   onClose: () => void;
-  onInstall: (path: string, agent: "codex" | "claude_code", scope: "global" | "project") => Promise<void>;
+  onInstall: (
+    path: string,
+    agent: "codex" | "claude_code",
+    method: "symlink" | "copy",
+  ) => Promise<void>;
 };
 
 export function InstallModal({ skill, language, onClose, onInstall }: InstallModalProps) {
   const text = copy[language];
   const [path, setPath] = useState("");
   const [agent, setAgent] = useState<"codex" | "claude_code">(skill.agent);
-  const [scope, setScope] = useState<"global" | "project">(skill.scope);
+  const [method, setMethod] = useState<"symlink" | "copy">("symlink");
   const [busy, setBusy] = useState(false);
 
   async function handleSelectFolder() {
-    const selected = await openDialog({ directory: true, multiple: false });
-    if (selected && typeof selected === "string") {
-      setPath(selected);
+    try {
+      const selected = await openDialog({ directory: true, multiple: false });
+      if (selected && typeof selected === "string") {
+        setPath(selected);
+      }
+    } catch {
+      // Some environments block the dialog; ignore
     }
   }
 
@@ -29,7 +37,7 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
     if (!path.trim()) return;
     setBusy(true);
     try {
-      await onInstall(path.trim(), agent, scope);
+      await onInstall(path.trim(), agent, method);
     } finally {
       setBusy(false);
     }
@@ -101,11 +109,11 @@ export function InstallModal({ skill, language, onClose, onInstall }: InstallMod
 
           <div>
             <p style={{ fontSize: "0.8rem", color: "var(--sm-text-secondary)", marginBottom: 6 }}>
-              {text.customInstallScope}
+              {text.customInstallMethod}
             </p>
             <div style={{ display: "flex", gap: 8 }}>
-              <AgentToggleButton active={scope === "global"} label={scopeLabel("global", language)} onClick={() => setScope("global")} />
-              <AgentToggleButton active={scope === "project"} label={scopeLabel("project", language)} onClick={() => setScope("project")} />
+              <AgentToggleButton active={method === "symlink"} label={text.installMethodSymlink} onClick={() => setMethod("symlink")} />
+              <AgentToggleButton active={method === "copy"} label={text.installMethodCopy} onClick={() => setMethod("copy")} />
             </div>
           </div>
         </div>
@@ -144,9 +152,9 @@ function AgentToggleButton({
       style={{
         padding: "8px 14px",
         borderRadius: 8,
-        border: "1px solid var(--sm-border)",
-        background: active ? "var(--sm-accent)" : "var(--sm-surface-hover)",
-        color: active ? "#fff" : "var(--sm-text)",
+        border: active ? "1px solid var(--sm-primary)" : "1px solid var(--sm-border)",
+        background: active ? "var(--sm-primary)" : "var(--sm-surface-hover)",
+        color: active ? "#ffffff" : "var(--sm-text)",
         fontWeight: 600,
         fontSize: "0.9rem",
         cursor: "pointer",

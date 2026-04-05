@@ -1050,14 +1050,14 @@ export function LibraryDetailsPanel({
           skill={selectedSkill}
           language={language}
           onClose={() => setShowInstallModal(false)}
-          onInstall={async (targetPath, targetAgent, targetScope) => {
+          onInstall={async (targetPath, targetAgent, targetMethod) => {
             setInstallsError(null);
             try {
               const next = await installSkillToTarget(
                 selectedSkill.path,
                 targetPath,
                 targetAgent,
-                targetScope,
+                targetMethod,
               );
               setInstallStatuses(next);
               setShowInstallModal(false);

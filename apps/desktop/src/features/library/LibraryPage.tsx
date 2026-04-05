@@ -215,9 +215,10 @@ export function LibraryPage({
                 const representative = group.skills[0];
                 const delay = Math.min(index * 40, 600);
                 return (
-                  <button
+                  <div
                     key={group.familyKey}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     className={styles.skillGalleryCard}
                     style={{ "--delay": `${delay}ms` } as React.CSSProperties}
                     onClick={() => onSelectSkill(representative.path)}
@@ -225,7 +226,23 @@ export function LibraryPage({
                       event.preventDefault();
                       setContextMenu({ x: event.clientX, y: event.clientY, skill: representative });
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        onSelectSkill(representative.path);
+                      }
+                    }}
                   >
+                    <button
+                      type="button"
+                      className={styles.cardInstallButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setModalSkill(representative);
+                      }}
+                      title={text.installToCustomLocation}
+                    >
+                      {text.cardInstallAction}
+                    </button>
                     <div className={styles.skillCardHeader}>
                       <div
                         className={styles.skillCardIcon}
@@ -255,7 +272,7 @@ export function LibraryPage({
                         {group.skills.length} {text.variantCountLabel}
                       </span>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -331,8 +348,8 @@ export function LibraryPage({
           skill={modalSkill}
           language={language}
           onClose={() => setModalSkill(null)}
-          onInstall={async (targetPath, targetAgent, targetScope) => {
-            await installSkillToTarget(modalSkill.path, targetPath, targetAgent, targetScope);
+          onInstall={async (targetPath, targetAgent, targetMethod) => {
+            await installSkillToTarget(modalSkill.path, targetPath, targetAgent, targetMethod);
           }}
         />
       ) : null}
