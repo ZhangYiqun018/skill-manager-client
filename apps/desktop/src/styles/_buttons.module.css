@@ -281,6 +281,24 @@
 
 /* --- Diff file button --- */
 
+/* --- Inline link-style button (for Tauri shell open) --- */
+
+.linkButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--sm-primary);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+}
+
 .diffFileButton {
   appearance: none;
   display: flex;

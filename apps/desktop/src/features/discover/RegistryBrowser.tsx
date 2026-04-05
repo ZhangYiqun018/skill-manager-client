@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { open } from "@tauri-apps/plugin-shell";
 import buttons from "../../styles/_buttons.module.css";
 import cards from "../../styles/_cards.module.css";
 import forms from "../../styles/_forms.module.css";
@@ -160,9 +161,13 @@ export function RegistryBrowser({
 
       <div className={layout.attributionRow}>
         <span>{text.registryAttribution}</span>
-        <a href="https://skills.sh" target="_blank" rel="noopener noreferrer">
+        <button
+          type="button"
+          className={buttons.linkButton}
+          onClick={() => void open("https://skills.sh")}
+        >
           {text.registryVisitSite}
-        </a>
+        </button>
         {totalSkills > 0 ? (
           <span className={layout.attributionStat}>
             {totalSkills.toLocaleString()} {text.registryTotalSkills}
